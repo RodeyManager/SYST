@@ -12,39 +12,39 @@ SYST JS 是一个js MVC框架 功能比较纯粹简单, 使用起来也比较简
                         exports: 'SYST'
                     }
  */
- 
+
  Model(模型创建)；
- 
+
  defaine([], function(){
     var model = SYST.Model({
         name: 'model----',
         init: function(){ // 初始化，如果没有可以不写 }
-        
+
     });
     return model;
  });
- 
- 
+
+
  Controller(控制器)
- 
+
  defaine(['model'], function(model){
- 
+
     var controller = SYST.Controller({
         name: 'controller----;
         model: model,
         parseData: function(){
           // 格式化从后台请求的数据
         }
-    });  
-    
+    });
+
     return controller;
  });
- 
- 
+
+
  View(视图)
- 
+
   defaine(['controller'], function(controller){
- 
+
     var view = SYST.View({
         name: 'view----;
         controller: controller,
@@ -52,21 +52,21 @@ SYST JS 是一个js MVC框架 功能比较纯粹简单, 使用起来也比较简
         events: {
           'click document': 'domClick'
         },
-        
+
         init: function(){ //初始化页面 },
-        
+
         domClick: function(evt){
           var self = this;
           console.log(self);
           console.log(evt);
           alert('document click!!!');
         }
-    });  
-    
+    });
+
     return view;
  });
- 
- 
+
+
 index.html；
 
 
@@ -79,20 +79,10 @@ index.html；
 <body
 
 
-  <script src="js/libs/require/require.js" 
-          data-main="js/libs/mian.js" 
-          data-app="js/index/init.js" 
+  <script src="js/libs/require/require.js"
+          data-main="js/libs/mian.js"
+          data-app="js/index/init.js"
           data-appname="index"></script>
 </body>
 </html>
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
+

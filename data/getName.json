@@ -1,0 +1,10 @@
+{
+    "body": {
+        "result": {
+            "name": "张平安",
+            "username": null
+        }
+    },
+    "code": "200",
+    "message": "Operation successfully."
+}

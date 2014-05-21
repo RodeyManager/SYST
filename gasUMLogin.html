@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8" />
+        <meta http-equiv="Content-Type" content="text/html" charset="utf-8">
+        <meta content="name" charset="Rodey">
+        <meta content="keyword" charset=" ">
+        <meta content="descriptions" charset=" ">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-status-bar-style" content="black-translucent">
+        <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport">
+        <meta name="format-detection" content="telephone=no"/>
+        <title>平安</title>
+        <link href="css/gas.css" rel="stylesheet"/>
+
+    </head>
+    <body style="background: white;">
+        <div id="app">
+            <article class="login-home" id="login-home">
+
+                <div class="login">
+                    <span class="login-title login-tips">UM账号登录</span>
+                    <input type="hidden" name="jid" id="jid" value="">
+                    <p class="putBox">
+                        <input type="text" placeholder="账号" class="siput input1" name="userName" id="login-username" value="">
+                        <i class="us-i"></i>
+                    </p>
+                    <p class="putBox">
+                        <input type="password" placeholder="密码" class="siput input2" name="password" id="login-password" value="">
+                        <i class="ps-i"></i>
+                    </p>
+
+                    <div id="errorTips" class="errorTips" style="display: none;">验证失败，请检查输入的UM号和密码！</div>
+                    <div class="login-loading" id="login-loading">
+                        <span class="login-loading-txt">页面正在努力加载...</span>
+                    </div>
+                </div>
+                <div>
+                    <span value="" class="btn-green btn-add-gray" id="login-loginBtn" >提&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;交</span>
+                </div>
+
+            </article>
+        </div>
+
+
+        <!--载入js-->
+        <script type="text/javascript"
+                data-main="js/main.js"
+                data-app="js/gas/init.js"
+                data-appname="gasUMLogin"
+                src="js/lib/require/require.js">
+        </script>
+    </body>
+</html>

@@ -1,0 +1,78 @@
+<img src="images/gas/gasIndexShareImg.jpg" hidden="hidden" style="display: none;" />
+<section class="section">
+    <div class="my_user">
+        <span > <img src="" id="money_url"> </span>
+        <div>
+            <p class="money_name" id="money_name">越狱兔</p>
+            <b class="money_num" id="money_num">0</b>
+        </div>
+        <i></i>
+    </div>
+    <div class="level_box ">
+        <div class="clear p_ba">
+            <h4 class="money_history">历史财富</h4>
+            <div class="level fl">
+                <b>身份等级</b>
+                <b id="culevel_num">0<i></i></b>
+                <b id="culevel_title"></b>
+            </div>
+            <div class="light fl" id="light_level">
+                <b class="light_white"></b>
+                <b class="light_white"></b>
+                <b class="light_white"></b>
+                <b class="light_white"></b>
+                <b class="light_white"></b>
+            </div>
+            <div class="level fr">
+                <b>下一个等级</b>
+                <b id="nextLevel_num">0<i></i></b>
+                <b id="nextLevel_title"></b>
+            </div>
+        </div>
+        <div class="level_box1 bg_c2e892">
+            <canvas id="canvas" height="150" width="150"></canvas>
+            <span id="ibbit-num"></span>
+            <p class="pk_box inbit-les" id="inbit-les">
+                <b class="bg_ea5f54">创新PK</b>
+                <b class="bg_48abff">专业达人pK</b>
+                <b class="bg_ffbe19">IT小伙伴</b>
+                <b class="bg_8dc936">其他</b>
+            </p>
+        </div>
+    </div>
+
+    <div class="decoration_box" id="decoration_box">
+        <div class="decoration_iscroll charts-loading" id="decoration_iscroll">
+            <ul class="nav clear">
+                <!--<li>
+                    <a href="javascript:void(0);">
+                        <dl>
+                            <dt class="icon_list1"></dt>
+                            <dd>荣誉讲师</dd>
+                        </dl>
+                    </a>
+                </li>-->
+
+            </ul>
+        </div>
+
+    </div>
+</section>
+
+<!--模板 START-->
+<!--以获得的勋章 模板-->
+<script type="text/html" id="decoration-tpl">
+    <%if(insigniaList){
+    for(i = 0; i < insigniaList.length; i++){
+    %>
+    <li>
+        <a href="javascript:void(0);">
+            <dl>
+                <dt class="icon_list1" style="background:url(<%= insigniaList[i].url %>) no-repeat center center;"></dt>
+                <dd><%= insigniaList[i].name %></dd>
+            </dl>
+        </a>
+    </li>
+    <%} }%>
+</script>
+<!--模板 END-->

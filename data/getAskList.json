@@ -1,0 +1,66 @@
+{
+    "body":[
+        {
+            "answer":null,
+            "branch":"趵突泉（天下第一泉）===大明湖（“皇上，您还记得当年大明湖畔的夏雨荷吗？”）===泰山（孔子登东山而小鲁，登泰山而小天下）",
+            "createdDate":1397806294000,
+            "defaultOrder":1,
+            "hint":"亲，准备好了吗？趣味问答开始咯~",
+            "id":"1",
+            "question":"今年的运营督导钻石表彰将在素有“四面荷花三面柳，一城山色半城湖”美誉的山东济南举行，您知道以下哪处景点不在济南市吗？",
+            "status":1,
+            "type":0,
+            "updatedDate":null
+        },
+        {
+            "answer":null,
+            "branch":"成都（一座来了就不想走的城市）===昆明（“春城”）===南京（“六朝古都”）",
+            "createdDate":1397806294000,
+            "defaultOrder":2,
+            "hint":"初露锋芒，继续加油哦~",
+            "id":"2",
+            "question":"自2008年以来，运营督导钻石表彰会分别在深圳-北京-深圳-三亚-开封-    -济南举办，您知道去年的运营督导钻石表彰地是在哪里吗？",
+            "status":1,
+            "type":0,
+            "updatedDate":null
+        },
+        {
+            "answer":null,
+            "branch":"男≥女（男儿豪气万丈高）===男<女（谁说女子不如男）",
+            "createdDate":1397806294000,
+            "defaultOrder":2,
+            "hint":"看来您对精英俱乐部真的很了解呀！",
+            "id":"3",
+            "question":"运营督导队伍整体的男女比例接近1:1，来猜猜今年的钻石精英男女比例？",
+            "status":1,
+            "type":0,
+            "updatedDate":null
+        },
+        {
+            "answer":null,
+            "branch":"孔子（子曰……）===孟子===韩非子",
+            "createdDate":null,
+            "defaultOrder":2,
+            "hint":"请继续~",
+            "id":"7",
+            "question":"本届举办地在山东济南，山东是中国儒家文化的重要发祥地，名人辈出。您知道下面哪位历史名人不是出生在山东吗？",
+            "status":1,
+            "type":0,
+            "updatedDate":null
+        },
+        {
+            "answer":null,
+            "branch":"《超越梦想》===《我相信》===《天下平安》",
+            "createdDate":null,
+            "defaultOrder":2,
+            "hint":"加油哦~ 最后一题咯~",
+            "id":"10",
+            "question":"您知道运营督导精英俱乐部的会歌是什么吗？",
+            "status":1,
+            "type":0,
+            "updatedDate":null
+        }
+    ],
+    "code":"200",
+    "message":"Operation successfully."
+}

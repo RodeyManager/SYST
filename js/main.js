@@ -73,6 +73,7 @@ require.config({
         APPSlider       : 'js/libs/plugins/APPSlider',
         APPSearch       : 'js/libs/plugins/APPSearch',
         tipDialog       : 'js/libs/plugins/tipDialog',
+        shareDialog     : 'js/libs/plugins/shareDialog',
         PageLoading     : 'js/libs/plugins/PageLoading'
     }
 });
@@ -85,6 +86,7 @@ define(['jQuery',
     'APPSearch',
     'APPDateField',
     'tipDialog',
+    'shareDialog',
     'PageLoading',
     'iScroll',
     'server',
@@ -105,7 +107,15 @@ define(['jQuery',
         'loadPage': '页面加载组件',
         'history': '查看历史消息',
         'scrollSide': '无缝滚动原理',
-        '2048': '2048游戏'
+        '2048': '2048游戏',
+
+         //趣味问答
+        'answer': '趣味问答',
+        //it币
+        'gasInit'   : '我的BI币 - 绿色加油站',
+        'gasIndex'  : '我的BI币 - 绿色加油站',
+        'gasPK'     : '排行帮PK - 绿色加油站',
+        'gasUMLogin': 'UM登录验证 - 绿色加油站'
     };
 
     //定位当前页面

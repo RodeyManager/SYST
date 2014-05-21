@@ -1,0 +1,16 @@
+{
+    "body":{
+        "result":{
+            "answer":null,
+            "correctAmount":5,
+            "createdDate":null,
+            "id":3,
+            "questionIds":"1:3;2:4;3:1;4:2;5:3",
+            "status":1,
+            "updatedDate":null,
+            "username":13510181015
+        }
+    },
+    "code":"200",
+    "message":"Operation successfully."
+}

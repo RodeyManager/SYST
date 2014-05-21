@@ -582,7 +582,6 @@
      */
     APPDateField.prototype._cancel = function(evt){
         this.appWrap.style.display = 'none';
-        this.cancel.call(this, evt);
     };
     /**
      * 日期格式化
@@ -766,16 +765,12 @@
             var self = this;
             if(flag){
                 el.style.top = y + 'px';
-                //el.style.webkitTransform = 'translate(0px, '+ y +'px, 0px)';
-                //el.style.webkitTransformOriginY = y + 'px';
             }else{
-                //$(el).stop().animate({ 'webkitTransform': 'translate(0px, '+ y +'px, 0px)' }, 10, function(){
                 $(el).stop().animate({ top: y }, 10, function(){
                     var mesc = y % 50;
                     //console.log(mesc)
                     if(mesc != 0){
                         var top = 50 * Math.round(y / 50) - ( Math.abs(mesc) < 50 ? 0 : 50);
-                        //$(this).animate({ 'webkitTransform': 'translate(0px, '+ top +'px, 0px)' });
                         $(this).animate({ top: top });
                         self.y = top;
                     }

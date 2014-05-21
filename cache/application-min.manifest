@@ -1,6 +1,6 @@
 CACHE MANIFEST
 
-# VERSION 0.5
+# VERSION 0.1
 
 
 CACHE:
@@ -8,8 +8,6 @@ CACHE:
 #JS FILES
 
 ../js/lib/require/text.js
-../js/lib/require/require.js
-../js/main.js
 ../js/lib/jquery/jquery-1.9.1.min.js
 ../js/lib/jquery/jquery.touch.js
 ../js/lib/art/artTemplate/arttemplate.js
@@ -21,9 +19,6 @@ CACHE:
 ../js/lib/plugins/shareDialog.js
 ../js/lib/plugins/PageLoading.js
 
-#----MODULES FILES---
-
-../js/answer/view.js
 
 
 #HTML FILES
@@ -50,7 +45,6 @@ CACHE:
 ../images/answer/radio_2.png
 ../images/answer/results.png
 ../images/answer/print.png
-../images/answer/answer_01.png
 ../images/answer/answer_07.png
 ../images/answer/answer_114.png
 ../images/answer/answer_14.png

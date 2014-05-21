@@ -23,7 +23,7 @@
     (typeof exports !== 'undefined') ? (SYST = exports) : (SYST = root.SYST = {});
 
     //框架属性
-    SYST.version = '0.3';
+    SYST.version = '0.5';
     SYST.author = 'Rodey Luo';
     SYST.createDate = '2014-01-17';
     SYST.updateDate = '2014-03-28';
@@ -104,21 +104,9 @@
             this.init && this.init.apply(this, arguments);
             this.attributes = {};
         },
-        /**
-         * 获取数据
-         * @param key
-         * @return {*}
-         */
         get: function(key){
             return this.attributes[key];
         },
-        /**
-         * 设置数据
-         * @param key
-         * @param value
-         * @param options
-         * @return {*}
-         */
         set: function(key, value, options){
             if(key == null) return this;
             var attrs, options;
@@ -166,9 +154,9 @@
             if(attributes[key]){
                 if(typeof callback === 'function'){
                     callback.call(this, arguments);
-                }/*else{
+                }else{
                     console.log(this);
-                }*/
+                }
             }
         },
 
@@ -212,12 +200,12 @@
          * @param su
          * @param fail
          */
-        doAjax: function(url, postData, su, fail){
+        doAjax: function(url, postData, su, fail, options){
             this.doRequest(url, postData, function(res){
                 if(typeof su === 'function') su.call(this, res);
             }, function(xhr, errType){
                 if(typeof fail === 'function') fail.call(this, xhr, errType);
-            });
+            }, options);
         }
     };
 
@@ -301,11 +289,10 @@
                 if(evts[i] === evt){
                     //采用jquery进行绑定
                     //obj.on(evt, hoadEvent(pobj, func));
-                    //console.log('$("' + obj.selector + '").on("'+ evt + '", hoadEvent(' + pobj + ', ' + func +'));');
                     if(obj.selector == 'window')
-                        $(window).off().on(evt, hoadEvent(pobj, func));
+                        $(window).on(evt, hoadEvent(pobj, func));
                     else if(obj.selector == 'document' || obj.selector == 'html' || obj.selector == 'body')
-                        $(obj.selector).off().on(evt, hoadEvent(pobj, func));
+                        $(obj.selector).on(evt, hoadEvent(pobj, func));
                     else
                         $('body').delegate(obj.selector, evt, hoadEvent(pobj, func));
                 }else{
@@ -606,21 +593,10 @@
             if($){ element.childNodes = $(htmlStr); }
             return element.childNodes;
         },
-        /**
-         * 去除两边空白
-         * @param val
-         * @return {*|void}
-         */
-        trim: function(val){
-            return val.replace(/^\s*|\s*$/gi, '');
-        },
-        /**
-         * 去除字符串首尾指定的字符
-         * @param val   : 将要进行替换的字符串
-         * @param commer: 指定要替换的字符串
-         * @return      : 返回替换后的字符串
-         */
-        rtrim:function(val, commer, flag){
+        //去除两边空白
+        // commer: 指定要取出的字符串
+        // flag: true->表示要全文替换； false->只去除字符串首尾
+        trim: function(val, commer, flag){
             if(commer){
                 var re;
                 if(!flag)
@@ -628,6 +604,20 @@
                 else
                     re = new RegExp('' + commer + '*', 'gi');
                 var ma = val.match(re)[0];
+                return val.replace(re, '');
+            }else{
+                return val.replace(/^\s*|\s*$/gi, '');
+            }
+        },
+        /**
+         * 去除字符串首尾指定的字符
+         * @param val   : 将要进行替换的字符串
+         * @param commer: 指定要替换的字符串
+         * @return      : 返回替换后的字符串
+         */
+        rtrim:function(val, commer){
+            if(commer){
+                var re = new RegExp('^(' + commer +')*|('+ commer + ')*$', 'gi');
                 return val.replace(re, '');
             }else{
                 return val.replace(/^\s*|\s*$/gi, '');
@@ -870,7 +860,7 @@
      * 调用一个Native方法
      * @param {String} name 方法名称
      */
-    SYST.callNative = function(name) {
+    SYST.callNative = SYST._call = function(name) {
 
         // 获取传递给Native方法的参数
         var args = Array.prototype.slice.call(arguments, 1);
