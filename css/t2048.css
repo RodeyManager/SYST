@@ -1,0 +1,109 @@
+* {
+    margin:0px;
+    padding:0px;
+    -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+    -webkit-touch-callout:none;
+    outline: none;
+    box-sizing:border-box;
+    -webkit-box-sizing:border-box;
+}
+body {
+    font-family: Arial "Microsoft YaHei";
+    background: white;
+    -webkit-text-size-adjust:none;
+    width:640px;
+    line-height: 1;
+}
+html, body, div, span, applet, object, iframe, h1, h2, h3, h4, h5, h6, p, blockquote, pre, a, abbr, acronym, address, big, cite, code, del, dfn, em, img, ins, kbd, q, s, samp, small, strike, strong, sub, sup, tt, var, b, u, i, center, dl, dt, dd, ol, ul, li, fieldset, form, label, legend, table, caption, tbody, tfoot, thead, tr, th, td, article, aside, canvas, details, embed, figure, figcaption, footer, header, hgroup, menu, nav, output, ruby, section, summary, time, mark, audio, video {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    font-size: 100%;
+    vertical-align: baseline;
+    text-decoration: none;
+}
+input[type="text"], input[type="password"], input[type="number"], input[type="search"],
+input[type="email"], input[type="url"], input[type="color"], input[type="Date pickers"],
+input[type="range"], select, textarea {
+    -webkit-user-select: text;
+}
+article, aside, details, figcaption, figure, footer, header, hgroup, menu, nav, section { display: block;}
+ol, ul { list-style: none;}
+blockquote, q { quotes: none;}
+blockquote:before, blockquote:after, q:before, q:after { content: '';content: none;}
+table { border-collapse: collapse;border-spacing: 0;}
+a:active{text-decoration: none; color: #555;}
+a:hover{text-decoration: none; color: #555;}
+a:link{text-decoration: none; color: #555;}
+.clear{ clear: both; }
+
+
+.header2048{
+    margin: 0 auto;
+    display: block;
+    width: 500px;
+    text-align: center;
+}
+.header2048 h1{
+    font-family: Arial;
+    font-size: 60px;
+    font-weight: bold;
+}
+.header2048 #newgamebutton{
+    display: block;
+    margin: 20px auto;
+    width: 200px;
+    padding: 10px 10px;
+    background: #8f7a66;
+    font-family: Arial;
+    font-size: 30px;
+    color: white;
+    border-radius: 10px;
+    text-decoration: none;
+}
+.header2048 p{
+    font-family: Arial;
+    font-size: 30px;
+    margin: 20px auto;
+}
+
+.grid-container{
+    width: 500px;
+    height: 500px;
+    padding: 20px;
+
+    margin: 0px auto;
+    background-color: #bbada0;
+
+    border-radius: 10px;
+    position: relative;
+}
+
+.grid-container .grid-cell{
+    width: 100px;
+    height: 100px;
+    border-radius: 6px;
+    background-color: #ccc0b3;
+    position: absolute;
+}
+
+.grid-container .number-cell{
+    border-radius: 6px;
+    font-family: Arial;
+    font-weight: bold;
+    font-size: 60px;
+    line-height: 100px;
+    text-align: center;
+
+    position: absolute;
+}
+
+
+
+
+
+
+
+
+
+
