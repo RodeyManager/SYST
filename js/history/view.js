@@ -125,9 +125,9 @@ define(['currentModel'], function(hisModel){
          * 获取历史消息
          */
         getHisList: function(type){
+            var self = this, postDate; //commit
             if(self.isLoading) return;
             self.isLoading = true;
-            var self = this, postDate;
             var type = type || 'down';
             var nullList = document.getElementById('null-list') ? $('#null-list') : $('<li id="null-list">暂无历史消息</li>');
             if(nullList){
