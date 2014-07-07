@@ -74,7 +74,6 @@ SYST JS 是一个js MVC框架 功能比较纯粹简单, 使用起来也比较简
 index.html；
 
 <pre>
-	<code>
 		<!DOCTYPE html>
 		<html>
 		<head>
@@ -90,6 +89,5 @@ index.html；
 				  data-appname="index"></script>
 		</body>
 		</html>
-	</code>
 </pre>
 
