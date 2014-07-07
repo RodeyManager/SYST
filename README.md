@@ -7,13 +7,12 @@ SYST JS 是一个js MVC框架 功能比较纯粹简单, 使用起来也比较简
  * 使用前请先引入依赖插件
  *
  * requireJS 引入:
- <pre>
- *                  'SYST' : {
-                        deps : ['jQuery', 'arttemplate'],
-                        exports: 'SYST'
-                    }
- */
  
+ <pre>
+		'SYST' : {
+			deps : ['jQuery', 'arttemplate'],
+			exports: 'SYST'
+		}
  </pre>
 
  
@@ -73,7 +72,6 @@ SYST JS 是一个js MVC框架 功能比较纯粹简单, 使用起来也比较简
 
 index.html；
 
-<pre>
 		<!DOCTYPE html>
 		<html>
 		<head>
@@ -89,5 +87,4 @@ index.html；
 				  data-appname="index"></script>
 		</body>
 		</html>
-</pre>
 
