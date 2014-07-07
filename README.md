@@ -7,14 +7,18 @@ SYST JS 是一个js MVC框架 功能比较纯粹简单, 使用起来也比较简
  * 使用前请先引入依赖插件
  *
  * requireJS 引入:
+ <pre>
  *                  'SYST' : {
                         deps : ['jQuery', 'arttemplate'],
                         exports: 'SYST'
                     }
  */
+ 
+ </pre>
 
+ 
  Model(模型创建)；
-
+<pre>
  defaine([], function(){
     var model = SYST.Model({
         name: 'model----',
@@ -23,10 +27,10 @@ SYST JS 是一个js MVC框架 功能比较纯粹简单, 使用起来也比较简
     });
     return model;
  });
-
+</pre>
 
  Controller(控制器)
-
+<pre>
  defaine(['model'], function(model){
 
     var controller = SYST.Controller({
@@ -39,10 +43,10 @@ SYST JS 是一个js MVC框架 功能比较纯粹简单, 使用起来也比较简
 
     return controller;
  });
-
+</pre>
 
  View(视图)
-
+<pre>
   defaine(['controller'], function(controller){
 
     var view = SYST.View({
@@ -65,24 +69,27 @@ SYST JS 是一个js MVC框架 功能比较纯粹简单, 使用起来也比较简
 
     return view;
  });
-
+</pre>
 
 index.html；
 
+<pre>
+	<code>
+		<!DOCTYPE html>
+		<html>
+		<head>
+		  <meta charset="UTF-8" />
+		  <title>SYST JS FRAMEWORK</title>
+		</head>
+		<body
 
-<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="UTF-8" />
-  <title>SYST JS FRAMEWORK</title>
-</head>
-<body
 
-
-  <script src="js/libs/require/require.js"
-          data-main="js/libs/mian.js"
-          data-app="js/index/init.js"
-          data-appname="index"></script>
-</body>
-</html>
+		  <script src="js/libs/require/require.js"
+				  data-main="js/libs/mian.js"
+				  data-app="js/index/init.js"
+				  data-appname="index"></script>
+		</body>
+		</html>
+	</code>
+</pre>
 
