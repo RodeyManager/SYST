@@ -23,10 +23,9 @@
     (typeof exports !== 'undefined') ? (SYST = exports) : (SYST = root.SYST = {});
 
     //框架属性
-    SYST.version = '0.5';
+    SYST.version = '0.3.2';
     SYST.author = 'Rodey Luo';
-    SYST.createDate = '2014-01-17';
-    SYST.updateDate = '2014-03-28';
+    SYST.createDate = '2014-07-01';
     SYST.name = 'SYST JS MVC Framework (JS MVC框架)';
     /**
      * Native相关
@@ -77,7 +76,9 @@
         if(!child.prototype){
             child.__super__ = parent.prototype;
             for(var proto in parent.prototype){
-                child[proto] = parent.prototype[proto];
+                if(!parent.hasOwnProperty(proto)){
+                    child[proto] = parent.prototype[proto];
+                }
             }
         }
         return child;
@@ -104,19 +105,18 @@
             this.init && this.init.apply(this, arguments);
             this.attributes = {};
         },
-        get: function(key){
-            return this.attributes[key];
-        },
+        // 在本模型中存取
+        get: function(key, options){    return this.attributes[key];    },
         set: function(key, value, options){
             if(key == null) return this;
             var attrs, options;
-            if(key && key.length > 0){
+            if(key){
                 if(typeof key === 'object'){
                     // this.set({ name: 'Rodey', age: 25 });
                     for(var k in key){
                         this.attributes[k] = key[k];
                     }
-                }else if(typeof key === 'string' && value){
+                }else if(typeof key === 'string' && key.length > 0){
                     //this.set('name', 'Rodey') | this.set('one', { name: 'Rodey', age: 25, isBoss: false }
                     this.attributes[key] = value;
                 }else{
@@ -124,42 +124,41 @@
                 }
             }
         },
-        //判断某个属性是否存在
-        has: function(key){
-            return Boolean(this.attributes[key]);
-        },
-        //动态添加属性, 如果存在则覆盖
-        add: function(object){
-            if(!SYST.T.isObject(obj)) return this;
-            for(var proto in object){
-                this.attributes[proto] = object[proto];
+        // 在localStorage中存取
+        getItem: function(key){     return window.localStorage.getItem(key);    },
+        setItem: function(key, value, options){
+            if(typeof key === 'object'){
+                // this.set({ name: 'Rodey', age: 25 });
+                for(var k in key){
+                    window.localStorage.setItem(k, key[k]);
+                }
+            }else if(typeof key === 'string' && key.length > 0){
+                //this.set('name', 'Rodey') | this.set('one', { name: 'Rodey', age: 25, isBoss: false }
+                if(SYST.V.isObject(value)){
+                    window.localStorage.setItem(key, JSON.stringify(value));
+                }else{
+                    window.localStorage.setItem(key, value);
+                }
+            }else{
+                return this;
             }
         },
+
+        //判断某个属性是否存在
+        has: function(key){ return Boolean(this.attributes[key]); },
+        hasItem: function(key){ return Boolean(window.localStorage.getItem(key)); },
+        //动态添加属性
+        add: function(key, value, options){ this.set(key, value, options); },
+        /*addItem: function(key, value, options){ this.setItem(key, value, options) },*/
         //动态删除属性
         remove: function(key){
             if(!key || key == '') return this;
             this.attributes[key] = null;
             delete this.attributes[key];
         },
-        _getName: function(){
-            return this.__Name__;
-        },
-
-        change: function(key, callback){
-            if(!key || key == '' || key == null || typeof key == 'undefined'){
-                throw new Error('change事件中必须有key');
-                return this;
-            }
-            var attributes = this.attributes;
-            if(attributes[key]){
-                if(typeof callback === 'function'){
-                    callback.call(this, arguments);
-                }else{
-                    console.log(this);
-                }
-            }
-        },
-
+        removeItem: function(key){ window.localStorage.removeItem(key); },
+        removeAll: function(flag){ flag ? (this.attributes = []) : window.localStorage.clear(); },
+        _getName: function(){ return this.__Name__; },
         /**
          * 通用AJAX请求方法
          * @param url
@@ -200,12 +199,12 @@
          * @param su
          * @param fail
          */
-        doAjax: function(url, postData, su, fail, options){
+        doAjax: function(url, postData, su, fail){
             this.doRequest(url, postData, function(res){
                 if(typeof su === 'function') su.call(this, res);
             }, function(xhr, errType){
                 if(typeof fail === 'function') fail.call(this, xhr, errType);
-            }, options);
+            });
         }
     };
 
@@ -278,10 +277,12 @@
      * @func    事件函数
      * @type {Function}
      */
-    var Events = SYST.Events = function(obj, pobj, evt, func){
+    var Events = SYST.Events = function(obj, pobj, evt, func, type){
         var self = this;
-        var evts = "abort reset click dblclick tap touchstart touchmove touchend change mouseover mouseout mouseup mousedown mousemove mousewheel drag dragend dragenter dragleave dragover dragstart drop resize scroll submit select keydown keyup keypress touchstart touchend load unload blur focus contextmenu formchange forminput input invalid afterprint beforeprint beforeonload haschange message offline online pagehide pageshow popstate redo storage undo canplay canplaythrough durationchange emptied ended loadeddata loadedmetadata loadstart pause play playing progress ratechange readystatechange seeked seeking stalled suspend timeupdate volumechange waiting".split(/\s+/gi);
+        var type = type || 'on';
+        var evts = "abort reset click dblclick tap touchstart touchmove touchend change mouseover mouseout mouseup mousedown mousemove mousewheel drag dragend dragenter dragleave dragover dragstart drop resize scroll submit select keydown keyup keypress touchstart touchend load unload blur focus contextmenu formchange forminput input invalid afterprint beforeprint beforeonload haschange message offline online pagehide pageshow popstate redo storage undo canplay canplaythrough durationchange emptied ended loadeddata loadedmetadata loadstart pause play playing progress ratechange readystatechange seeked seeking stalled suspend timeupdate volumechange waiting cut copy paste".split(/\s+/gi);
         if(!obj) obj = window;
+
         //重构
         if(window.$ || window.jQuery){
             for(var i = 0; i < evts.length; i++){
@@ -289,12 +290,26 @@
                 if(evts[i] === evt){
                     //采用jquery进行绑定
                     //obj.on(evt, hoadEvent(pobj, func));
-                    if(obj.selector == 'window')
-                        $(window).on(evt, hoadEvent(pobj, func));
-                    else if(obj.selector == 'document' || obj.selector == 'html' || obj.selector == 'body')
-                        $(obj.selector).on(evt, hoadEvent(pobj, func));
-                    else
-                        $('body').delegate(obj.selector, evt, hoadEvent(pobj, func));
+                    //console.log('$("' + obj.selector + '").on("'+ evt + '", hoadEvent(' + pobj + ', ' + func +'));');
+                    if(obj.selector == 'window'){
+                        if(type == 'on'){
+                            $(window).off().on(evt, hoadEvent(pobj, func));
+                        }else{
+                            $(window).off(evt, hoadEvent(pobj, func));
+                        }
+                    }else if(obj.selector == 'document' || obj.selector == 'html' || obj.selector == 'body'){
+                        if(type == 'on'){
+                            $(obj.selector).off().on(evt, hoadEvent(pobj, func));
+                        }else{
+                            $(obj.selector).off(evt, hoadEvent(pobj, func));
+                        }
+                    }else{
+                        if(type == 'on'){
+                            $('body').delegate(obj.selector, evt, hoadEvent(pobj, func));
+                        }else{
+                            $('body').undelegate(obj.selector, evt, hoadEvent(pobj, func));
+                        }
+                    }
                 }else{
                     continue;
                 }
@@ -302,9 +317,25 @@
         }else{
             throw new Error('请先引入jQuery或者是zepto');
         }
+
+
+        /*for(var i = 0; i < evts.length; i++){
+            if(evts[i] === evt){
+                //采用jquery进行绑定
+                if(window.$){
+                    //obj.on(evt, hoadEvent(pobj, func));
+                    //console.log(obj.selector)
+                    if(obj.selector == 'window')
+                        obj.on(evt, hoadEvent(pobj, func));
+                    else
+                        $('body').delegate(obj.selector, evt, hoadEvent(pobj, func));
+                }
+                continue;
+            }
+        }*/
     };
 
-    var hoadEvent = function(obj, func){
+    var hoadEvent = SYST.hoadEvent = function(obj, func){
         var args = [], self = this;
         obj = obj || window;
         for(var i = 2; i < arguments.length; i++) args.push(argments[i]);
@@ -317,7 +348,10 @@
             //obj[func].apply(obj, args);
             //保证传递 Event对象过去
             //obj[func].call(obj, e, args);
-            obj[func].call(obj, e, args);
+            if(obj[func])
+                obj[func].call(obj, e, args);
+            else
+                throw new Error(func + ' 函数未定义！');
         }
     };
 
@@ -345,25 +379,32 @@
         tagPanel: 'selection',
         _template: '',
         _initialize: function(){
-
+            var self = this;
             this.el = {};
             this.chache = [];
             this.els = {};
             this.shareModels = {};
 
             this.model = this.model ? this.model : (this.controller ? this.controller.getModel() : undefined);
-            var panel = '<' + this.tagPanel + '/>';
-            this.$el = SYST.$ ? SYST.$(panel) : this.parseDom(panel);
             //document.body.appendChild(this.$el[0]);
             //自定义init初始化
             this.init && this.init.apply(this, arguments);
-            this.render && this.render.apply(this, arguments);
+            if(this.render){
+                var panel = '<' + self.tagPanel + '/>';
+                self.$el = SYST.$ ? SYST.$(panel) : self.parseDom('', panel);
+                self.render.apply(self, arguments);
+            }
 
             //自动解析 events对象，处理view中的事件绑定
-            this.parseEvents(this.events);
+            this.parseEvent(this.events);
             this.autoHandleEvent();
 
         },
+
+        destroy: function(){
+            this.$el.remove();
+        },
+
         /**
          * 改变对象属性作用域 (常用在元素触发事件侦听函数中)
          * @param callback
@@ -404,7 +445,10 @@
                 args.push(e);
                 //obj[func].apply(obj, args);
                 //解决同类多个对象侦听后，evt.target值不改变bug
-                obj[func].call(obj, e, args);
+                if(obj[func])
+                    obj[func].call(obj, e, args);
+                else
+                    throw new Error(func + ' 函数未定义！');
             }
         },
         /**
@@ -412,14 +456,14 @@
          * @param events对象
          * @return {*}
          */
-        parseEvents: function(evtObj){
+        parseEvent: function(evtObj){
             //console.log(evtObj)
             if(!evtObj || evtObj.length == 0 || evtObj === {}) return this;
 
             var evts = [], objs = [], handleFunctions = [];
             for(var evt in evtObj){
-                var o = evt.split(' ');
-                objs.push(o[1].replace(/^\$*|[\(*]|[\)*]$/gi, '').replace(/"|'/gi, '\"'));  // $("#one")
+                var o = (SYST.T.trim(evt)).split(/\s+/gi);
+                objs.push(o[1].replace(/^\$*|[\(*]|[\)*]$/gi, '').replace(/"|'/gi, '\"'));
                 evts.push(o[0].replace(/^\s*|\s*$/gi, ''));
                 handleFunctions.push(evtObj[evt]);
             }
@@ -437,23 +481,31 @@
          * 自动绑定事件
          * @param 将被替换的对象
          */
-        autoHandleEvent: function(obj){
+        autoHandleEvent: function(type){
             if(!this.evts || this.evts.length == 0 || this.evts.length == {}) return this;
-            obj = obj || this;
+            var type = type || 'on';
             for(var i = 0, l = this.evts.length; i < l; i++){
-                //console.log(this.evts[i])
                 if(!this.evts[i])
                     throw new Error('对象侦听'+ this.evts[i] + '不存在');
                 if(!this.handleFunctions[i])
                     throw new Error('对象'+ this + '不存在' + this.handleFunctions[i] + '方法');
                 if(!this.objs[i])
                     throw new Error('事件函数'+ this.handleFunctions[i] + '不存在');
-                else
-                    SYST.Events($(this.objs[i]), this, this.evts[i], this.handleFunctions[i]);
+
+                SYST.Events($(this.objs[i]), this, this.evts[i], this.handleFunctions[i], type);
                 //console.log(this.handleFunctions[i]);
             }
             return this;
         },
+
+        onEvent: function(){
+            this.autoHandleEvent('on');
+        },
+
+        offEvent: function(){
+            this.autoHandleEvent('off');
+        },
+
         /**
          * 模板渲染
          * @param htmlStr
@@ -473,12 +525,9 @@
             }
             return compHtml;
         },
-        render: function(){
-            return this;
-        },
         //将元素转成对象并返回
         parseDom: function(htmlStr, tagPanel){
-            return SYST.T._template(htmlStr, tagPanel);
+            return SYST.T.template(htmlStr, tagPanel);
         },
         /**
          * 获取标签元素对象 use: getEl('#id')\getEl('.class')\getEl('tagName');
@@ -499,12 +548,18 @@
             return el;
         },
         getController: function(){
-            return this.controller ? this.controller : SYST.Controller;
+            return this.controller;
         },
         getModel: function(){
-            return this.model ? this.model : SYST.Model;
+            return this.model || this.getController().getModel();
         },
         shareModel: SYST.shareModels
+    };
+    //将元素转成对象并返回
+    SYST._template = function(htmlStr, tagPanel){
+        var element = document.createElement(tagPanel || 'div');
+        element.innerHTML = htmlStr;
+        return element.childNodes;
     };
 
     /**
@@ -523,52 +578,54 @@
     };
     SYST.V = SYST.Validate.prototype = {
         //为空时
-        isEmpty: function(val){ return (!val || val.length == 0 || val == '' || val == null || typeof val == 'undefined') ? true : false;},
+        isEmpty     : function(val){        return (!val || val.length == 0 || val == '' || val == null || typeof val == 'undefined') ? true : false; },
         //是否已设置
-        isSet: function(val){ return (val || typeof val != 'undefined') ? true : false; },
-        //判断数值是否在两者之间 (默认不包括两者)
-        between: function(val, min, max, flag){
-            var flag = flag || false;
-            return (flag) ? ((val.length >= min && val.length <= max) ? true : false) : ((val.length > min && val.length < max) ? true : false);
+        isSet       : function(val){        return (val || typeof val != 'undefined') ? true : false; },
+        //取两个数值之间 (默认不包括两者)
+        between     : function(val, min, max, flag){
+            flag = flag || false;
+            if(flag)                        return (val.length >= min && val.length <= max) ? true : false;
+            else                            return (val.length > min && val.length < max) ? true : false;
         },
         //是否含有中文 （flag存在则完全匹配中文，默认不完全匹配）
-        isCN: function(str, flag){
-            var flag = flag || false;
-            return (!flag) ? (/^[\u4e00-\u9fa5]+$/i.test(str)) : (/[\u4e00-\u9fa5]+/gi.test(str));
+        isCN        : function(str, flag){
+            if(flag)                        return (/^[\u4e00-\u9fa5]+$/.test(str));
+            else                            return (/[\u4e00-\u9fa5]+/gi.test(str));
         },
         //验证 E-mail 地址
-        isEmail: function(email){ return /^[a-z0-9!#$%&'*+/=?^_`{|}~.-]+@[a-z0-9-]+(\.[a-z0-9-]+)*$/i.test(email); },
+        isEmail     : function(email){      return /^\w+([-+.]\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*$/gi.test(email); },
         //验证 URL 地址
-        isURL: function(url){ return /^(ftp|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?$/.test(url); },
+        isURL       : function(url){        return /^http:\/\/[A-Za-z0-9]+\.[A-Za-z0-9]+[\/=\?%\-&_~`@[\]\':+!]*([^<>\"\"])*$/i.test(url); },
         //验证电话号码
-        isTel: function(tel){ return /^(\(\d{3,4}\)|\d{3,4}-)?\d{7,8}$/gi.test(tel); },
+        isTel       : function(tel){        return /^(\(\d{3,4}\)|\d{3,4}-)?\d{7,8}$/gi.test(tel); },
         //验证手机号码
-        isMobile: function(mobile){ return /^1[3|5|8]{1}\d{9}$/.test(mobile); },
-        //验证邮编
-        isZip: function(zipCode){ return /^\d{6}$/.test(zipCode); },
+        isMobile    : function(mobile){     return /^1[3|5|8]{1}\d{9}$/.test(mobile); },
+        isZip       : function(zipCode){    return /^\d{6}$/.test(zipCode); },
+
         //验证日期, 日期时间, 时间
-        isDateLocal : function(date){ return /^(\d{4})-(\d{1,2})-(\d{1,2})$/.test(date); },
-        isDateTime  : function(dateTime){ return /^(\d{4})-(\d{1,2})-(\d{1,2})\s+(\d{1,2}):(\d{1,2}):(\d{1,2})$/.test(dateTime); },
-        isTime      : function(time){ return /^(\d{1,2}):(\d{1,2}):(\d{1,2})$/.test(time); },
+        isDateLocal : function(date){       return /^(\d{4})-(\d{1,2})-(\d{1,2})$/.test(date); },
+        isDateTime  : function(dateTime){   return /^(\d{4})-(\d{1,2})-(\d{1,2})\s+(\d{1,2}):(\d{1,2}):(\d{1,2})$/.test(dateTime); },
+        isTime      : function(time){       return /^(\d{1,2}):(\d{1,2}):(\d{1,2})$/.test(time); },
         /**
          * 常用对象判断
          * @param value
          * @return {Boolean}
          */
-        isString    : function(value){ return typeof value === 'string'; },
-        isNumber    : function(value){ return typeof value === 'number'; },
-        isArray     : function(value){ return toString.call(value) === '[object Array]'; },
-        isDate      : function(value){ return toString.call(value) === '[object Date]'; },
-        isObject    : function(value){ return value != null && typeof value === 'object'; },
-        isFunction  : function(value){ return toString.call(value) === '[object Function]'; },
-        isFile      : function(value){ return toString.call(value) === '[object File]'; },
-        isBlob      : function(value){ return toString.call(value) === '[object Blob]'; },
-        isBoolean   : function(value){ return typeof value === 'boolean'; },
-        isUndefined : function(value){ return typeof value === 'undefined';},
-        isdefined   : function(value){ return typeof value !== 'undefined';},
-        isRegExp    : function(value){ return toString.call(value) === '[object RegExp]'; },
-        isWindow    : function(value){ return value && value.document && value.location && value.alert && value.setInterval; },
-        isElement   : function(value){ return !!(value && (value.nodeName || (value.prop && value.attr && value.find))); }
+        isString    : function(value){      return typeof value === 'string'; },
+        isNumber    : function(value){      return typeof value === 'number'; },
+        isArray     : function(value){      return toString.call(value) === '[object Array]'; },
+        isDate      : function(value){      return toString.call(value) === '[object Date]'; },
+        isObject    : function(value){      return value != null && typeof value === 'object'; },
+        isFunction  : function(value){      return toString.call(value) === '[object Function]'; },
+        isFile      : function(value){      return toString.call(value) === '[object File]'; },
+        isBlob      : function(value){      return toString.call(value) === '[object Blob]'; },
+        isBoolean   : function(value){      return typeof value === 'boolean'; },
+        isUndefined : function(value){      return typeof value === 'undefined';},
+        isdefined   : function(value){      return typeof value !== 'undefined';},
+        isRegExp    : function(value){      return toString.call(value) === '[object RegExp]'; },
+        isWindow    : function(value){      return value && value.document && value.location && value.alert && value.setInterval; },
+        isElement   : function(value){      return !!(value && (value.nodeName || (value.prop && value.attr && value.find))); }
+
     };
 
     /**
@@ -586,28 +643,51 @@
         }
     };
     SYST.T = SYST.Tools.prototype = {
-        _template: function(htmlStr, tagPanel){
+        template: function(htmlStr, tagPanel){
             var element = document.createElement(tagPanel || 'div');
             element.innerHTML = htmlStr;
             //jQuery || zepto
-            if($){ element.childNodes = $(htmlStr); }
+            if($){
+                $(element).html(htmlStr);
+                return $(element)[0];
+            }
             return element.childNodes;
         },
-        //去除两边空白
-        // commer: 指定要取出的字符串
-        // flag: true->表示要全文替换； false->只去除字符串首尾
-        trim: function(val, commer, flag){
-            if(commer){
-                var re;
-                if(!flag)
-                    re = new RegExp('^(' + commer +')*|('+ commer + ')*$', 'i');
-                else
-                    re = new RegExp('' + commer + '*', 'gi');
-                var ma = val.match(re)[0];
-                return val.replace(re, '');
-            }else{
-                return val.replace(/^\s*|\s*$/gi, '');
+        /**
+         * 触发事件
+         * @param  {[type]}   element  [触发对象]
+         * @param  {[type]}   event    [事件名称]
+         * @param  {[type]}   data     [参数]
+         * @param  {Function} callback [回调]
+         * @return {[type]}            [undefined]
+         * use:
+         * $(document.body).bind('click', function(){});
+         * SYST.T.trigger($(document.body)[0], 'onclick', 'hello', function(data){
+         *     console.log(this); //output:     <body>...</body。
+         *     console.log(data); //output；    'hello'
+         * });
+         */
+        trigger: function(element, event, data, callback){
+            if(element && event && '' !== event){
+                try{
+                   element[method].call(element, data, arguments);
+                    if(typeof callback === 'function') callback.call(element, data);
+                }catch(e){
+                    throw new Error(element + '不存在' + event + '方法 <::>');
+                }
             }
+        },
+        params: function(name){
+            this.params[name] = this.getParams(name);
+            return this.params[name];
+        },
+        /**
+         * 去除两边空白
+         * @param val
+         * @return {*|void}
+         */
+        trim: function(val){
+            return val.replace(/^\s*|\s*$/gi, '');
         },
         /**
          * 去除字符串首尾指定的字符
@@ -615,9 +695,14 @@
          * @param commer: 指定要替换的字符串
          * @return      : 返回替换后的字符串
          */
-        rtrim:function(val, commer){
+        rtrim:function(val, commer, flag){
             if(commer){
-                var re = new RegExp('^(' + commer +')*|('+ commer + ')*$', 'gi');
+                var re;
+                if(!flag)
+                    re = new RegExp('^(' + commer +')*|('+ commer + ')*$', 'i');
+                else
+                    re = new RegExp('' + commer + '*', 'gi');
+                var ma = val.match(re)[0];
                 return val.replace(re, '');
             }else{
                 return val.replace(/^\s*|\s*$/gi, '');
@@ -664,6 +749,150 @@
                 array.splice(index, 1);
             return val;
         },
+
+        /**
+         * 取两个数值之间 (默认不包括两者) false: 不包括； true: 包括
+         * @param val
+         * @param flag
+         * @return {*}
+         * use： SYST.T.getArray('1...6')
+         *
+         *      console.log(SYST.T.getArray('..100'));
+         *      console.log(SYST.T.getArray('...100'));
+         *      console.log(SYST.T.getArray('0..100'));
+         *      console.log(SYST.T.getArray('0...100'));
+         *      console.log(SYST.T.getArray('100..0'));
+         *      console.log(SYST.T.getArray('100...0'));
+         */
+        getArray    : function(val){
+            var strArr = '';
+            var flag = false;
+            if(SYST.V.isString(val)){
+
+                if(val.indexOf('...') >= 0){
+                    flag = true;
+                    strArr = val.split('...');
+                }else if(val.indexOf('..') >= 0){
+                    flag = false;
+                    strArr = val.split('..');
+                }
+
+                if(SYST.V.isEmpty(strArr[0])){
+                    strArr[0] = 0;
+                }
+                if(SYST.V.isEmpty(strArr[1])){
+                    throw new Error('结束数值必须存在 ;)');
+                    return false;
+                }
+
+                var first = +strArr[0];
+                var last = +strArr[1];
+                var i = flag ? first : first + 1;
+                var l = flag ? last + 1 : last;
+                var arr = [];
+
+                if(first < last){
+                    for(; i < l; i++){
+                        arr.push(i);
+                    }
+                }else if(first == last){
+                    arr.push(first);
+                }else if(first > last){
+                    //i = i - 1;
+                    i = flag ? first : first - 1;
+                    l = flag ? last - 1 : last;
+                    for(; i > l; i--){
+                        arr.push(i);
+                    }
+                }
+
+                return arr;
+            }
+            return '';
+        },
+
+        /**
+         * 创建一个相同字符的字符串
+         * 如果首尾都是字符串，则会将字符串变成大写，然后拼接
+         * @param val
+         * @return {String}
+         * user: SYST.T.getString('A*10') => 'AAAAAAAAAA'
+         *       SYST.T.getString('A**D') => 'ABCD'
+         */
+        getString: function(val, commer){
+            var strArr = '';
+            var flag = false;
+            commer = commer || ',';
+
+            var firstChar = '';
+            var lastChar = '';
+            var firstCode  = 0;
+            var lastCode   = 0;
+            var num = 0;
+            var s = '';
+            var a = [];
+            if(SYST.V.isString(val)){
+                if(val.indexOf('**') >= 0){
+                    flag = false;
+                    strArr = val.split('**');
+                    firstChar = strArr[0];
+                    lastChar = strArr[1];
+
+                    if(!isNaN(parseInt(firstChar)) && !isNaN(parseInt(lastChar))){
+                        firstCode  = parseInt(firstChar);
+                        lastCode   = parseInt(lastChar);
+                        if(firstChar > lastChar){
+                            for(; firstCode > lastCode - 1; firstCode--){
+                                a.push(String(firstCode));
+                            }
+                        }else if(firstCode == lastCode){
+                            a.push(String(firstCode));
+                        }else if(firstCode < lastCode){
+                            for(; firstCode < lastCode + 1; firstCode++){
+                                a.push(String(firstCode));
+                            }
+                        }
+
+                        return a.join(commer);
+                    }else if(SYST.V.isString(firstChar) && SYST.V.isString(lastChar)){
+                        firstCode  = firstChar.toLowerCase().charCodeAt();
+                        lastCode  = lastChar.toLowerCase().charCodeAt();
+                        if(firstCode > lastCode){
+                            for(; firstCode > lastCode - 1; firstCode--){
+                                if(firstCode >= 91 && firstCode <= 96){ continue;}
+                                //if(firstCode < 65 && firstCode > 122){ continue;}
+                                var sc = String.fromCharCode(firstCode);
+                                s += sc;
+                            }
+                        }else if(firstCode == lastCode){
+                            s = firstChar;
+                        }else if(firstCode < lastCode){
+                            for(; firstCode < lastCode + 1; firstCode++){
+                                if(firstCode >= 91 && firstCode <= 96){ continue;}
+                                //if(firstCode < 65 && firstCode > 122){ continue;}
+                                var sc = String.fromCharCode(firstCode);
+                                s += sc;
+                            }
+                        }
+
+                        return s;
+                    }
+                }else if(val.indexOf('*') >= 0){
+                    flag = true;
+                    strArr = val.split('*');
+                    firstChar = strArr[0];
+                    num = isNaN(parseInt(strArr[1])) ? firstChar.charCodeAt() : parseInt(strArr[1]);
+                    for(var i = 0; i < num; i++){
+                        s += firstChar;
+                    }
+                    return s;
+                }else{
+                    return '';
+                }
+            }
+            return '';
+        },
+
         /**
          * 全角字符转为半角,并取出所有空格
          * @param str
@@ -700,8 +929,36 @@
          */
         setDateFormat: function(timestamp){
             var date = new Date(parseInt(timestamp));
-            return date.getFullYear() +'-'+ this.dateFm(date.getMonth() + 1) +'-'+ this.dateFm(date.getDate()) + ' ' + this.dateFm(date.getHours()) + ':' + this.dateFm(date.getMinutes()) + ':' + this.dateFm(date.getSeconds());
+            return date.getFullYear() +'-'+ App.dateFm(date.getMonth() + 1) +'-'+ App.dateFm(date.getDate()) + ' ' + App.dateFm(date.getHours()) + ':' + App.dateFm(date.getMinutes()) + ':' + App.dateFm(date.getSeconds());
         },
+
+        /**
+         * 比较两个时间差 格式：YYYY-mm-dd
+         * @param DateOne
+         * @param DateTwo
+         * @return {Number}
+         */
+        daysBetween: function(DateOne, DateTwo, callback){
+            //获取第一个时间
+            var OneMonth    = DateOne.substring(5, DateOne.lastIndexOf('-'));
+            var OneDay      = DateOne.substring(DateOne.length, DateOne.lastIndexOf('-') + 1);
+            var OneYear     = DateOne.substring(0, DateOne.indexOf('-'));
+            //获取第二个时间
+            var TwoMonth    = DateTwo.substring(5,DateTwo.lastIndexOf('-'));
+            var TwoDay      = DateTwo.substring(DateTwo.length, DateTwo.lastIndexOf('-') + 1);
+            var TwoYear     = DateTwo.substring(0, DateTwo.indexOf('-'));
+
+            var CDays = ((Date.parse(OneMonth +'/'+ OneDay +'/'+ OneYear) - Date.parse(TwoMonth +'/'+ TwoDay +'/'+ TwoYear)) / 86400000);
+
+            if(callback && typeof callback === 'function'){
+                callback(CDays);
+            }else{
+                //return Math.abs(CDays);
+                return CDays;
+            }
+        },
+
+
         //获取get模式下url中的指定参数值
         getParams: function(name) {
             var reg = new RegExp('(^|&)' + name + '=([^&]*)(&|$)', 'i');
@@ -717,14 +974,17 @@
         Cookie: function(key, value, options) {
             if(arguments.length > 1 && (!/Object/.test(Object.prototype.toString.call(value)) || value === null || value === undefined)) {
                 options = options || {};
+
                 if(value === null || value === undefined) {
                     options.expires = -1;
                 }
+
                 if( typeof options.expires === 'number') {
                     var days = options.expires, t = options.expires = new Date();
                     t.setDate(t.getDate() + days);
                 }
                 value = String(value);
+
                 return (document.cookie = [encodeURIComponent(key), '=', options.raw ? value : encodeURIComponent(value), options.expires ? '; expires=' + options.expires.toUTCString() : '', options.path ? '; path=' + options.path : '', options.domain ? '; domain=' + options.domain : '', options.secure ? '; secure' : ''].join(''));
             }
             options = value || {};
@@ -738,7 +998,6 @@
             }
             return null;
         },
-
         /**
          * 截取字符串长度
          * @param str
@@ -747,36 +1006,43 @@
          */
         subStr: function(str, start, end){
             if(!SYST.V.isString(str) || str.length == 0){ return ''; }
+            if(SYST.V.isNumber(str)){ str = "" + str; }
             var l = str.length;
             var start = start || 0;
             var end = (end || l) > l ? l : (end || l);  // 'Rodeyluo'
             var sa = str.split('');
             var a = [];
-
-            if(start < 0 && end > 0){
-                start = Math.abs(start); //-2, 3
-                for(var i=l - start; i<l; i++)
-                    a.push(str[i]);
-                //s = str.substr(str.length - start, str.length);
-            }else if(start < 0 && end < 0){
-                start = Math.abs(start); //-2
-                end = Math.abs(end);  //-4
-                for(var i=l - end; i<l - start; i++)
-                    a.push(str[i]);
-                //s = str.substr(l - end, l - start);
-            }else if(start > 0 && end < 0){
-                end = Math.abs(end); //0, -2
-                for(var i=start; i<l - end; i++)
-                    a.push(str[i]);
-                //s = str.substr(start, l - end);
-            }else if(start > 0 && end > 0){
-                for(var i=start; i<end; i++)
-                    a.push(str[i]);
-                //s = str.substr(start, end);
-            }else if(start == 0 && end == 0){
+            //ex: 'abcdefghijklmn'
+            // (-5, -1)
+            if(start < 0 && end < 0){
+                start   = Math.abs(start);
+                end     = Math.abs(end);
+                str = str.split('').reverse();
+                if(start < end){ //(-2, -8)
+                    for(var i = start; i < end; i++)
+                        a.push(str[i] || '');
+                }else if(start > end){ //(-5, 0)
+                    for(var i = end; i < start; i++)
+                        a.push(str[i] || '');
+                }else if(start == end){
+                    return str[start];
+                }
+                a.reverse().join('');
+            }else if(start > 0 && end > 0){ // (1, 5)
+                if(start < end){ return ''; }
+                for(var i = start; i < end; i++)
+                    a.push(str[i] || '');
+                return a.join('');
+            }else if(start < 0 && end > 0){  // (-5, 2)
+                str = str.split('').reverse(); //'abcdefghijklmn'=>'nmlkjihgfedcba'
+                for(var i = start - 1; i < l - end; i++)
+                    a.push(str[i] || '');
+                return a.reverse().join('');
+            }else if(start > 0 && end < 0){  // (2, -6)
+                return '';
+            }else{
                 return '';
             }
-            return a.join('');
         },
 
         /**
@@ -784,13 +1050,24 @@
          * @param str       要截取的字符串
          * @param len       要截取的长度
          * @param commer    结尾补假字符（可选）默认为'...'
+         *
+         * USE:
+         *      SYST.T.subString('我是中国人，我爱中国，更爱中国人民！', 10);
+         *      => '我是中国人，我爱中国...'
+         *      SYST.T.subString('我是中国人，我爱中国，更爱中国人民！', 10, '!!!');
+         *      => '我是中国人，我爱中国!!!'
+         *      SYST.T.subString('我是中国人，我爱中国，更爱中国人民！', -12, '!!!');
+         *      => '我爱中国，更爱中国人民！'
          */
         subString: function(str, len, commer){
-            if(!SYST.V.isString(str) || str.length == 0){ return ''; }
-            if(!len || len == 0){ return ''; }
+            if(!str || str.length == 0){ return ''; }
+            if(SYST.V.isNumber(str)){ str = "" + str; }
+            if(!len){ return str; }
+            if(len == 0){ return ''; }
             var commer = commer || '...';
             var sarr = [];
             var l = str.length;
+            if(l <= len){ commer = ''; }
             if(len > 0){
                 for(var i = 0; i < l; i++){
                     if(i > len - 1){
@@ -799,8 +1076,6 @@
                         sarr.push(str[i]);
                     }
                 }
-            }else if(len == 0){
-                return '';
             }else{
                 for(var i = l; i >= l - Math.abs(len); i--)
                     sarr.unshift(str[i]);
@@ -829,7 +1104,7 @@
     };
 
     /**
-     * USE: //调用native方法 （移动开发）
+     * USE: //调用native方法
      * @type {Object}
      *
      * use: var getName = function(id, callback){
@@ -844,8 +1119,10 @@
     SYST.N = SYST.Native.prototype = {
         isAndroid   : SYST.IS_ANDROID,
         isIos       : SYST.IS_IOS,
-        isNative    : SYST.IS_NATIVE,
-        callNative  : function(name){  }
+        isNative    : (SYST.IS_ANDROID || SYST.IS_IOS) ? true : false,
+        callNative  : function(name){
+            SYST._call(name);
+        }
     };
 
     /* native start */
@@ -855,13 +1132,12 @@
         if(_toString.call(fn) == '[object Function]') {
             fn();
         }
-    };
+    }
     /**
      * 调用一个Native方法
      * @param {String} name 方法名称
      */
-    SYST.callNative = SYST._call = function(name) {
-
+    SYST._call = function(name) {
         // 获取传递给Native方法的参数
         var args = Array.prototype.slice.call(arguments, 1);
         var callback = '', item = null;
@@ -878,13 +1154,11 @@
                 callback = name + 'Callback' + i;
 
                 root[callback] = item;
-                //console.log(root);
+                console.log(root);
                 item = callback;
             }
             args[i] = item;
         }
-
-
 
         if(SYST.IS_ANDROID) {// Android平台
             try {
@@ -892,10 +1166,8 @@
                     // args[i] = '"' + args[i] + '"';
                     args[i] = '\'' + args[i] + '\'';
                 }
-                //alert('window.android.' + name + '(' + args.join(',') + ')')
                 eval('window.android.' + name + '(' + args.join(',') + ')');
             } catch(e) {
-                //alert(e.message)
                 console.log(e)
             }
             eval();
@@ -905,9 +1177,6 @@
             }
             // IOS通过location.href调用Native方法, _call变量存储一个随机数确保每次调用时URL不一致
             _callindex++;
-            console.log(name)
-            console.log(args)
-            //alert('#ios:' + name + args + '|' + _callindex)
             location.href = '#ios:' + name + args + '|' + _callindex;
         }
     };
