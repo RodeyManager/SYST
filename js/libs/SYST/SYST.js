@@ -775,6 +775,8 @@
                 }else if(val.indexOf('..') >= 0){
                     flag = false;
                     strArr = val.split('..');
+                }else{
+                    return false;
                 }
 
                 if(SYST.V.isEmpty(strArr[0])){
@@ -1000,53 +1002,6 @@
         },
         /**
          * 截取字符串长度
-         * @param str
-         * @param start
-         * @param end
-         */
-        subStr: function(str, start, end){
-            if(!SYST.V.isString(str) || str.length == 0){ return ''; }
-            if(SYST.V.isNumber(str)){ str = "" + str; }
-            var l = str.length;
-            var start = start || 0;
-            var end = (end || l) > l ? l : (end || l);  // 'Rodeyluo'
-            var sa = str.split('');
-            var a = [];
-            //ex: 'abcdefghijklmn'
-            // (-5, -1)
-            if(start < 0 && end < 0){
-                start   = Math.abs(start);
-                end     = Math.abs(end);
-                str = str.split('').reverse();
-                if(start < end){ //(-2, -8)
-                    for(var i = start; i < end; i++)
-                        a.push(str[i] || '');
-                }else if(start > end){ //(-5, 0)
-                    for(var i = end; i < start; i++)
-                        a.push(str[i] || '');
-                }else if(start == end){
-                    return str[start];
-                }
-                a.reverse().join('');
-            }else if(start > 0 && end > 0){ // (1, 5)
-                if(start < end){ return ''; }
-                for(var i = start; i < end; i++)
-                    a.push(str[i] || '');
-                return a.join('');
-            }else if(start < 0 && end > 0){  // (-5, 2)
-                str = str.split('').reverse(); //'abcdefghijklmn'=>'nmlkjihgfedcba'
-                for(var i = start - 1; i < l - end; i++)
-                    a.push(str[i] || '');
-                return a.reverse().join('');
-            }else if(start > 0 && end < 0){  // (2, -6)
-                return '';
-            }else{
-                return '';
-            }
-        },
-
-        /**
-         * 截取字符串长度
          * @param str       要截取的字符串
          * @param len       要截取的长度
          * @param commer    结尾补假字符（可选）默认为'...'
@@ -1132,7 +1087,7 @@
         if(_toString.call(fn) == '[object Function]') {
             fn();
         }
-    }
+    };
     /**
      * 调用一个Native方法
      * @param {String} name 方法名称
@@ -1196,33 +1151,6 @@
             obj[func].call(obj, e, args);
         }
     };
-
-    /**
-     * window对象 object子类对象原型扩展 ----------------------------
-     */
-    /**
-     * 返回数值中指定元素的索引值
-     * @param val
-     * @return {Number}
-     */
-    Array.prototype.indexOf = function(val) {
-        for (var i = 0; i < this.length; i++) {
-            if (this[i] == val) return i;
-        }
-        return -1;
-    };
-    /**
-     * 删除数值中指定的元素
-     * @param val
-     */
-    Array.prototype.remove = function(val) {
-        var index = this.indexOf(val);
-        if (index > -1) {
-            this.splice(index, 1);
-        }
-        return this;
-    };
-
 
 
     // RequireJS && SeaJS -----------------------------
