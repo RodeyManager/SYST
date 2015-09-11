@@ -155,20 +155,22 @@
             return item;
         },
         setItem: function(key, value, flag){
-            if(typeof key === 'object'){
-                // this.set({ name: 'Rodey', age: 25 });
+            if(SYST.V.isObject(key)){
+                // ({ name: 'Rodey', age: 25, phone: { name: 'iphone 5s', prize: 5000 } });
                 for(var k in key){
-                    (!flag ? window.localStorage : window.sessionStorage).setItem(k, key[k]);
+                    _set(k, key[k]);
                 }
             }else if(typeof key === 'string' && key.length > 0){
-                //this.set('name', 'Rodey') | this.set('one', { name: 'Rodey', age: 25, isBoss: false }
-                if(SYST.V.isObject(value)){
-                    (!flag ? window.localStorage : window.sessionStorage).setItem(key, JSON.stringify(value));
-                }else{
-                    (!flag ? window.localStorage : window.sessionStorage).setItem(key, value);
-                }
+                // ('name', 'Rodey') || ('one', { name: 'Rodey', age: 25, isBoss: false });
+                _set(key, value);
             }else{
                 return this;
+            }
+            function _set(_k, _v){
+                if(SYST.V.isObject(_v)){
+                    _v = JSON.stringify(_v);
+                }
+                (!flag ? window.localStorage : window.sessionStorage).setItem(_k, _v);
             }
         },
 
@@ -199,9 +201,12 @@
             if(!postData || typeof postData !== 'object' || !url || url == '') return;
 
             if(options){
-                type = options.type || self.ajaxType || 'POST';
+                type = options.type;
                 dataType = options.dataType || self.ajaxDataType || 'json';
                 setting = options;
+            }else{
+                type = self.ajaxType || 'POST';
+                dataType = self.ajaxDataType || 'json';
             }
             //提交前触犯
             (self.ajaxBefore && SYST.V.isFunction(self.ajaxBefore)) && (setting['beforeSend'] = self.ajaxBefore.apply(self));
