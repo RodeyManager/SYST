@@ -1,11 +1,12 @@
 {
   "code": 200,
   "msg": "登录成功！",
-  "user": {
-    "username": "Rodey",
+  "data": {
+    "userName": "Rodey",
     "email": "rodeyluo@gmail.com",
     "qq": "453474593",
     "github": "https://github.com/RodeyManager",
-    "timeStemp": "1441878631102"
+    "timeStamp": "1441878631102",
+    "loginTime": "1441878631102"
   }
 }

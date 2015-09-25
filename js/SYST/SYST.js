@@ -639,10 +639,10 @@
         },
         /**
          * Function 去除字符串首尾指定的字符
-         * @param val   : 将要进行替换的字符串
-         * @param commer: 指定要替换的字符串
-         * @param flag:   true: 全局替换；false: 只替换首尾
-         * @return      : 返回替换后的字符串
+         * @param val       : 将要进行替换的字符串
+         * @param commer    : 指定要替换的字符串
+         * @param flag      : true: 全局替换；false: 只替换首尾
+         * @return          : 返回替换后的字符串
          */
         rtrim:function(val, commer, flag){
             if(commer){
@@ -857,6 +857,143 @@
         isMobile    : IS_MOBILE,
         callNative  : function(name){
             //TODO
+        }
+    };
+
+    //Router info
+    /**
+     * Module web通用公共函数对象
+     * @type {Function}
+     */
+    var Router = SYST.Router = function(child){
+        this.__Name__ = 'Router';
+        if(child){
+            child.__SuperName__ = 'SYST Router';
+            child = _extend(SYST.Router.prototype, child);
+            return child;
+        }else{
+            return new SYST.Router({});
+        }
+    };
+
+
+    var uri = root.location,
+        host = uri.host,
+        port = uri.port,
+        origin = uri.origin || uri.protocol + '//' + host,
+        pathname = uri.pathname,
+        hash = uri.hash;
+
+    var _parseRouter = function(route){
+        var rt = route;
+        var ms = rt.split('/');
+        return { module: ms[0], params: ms[1], action: ms[2] };
+    };
+
+    var _parseParams = function(str, router){
+        //exp: ':id:phone'  => { id: 1, phone: 13723729999  }
+        var rs = {}, hashSearch = str.replace(/^#!|#/, '');
+        var rms = router.replace(/^\//, '').split(':');
+        var sms = hashSearch.split('/');
+        for(var i = 0, len = rms.length; i < len; ++i){
+            if(!SYST.V.isEmpty(rms[i])){
+                rs[rms[i].replace(/[^\w]*/gi, '')] = sms[i];
+            }
+        }
+        return rs;
+    };
+
+    SYST.R = SYST.Router.prototype = {
+        _cache: {},
+        _init: function(){
+            this.params = {};
+        },
+        switch: function(route, options){
+            var self = this;
+            var rkey = SYST.V.isString(route) ? route : SYST.V.isObject(route) ? route['url'] : '/';
+            var rval = SYST.V.isObject(route) ? route : options;
+
+            this.params = SYST.T.params();
+            this.body = _parseParams(location.hash, rkey.split('/')[1]);
+
+            console.log(this.params);
+            console.log(this.body);
+
+            return;
+
+            //ajax request
+            var method = rval['method'] || 'POST';
+            var data = rval['data'] || {};
+
+            if(this._cache[rkey]){
+                this._exec(rkey);
+                return false;
+            }
+            this._cache[rkey] = SYST.V.isString(route) ? options : SYST.V.isObject(route) ? route : null;
+            this._exec(rkey);
+        },
+        /**
+         * 发送GET请求
+         * @param route
+         */
+        get: function(route){
+
+        },
+        /**
+         * 发送GET请求
+         * @param route
+         */
+        post: function(route){
+
+        },
+        /**
+         * 执行
+         * @param route
+         */
+        _exec: function(route){
+            var self = this;
+            var newUri = '#!' + route;
+            console.log(newUri);
+            window.location.href = newUri;
+            if(newUri !== this.oldHash){
+                this._execRouter(route);
+                return false;
+            }
+            this._change(function(){
+                self._execRouter(route);
+            });
+        },
+        _execRouter: function(route){
+            var routeOption = this._cache[route];
+            if(routeOption.template){
+                this._template(routeOption.template, routeOption.container, function(htmlStr){
+                    console.log(htmlStr);
+                });
+            }
+            routeOption.model && (function(){ return SYST.Model(routeOption.model); })();
+            routeOption.action && SYST.V.isFunction(routeOption.action) && routeOption.action.call(self, routeOption.model);
+        },
+        _change: function(callback){
+            var self = this;
+            window.removeEventListener('hashchange', _hashChangeHandler, false);
+            window.addEventListener('hashchange', _hashChangeHandler, false);
+            function _hashChangeHandler(evt){
+                self.oldHash = evt.oldHash;
+                callback && SYST.V.isFunction(callback) && callback.call(self, evt);
+            }
+        },
+        //解释html
+        _template: function(html, cid, callback){
+            var container = $('#' + cid.replace(/#/gi, ''));
+            if(/<|>/.test(html)){
+                container.append(html);
+            }else{
+                container.load(html, function(res){
+                    callback && SYST.V.isFunction(callback) && callback.call(this, res);
+                }, function(err){
+                    throw new Error('load template is failed!');
+                });
+            }
         }
     };
 
