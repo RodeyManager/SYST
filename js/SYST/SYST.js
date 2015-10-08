@@ -904,13 +904,17 @@
         return rs;
     };
 
+    var _getRouteKey = function(hash){
+        return hash.replace(/[#!]/gi, '').split('?')[0];
+    };
+
     SYST.R = SYST.Router.prototype = {
         _cache: {},
         start: function(){
-            this.params = {};
+            this.params = SYST.T.params();
             //如果初始化带有hash
             if(hash && '' !== hash){
-                var currentRoute = hash.replace(/[#!]/gi, '').split('?')[0];
+                var currentRoute = _getRouteKey(hash);
                 this._exec(currentRoute);
             }
             this._change();
@@ -940,7 +944,7 @@
             if(!routeOption) return;
             if(routeOption.template){
                 this._template(routeOption.template, routeOption.container, function(htmlStr){
-                    console.log(htmlStr);
+                    //console.log(htmlStr);
                 });
             }
             routeOption.model && (function(){ return SYST.Model(routeOption.model); })();
@@ -951,11 +955,11 @@
             window.removeEventListener('hashchange', _hashChangeHandler, false);
             window.addEventListener('hashchange', _hashChangeHandler, false);
             function _hashChangeHandler(evt){
-                console.log(self);
+                //console.log(self);
                 self.oldURL = '#' + evt.oldURL.split('#')[1];
-                self.newUrl = '#' + evt.newURL.split('#')[1];
+                self.newURL = '#' + evt.newURL.split('#')[1];
                 //callback && SYST.V.isFunction(callback) && callback.call(self, evt);
-                var currentRoute = self.newUrl.replace(/#|!/gi, '');
+                var currentRoute = _getRouteKey(self.newURL);
                 self.switch(currentRoute);
             }
         },
@@ -963,7 +967,7 @@
         _template: function(html, cid, callback){
             var container = $('#' + cid.replace(/#/gi, ''));
             if(/<|>/.test(html)){
-                container.append(html);
+                container.html(html);
             }else{
                 container.load(html, function(res){
                     callback && SYST.V.isFunction(callback) && callback.call(this, res);
