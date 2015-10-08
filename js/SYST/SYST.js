@@ -752,8 +752,9 @@
         params: function(name){
             if(this._pars && this._pars[name])
                 return this._pars[name];
-            var search = (window || document).location.search;
-            (search.indexOf('?') !== -1) && ( search = search.replace(/^\?/, '') );
+            var search = location.search || location.href.split('?')[1];
+            if(!search) return {};
+            (search && search.indexOf('?') !== -1) && ( search = search.replace(/^\?/, '') );
             var mas = search.split('&');
             if(!mas || [] === mas) return null;
             var i = 0, len = mas.length, ps = {};
@@ -880,7 +881,7 @@
     var uri = root.location,
         host = uri.host,
         port = uri.port,
-        origin = uri.origin || uri.protocol + '//' + host,
+        origin = uri.origin || (uri.protocol + '//' + host),
         pathname = uri.pathname,
         hash = uri.hash;
 
@@ -905,81 +906,57 @@
 
     SYST.R = SYST.Router.prototype = {
         _cache: {},
-        _init: function(){
+        start: function(){
             this.params = {};
-        },
-        switch: function(route, options){
-            var self = this;
-            var rkey = SYST.V.isString(route) ? route : SYST.V.isObject(route) ? route['url'] : '/';
-            var rval = SYST.V.isObject(route) ? route : options;
-
-            this.params = SYST.T.params();
-            this.body = _parseParams(location.hash, rkey.split('/')[1]);
-
-            console.log(this.params);
-            console.log(this.body);
-
-            return;
-
-            //ajax request
-            var method = rval['method'] || 'POST';
-            var data = rval['data'] || {};
-
-            if(this._cache[rkey]){
-                this._exec(rkey);
-                return false;
+            //如果初始化带有hash
+            if(hash && '' !== hash){
+                var currentRoute = hash.replace(/[#!]/gi, '').split('?')[0];
+                this._exec(currentRoute);
             }
-            this._cache[rkey] = SYST.V.isString(route) ? options : SYST.V.isObject(route) ? route : null;
-            this._exec(rkey);
+            this._change();
+            return this;
         },
-        /**
-         * 发送GET请求
-         * @param route
-         */
-        get: function(route){
-
+        when: function(route, object){
+            this._cache[route] = object;
         },
-        /**
-         * 发送GET请求
-         * @param route
-         */
-        post: function(route){
+        switch: function(route){
+            var self = this;
+            if(!this._cache || {} === this._cache)  return;
+            this.params = SYST.T.params();
 
+            this._exec(route);
+            return this;
         },
         /**
          * 执行
          * @param route
          */
         _exec: function(route){
-            var self = this;
-            var newUri = '#!' + route;
-            console.log(newUri);
-            window.location.href = newUri;
-            if(newUri !== this.oldHash){
-                this._execRouter(route);
-                return false;
-            }
-            this._change(function(){
-                self._execRouter(route);
-            });
+            this._execRouter(route);
         },
         _execRouter: function(route){
+            var self = this;
             var routeOption = this._cache[route];
+            if(!routeOption) return;
             if(routeOption.template){
                 this._template(routeOption.template, routeOption.container, function(htmlStr){
                     console.log(htmlStr);
                 });
             }
             routeOption.model && (function(){ return SYST.Model(routeOption.model); })();
-            routeOption.action && SYST.V.isFunction(routeOption.action) && routeOption.action.call(self, routeOption.model);
+            routeOption.controller && SYST.V.isFunction(routeOption.controller) && routeOption.controller.call(self, routeOption.model);
         },
         _change: function(callback){
             var self = this;
             window.removeEventListener('hashchange', _hashChangeHandler, false);
             window.addEventListener('hashchange', _hashChangeHandler, false);
             function _hashChangeHandler(evt){
-                self.oldHash = evt.oldHash;
-                callback && SYST.V.isFunction(callback) && callback.call(self, evt);
+                console.log(self);
+                self.oldURL = '#' + evt.oldURL.split('#')[1];
+                self.newUrl = '#' + evt.newURL.split('#')[1];
+                //callback && SYST.V.isFunction(callback) && callback.call(self, evt);
+                var currentRoute = self.newUrl.replace(/#|!/gi, '');
+                self.switch(currentRoute);
             }
         },
         //解释html

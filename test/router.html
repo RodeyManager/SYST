@@ -36,6 +36,10 @@
         <div class="container" id="container"></div>
     </div>
 
+    <a href="#!user/">find user</a>
+    <a href="#!user/add">add user</a>
+    <a href="#!user/edit">edit user</a>
+
 <!--载入js-->
 <script src="../js/jquery/jquery-2.0.3.js"></script>
 <script src="../js/SYST/SYST.js"></script>
@@ -46,20 +50,44 @@
         var userListModel = {
             init: function(){
                 console.log('... init user list model ...');
+                console.log();
             }
         };
 
         //SYST Router
-        (new SYST.Router()).switch({
-            url: '/:id:name:email',
+        var router = new SYST.Router();
+        router.when('user/', {
             container: '#container',
             //template: '<div>这里是首页的模板 (—^_^—)</div>',
             template: 'tpl/user_list.html',
-            action: function(){
-                console.log('......action.....');
+            controller: function(){
+                console.log('......action.....', this.body, this.params);
             },
             model: userListModel
         });
+        router.when('user/add', {
+            container: '#container',
+            //template: '<div>这里是首页的模板 (—^_^—)</div>',
+            template: 'tpl/user_add.html',
+            controller: function(){
+                console.log('......add action.....', this.body, this.params);
+            },
+            model: {
+                init: function(){
+                    console.log('... init user add model ...');
+                }
+            }
+        });
+        router.when('user/edit', {
+            container: '#container',
+            //template: '<div>这里是首页的模板 (—^_^—)</div>',
+            template: 'tpl/user_edit.html',
+            controller: function(){
+                console.log('......edit action.....', this.body, this.params);
+            }
+        });
+
+        router.start();
 
     });
 
