@@ -503,7 +503,7 @@
             }else if(root._){  //采用underscore编译
                 compHtml = _.template(htmlStr, data);
             }else{             // 如果模板插件不存在，则直接返回jQuery或者浏览器标准对象
-                compHtml = SYST.$ ? SYST.$(htmlStr) : this.parseDom(htmlStr);
+                compHtml = SYST.Render(htmlStr, data);
             }
             return compHtml;
         },
@@ -519,6 +519,48 @@
         },
         shareModel: SYST.shareModels
     };
+
+    /**
+     * SYST Template Render mini engine
+     * @type {{open: string, close: string}}
+     */
+    SYST.tplConfig = { open: '<%', close: '%>'};
+    var trimSpaceRegx = /^\s*|\s*$/i,
+        regOut = /(^( )?(if|for|else|switch|case|break|{|}))(.*)?/g,
+        code = 'var r = [];\n';
+
+    var _Render = function(tpl, data){
+        var outIndex = 0, ms, conf = SYST.tplConfig;
+        var reg = new RegExp(conf.open + '([^'+ conf.close +']+)?' + conf.close, 'g'); // /<%([^%>]+)?%>/g;
+        var make = function(line, js){
+            js? (code += line.match(regOut) ? line + '\n' : 'r.push(' + line + ');\n') :
+                (code += line != '' ? 'r.push("' + line.replace(/"/g, '\\"') + '");\n' : '');
+            return make;
+        };
+        while(ms = reg.exec(tpl)){
+            make(tpl.slice(outIndex, ms.index))(ms[1], true);
+            outIndex = ms.index + ms[0].length;
+        }
+        make(tpl.substr(outIndex, tpl.length - outIndex));
+        code += 'return r.join("");';
+        return new Function(code.replace(/[\r\t\n]/g, '')).apply(data);
+    };
+    SYST.Render = function(content, data){
+        var elm = document.querySelector('#' + content.replace('#')), tpl = '';
+        if(elm){
+            var tplStr = /^(TEXTEREA|INPUT)$/i.test(elm.nodeName) ? elm.value : elm.innerHTML;
+            tpl = tplStr.replace(trimSpaceRegx, '');
+        }else{
+            tpl = content.replace(trimSpaceRegx, '');
+        }
+        try{
+            this.cache = _Render(tpl, data);
+        }catch(e){
+            delete this.cache;
+        }
+        return this.cache ? this.cache : _Render(tpl, data);
+    };
+
 
     /**
      * Module web通用验证数据对象
@@ -885,25 +927,6 @@
         pathname = uri.pathname,
         hash = uri.hash;
 
-    var _parseRouter = function(route){
-        var rt = route;
-        var ms = rt.split('/');
-        return { module: ms[0], params: ms[1], action: ms[2] };
-    };
-
-    var _parseParams = function(str, router){
-        //exp: ':id:phone'  => { id: 1, phone: 13723729999  }
-        var rs = {}, hashSearch = str.replace(/^#!|#/, '');
-        var rms = router.replace(/^\//, '').split(':');
-        var sms = hashSearch.split('/');
-        for(var i = 0, len = rms.length; i < len; ++i){
-            if(!SYST.V.isEmpty(rms[i])){
-                rs[rms[i].replace(/[^\w]*/gi, '')] = sms[i];
-            }
-        }
-        return rs;
-    };
-
     var _getRouteKey = function(hash){
         return hash.replace(/[#!]/gi, '').split('?')[0];
     };
@@ -950,15 +973,18 @@
             routeOption.model && (function(){ return SYST.Model(routeOption.model); })();
             routeOption.controller && SYST.V.isFunction(routeOption.controller) && routeOption.controller.call(self, routeOption.model);
         },
-        _change: function(callback){
+        /**
+         * 开始监听路由变化
+         * @param callback
+         * @private
+         */
+        _change: function(){
             var self = this;
             window.removeEventListener('hashchange', _hashChangeHandler, false);
             window.addEventListener('hashchange', _hashChangeHandler, false);
             function _hashChangeHandler(evt){
-                //console.log(self);
                 self.oldURL = '#' + evt.oldURL.split('#')[1];
                 self.newURL = '#' + evt.newURL.split('#')[1];
-                //callback && SYST.V.isFunction(callback) && callback.call(self, evt);
                 var currentRoute = _getRouteKey(self.newURL);
                 self.switch(currentRoute);
             }
