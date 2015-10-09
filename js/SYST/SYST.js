@@ -976,10 +976,25 @@
             if(routeOption.template){
                 this._template(routeOption.template, routeOption.container, function(htmlStr){
                     //console.log(htmlStr);
+                    console.log(this);
+                    self._execMAction(routeOption, htmlStr);
                 });
+            }else{
+                self._execMAction(routeOption);
             }
+
+        },
+        _execMAction: function(routeOption, tpl){
+            var self = this;
+            this.tpl = tpl;
+            var vadding = { model: routeOption.model, tpl: tpl, params: self.params, router: self},
+                cadding = { model: routeOption.model, tpl: tpl, params: self.params, router: self, view: routeOption.view };
+            //转换成SYST.Model
             routeOption.model && (function(){ return SYST.Model(routeOption.model); })();
-            routeOption.controller && SYST.V.isFunction(routeOption.controller) && routeOption.controller.call(self, routeOption.model);
+            routeOption.view && (function(){ return SYST.View(_extend(routeOption.view, vadding)); })();
+            routeOption.controller && (function(){ return SYST.Controller(_extend(routeOption.controller, cadding)); })();
+           // routeOption.controller && SYST.V.isFunction(routeOption.controller) && routeOption.controller.call(this, routeOption.model, tpl);
+
         },
         /**
          * 开始监听路由变化
@@ -999,12 +1014,13 @@
         },
         //解释html
         _template: function(html, cid, callback){
+            var self = this;
             var container = $('#' + cid.replace(/#/gi, ''));
             if(/<|>/.test(html)){
                 container.html(html);
             }else{
                 container.load(html, function(res){
-                    callback && SYST.V.isFunction(callback) && callback.call(this, res);
+                    callback && SYST.V.isFunction(callback) && callback.call(self, res);
                 }, function(err){
                     throw new Error('load template is failed!');
                 });

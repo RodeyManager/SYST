@@ -57,6 +57,9 @@
         var userListModel = {
             init: function(){
                 console.log('... init user list model ...');
+            },
+            test: function(d, s, f){
+                this.doAjax('test.json', d, s, f);
             }
         };
 
@@ -65,12 +68,26 @@
         router.when('user/', {
             container: '#container',
             template: 'tpl/user_list.html',
-            controller: function(){
-                console.log('......action.....', this.body, this.params);
+            /*controller: function(){
+                console.log('......action.....', this.params);
+                console.log('......tpl.....', this.tpl);
+            },*/
+            controller: {
+                init: function(){
+                    console.log(this.tpl);
+                    this.login();
+                },
+                login: function(){
+                    this.model.test({}, function(res){
+                        console.log(res);
+                    }, function(err){
+                        console.log(err);
+                    });
+                }
             },
             model: userListModel
         });
-        router.when('user/add', {
+        /*router.when('user/add', {
             container: '#container',
             template: 'tpl/user_add.html',
             controller: function(){
@@ -96,7 +113,7 @@
                 console.log('......delete action....., for id = ' + this.params['id']);
                 alert('id = ' + this.params['id']);
             }
-        });
+        });*/
 
         //开启路由功能(监听路由变化)
         router.start();
