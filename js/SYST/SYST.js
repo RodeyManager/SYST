@@ -1,6 +1,6 @@
 /**
  * Created with JetBrains WebStorm.
- * User: Rodey
+ * Author: Rodey Luo
  * Date: 15-6-12
  * Time: 下午1:06
  * To change this template use File | Settings | File Templates.
@@ -23,10 +23,9 @@
     (typeof exports !== 'undefined') ? (SYST = exports) : (SYST = root.SYST = {});
 
     //框架属性
-    SYST.version = '0.0.3';
+    SYST.version = '0.0.4';
     SYST.author = 'Rodey Luo';
-    SYST.createDate = '2015-06-12';
-    SYST.name = 'SYST JS MVC Framework (JS MVC框架)';
+    SYST.name = 'SYST JS MVC mini Framework (JS MVC框架)';
 
     //解决命名冲突
     SYST.noConflict = function() {
@@ -765,9 +764,23 @@
          * @param timestamp
          * @return {String}
          */
-        setDateFormat: function(timestamp){
-            var date = new Date(parseInt(timestamp, 10));
-            return date.getFullYear() +'-'+ this.dateFm(date.getMonth() + 1) +'-'+ this.dateFm(date.getDate()) + ' ' + this.dateFm(date.getHours()) + ':' + this.dateFm(date.getMinutes()) + ':' + this.dateFm(date.getSeconds());
+        setDateFormat: function(timestamp, format, prefix){
+            if(SYST.V.isEmpty(timestamp)) return '';
+            var self = this;
+            var date = new Date(parseInt(timestamp, 10)), ds = [], ts = [];
+            if(!format)
+                return date.getFullYear() +'-'+ this.dateFm(date.getMonth() + 1) +'-'+ this.dateFm(date.getDate()) + ' ' + this.dateFm(date.getHours()) + ':' + this.dateFm(date.getMinutes()) + ':' + this.dateFm(date.getSeconds());
+            var cs = format.match(/[^\w\d\s]+?/i), c1 = cs[0] || '-', c2 = cs[1] || ':';
+            if(/y+?/i.test(format))     push(date.getFullYear(), ds);
+            if(/m+?/i.test(format))     push(date.getMonth() + 1, ds);
+            if(/d+?/i.test(format))     push(date.getDate(), ds);
+            if(/h+?/i.test(format))     push(date.getHours(), ts);
+            if(/i+?/i.test(format))     push(date.getMinutes(), ts);
+            if(/s+?/i.test(format))     push(date.getSeconds(), ts);
+            function push(value, toAr){
+                toAr.push(prefix ? self.dateFm(value) : value);
+            }
+            return SYST.T.trim(ds.join(c1) + (ts.length > 0 ? ' ' + ts.join(c2) : ''));
         },
         /**
          * Function 比较两个时间差 格式：YYYY-mm-dd
@@ -985,15 +998,14 @@
 
         },
         _execMAction: function(routeOption, tpl){
-            var self = this;
             this.tpl = tpl;
-            var vadding = { model: routeOption.model, tpl: tpl, params: self.params, router: self},
-                cadding = { model: routeOption.model, tpl: tpl, params: self.params, router: self, view: routeOption.view };
+            var vadding = { model: routeOption.model, tpl: tpl, params: self.params, router: this},
+                cadding = { model: routeOption.model, tpl: tpl, params: self.params, router: this, view: routeOption.view };
             //转换成SYST.Model
             routeOption.model && (function(){ return SYST.Model(routeOption.model); })();
             routeOption.view && (function(){ return SYST.View(_extend(routeOption.view, vadding)); })();
             routeOption.controller && (function(){ return SYST.Controller(_extend(routeOption.controller, cadding)); })();
-           // routeOption.controller && SYST.V.isFunction(routeOption.controller) && routeOption.controller.call(this, routeOption.model, tpl);
+            routeOption.action && SYST.V.isFunction(routeOption.action) && routeOption.action.call(this, routeOption.model, tpl);
 
         },
         /**
