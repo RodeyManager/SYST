@@ -526,12 +526,13 @@
      */
     SYST.tplConfig = { open: '<%', close: '%>'};
     var trimSpaceRegx = /^\s*|\s*$/i,
-        regOut = /(^( )?(if|for|else|switch|case|break|{|}))(.*)?/g,
-        code = 'var r = [];\n';
+        regOut = /(^( )?(if|for|else|switch|case|break|{|}))(.*)?/g;
 
     var _Render = function(tpl, data){
-        var outIndex = 0, ms, conf = SYST.tplConfig;
-        var reg = new RegExp(conf.open + '([^'+ conf.close +']+)?' + conf.close, 'g'); // /<%([^%>]+)?%>/g;
+        var outIndex = 0, ms, conf = SYST.tplConfig,
+            reg = new RegExp(conf.open + '([^'+ conf.close +']+)?' + conf.close, 'g'), // /<%([^%>]+)?%>/g,
+            code = 'var r = [];\n';
+        //添加字符串
         var make = function(line, js){
             js? (code += line.match(regOut) ? line + '\n' : 'r.push(' + line + ');\n') :
                 (code += line != '' ? 'r.push("' + line.replace(/"/g, '\\"') + '");\n' : '');
@@ -545,6 +546,13 @@
         code += 'return r.join("");';
         return new Function(code.replace(/[\r\t\n]/g, '')).apply(data);
     };
+    /**
+     * 提供外部接口
+     * @param content   元素id或者是模板字符串
+     * @param data      渲染需要的数据
+     * @returns {*}
+     * @constructor
+     */
     SYST.Render = function(content, data){
         var elm = document.querySelector('#' + content.replace('#')), tpl = '';
         if(elm){
