@@ -325,7 +325,7 @@
      * @func    事件函数
      * @type {Function}
      */
-    var Events = SYST.Events = function(obj, pobj, evt, func, type){
+    var Events = SYST.Events = function(obj, pobj, evt, func, type, trigger){
         var self = this;
         var type = type || 'on';
         var evts = "abort reset click dblclick tap touchstart touchmove touchend change mouseover mouseout mouseup mousedown mousemove mousewheel drag dragend dragenter dragleave dragover dragstart drop resize scroll submit select keydown keyup keypress touchstart touchend load unload blur focus contextmenu formchange forminput input invalid afterprint beforeprint beforeonload haschange message offline online pagehide pageshow popstate redo storage undo canplay canplaythrough durationchange emptied ended loadeddata loadedmetadata loadstart pause play playing progress ratechange readystatechange seeked seeking stalled suspend timeupdate volumechange waiting cut copy paste".split(/\s+/gi);
@@ -344,13 +344,11 @@
                         : $(obj.selector).off(evt, _hoadEvent(pobj, func));
                 }else{
                     (type == 'on')
-                        ? $('body').undelegate(obj.selector, evt, _hoadEvent(pobj, func))
+                        ? $(trigger || 'body').undelegate(obj.selector, evt, _hoadEvent(pobj, func))
                                 .delegate(obj.selector, evt, _hoadEvent(pobj, func))
-                        : $('body').undelegate(obj.selector, evt, _hoadEvent(pobj, func));
+                        : $(trigger || 'body').undelegate(obj.selector, evt, _hoadEvent(pobj, func));
                 }
-            }/*else{
-                continue;
-            }*/
+            }
         }
 
     };
@@ -466,7 +464,7 @@
                 if(!objs[i])
                     throw new Error('事件函数'+ funs[i] + '不存在');
 
-                SYST.Events($(objs[i]), this, evts[i], funs[i], type);
+                SYST.Events($(objs[i]), this, evts[i], funs[i], type, this.triggerContainer || 'body');
             }
             return this;
         },
