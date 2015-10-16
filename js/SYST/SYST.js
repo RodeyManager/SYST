@@ -963,7 +963,11 @@
             return this;
         },
         when: function(route, object){
-            this._cache[route] = object;
+            if(SYST.V.isObject(object)){
+                this._cache[route] = object;
+            }else if(SYST.V.isFunction(object)){
+                this._cache[route] = object();
+            }
         },
         switch: function(route){
             var self = this;
@@ -987,7 +991,7 @@
             if(routeOption.template){
                 this._template(routeOption.template, routeOption.container, function(htmlStr){
                     //console.log(htmlStr);
-                    console.log(this);
+                    //console.log(this);
                     self._execMAction(routeOption, htmlStr);
                 });
             }else{
@@ -1028,6 +1032,7 @@
             var container = $('#' + cid.replace(/#/gi, ''));
             if(/<|>/.test(html)){
                 container.html(html);
+                callback && SYST.V.isFunction(callback) && callback.call(self, html);
             }else{
                 container.load(html, function(res){
                     callback && SYST.V.isFunction(callback) && callback.call(self, res);
