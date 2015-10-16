@@ -3,7 +3,7 @@
  * Array Functions
  */
 
-;(function(){
+;(function(SYST){
 
     /**
      * 取随机字符串
@@ -72,4 +72,4 @@
         SYST.T = SYST.extend(SYST.T, tools);
     }
 
-})();
+})(SYST);

@@ -3,7 +3,7 @@
  * Array Functions
  */
 
-;(function(){
+;(function(SYST){
 
     //数组去重
     function unique (arr) {
@@ -58,4 +58,4 @@
         SYST.T = SYST.extend(SYST.T, tools);
     }
 
-})();
+})(SYST);

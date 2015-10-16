@@ -1,0 +1,21 @@
+{
+  "name": "syst",
+  "description": "mini mvc framework",
+  "main": "index.js",
+  "authors": [
+    "Rodey"
+  ],
+  "license": "ISC",
+  "homepage": "https://github.com/RodeyManager/SYST",
+  "moduleType": [
+    "amd"
+  ],
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ]
+}
