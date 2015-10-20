@@ -19,6 +19,7 @@ gulp.task('build.syst', function(){
         'src/tools.js',
         'src/template.js',
         'src/model.js',
+        'src/ajax.js',
         'src/view.js',
         'src/controller.js',
         'src/router.js',

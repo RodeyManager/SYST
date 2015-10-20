@@ -17,23 +17,23 @@
 </head>
 <body>
 
-    <div class="app member-app" id="app" scroll="no">
+<div class="app member-app" id="app" scroll="no">
 
 
-    </div>
+</div>
 
-    <script type="text/html" id="tpl">
-        <% if(this.posts){
-            for(var i = 0; i < this.posts.length; i++) {　
-                var post = this.posts[i];
-        %>
-            <% if(!post.expert){ %>
-                <span>post is null</span><br/>
-            <% } else { %>
-                <a href="#"><% post.expert %> at <% post.time %></a><br/>
-            <% } %>
-        <% }} %>
-    </script>
+<script type="text/html" id="tpl">
+    <% if(this.posts){
+    for(var i = 0; i < this.posts.length; i++) {　
+    var post = this.posts[i];
+    %>
+    <% if(!post.expert){ %>
+    <span>post is null</span><br/>
+    <% } else { %>
+    <a href="#"><% post.expert %> at <% post.time %></a><br/>
+    <% } %>
+    <% }} %>
+</script>
 
 <!--载入js-->
 <script src="../bower_components/jquery/dist/jquery.min.js"></script>

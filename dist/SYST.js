@@ -459,10 +459,10 @@
          * @param name
          * @returns {*}
          */
-        params: function(name){
+        params: function(name, url){
             if(this._pars && this._pars[name])
                 return this._pars[name];
-            var search = location.search || location.href.split('?')[1];
+            var search = url ? url.split('?')[1] : location.search || location.href.split('?')[1];
             if(!search) return {};
             (search && search.indexOf('?') !== -1) && ( search = search.replace(/^\?/, '') );
             var mas = search.split('&');
@@ -479,9 +479,9 @@
 
         },
         //获取get模式下url中的指定参数值
-        getParams: function(name) {
+        getParams: function(name, url) {
             var reg = new RegExp('(^|&)' + name + '=([^&]*)(&|$)', 'i');
-            var r = window.location.search.substr(1).match(reg);
+            var r = (url || window.location.search).substr(1).match(reg);
             if(r) {
                 return decodeURI(r[2]);
             }
@@ -489,6 +489,7 @@
         },
         //格式化参数 flag: 表示前面是否加上‘?’返回，true: 加上；false: 不加(默认)
         paramData: function(object, flag){
+            if(SYST.V.isEmpty(object) || !SYST.V.isObject(object))  return '';
             var data = object, s = '';
             for(var k in data)  (s += '&' + k + '=' + data[k]);
             s = s.substr(1);
@@ -750,6 +751,99 @@
     };
 
 })(SYST, window);
+/**
+ * Created by Rodey on 2015/10/20.
+ *
+ * Ajax 方法
+ */
+
+;(function(SYST){
+
+    var xhr = new XMLHttpRequest(),
+        //defaulst params
+        defs = {
+            dataType: 'json',
+            type: 'POST',
+            async: true,
+            header: {
+                'Content-type': 'application/x-www-form-urlencoded'
+            }
+        };
+
+    //callback ajax finish
+    var format = function(text, type){
+        var res = text;
+        if('json' === type){
+            try{ res = JSON.parse(text);        }catch(e){}
+        }
+        else if('text' === type){
+            try{ res = JSON.stringify(text);    }catch(e){}
+        }
+        return res;
+    };
+    var callFunction = function(text, type, cb){
+        var res = format(text, type);
+        SYST.V.isFunction(cb) && cb(res);
+    };
+
+    var callComplate = function(xhr, type, cb){
+        SYST.V.isFunction(cb) && cb(format(xhr.responseText, type), xhr);
+    };
+
+    /**
+     * Ajax Method
+     * @param options
+     * options use exp: {
+     *      url: '/list',
+     *      data: { id: 2},
+     *      type: 'GET',
+     *      dataType: 'json',
+     *      ajaxBefore: function(){},
+     *      success: function(res){},
+     *      error: function(err){},
+     *      complate: function(res){}
+     * }
+     */
+    var _ajax = function(options){
+        if(SYST.V.isObject(options)){
+            defs = SYST.extend(options, defs);
+        }
+        if(SYST.V.isEmpty(defs.url)) return;
+        var data = defs.data,
+            url = defs.type.toUpperCase() === 'GET' ? defs.url.split('?')[0] + SYST.T.paramData(defs.data, true) : defs.url,
+            body = defs.type.toUpperCase() === 'GET' ? undefined : data,
+            async = 'async' in defs ? defs.async : true;
+
+        //open before 请求之前
+        callFunction(undefined, defs.dataType, defs.ajaxBefore);
+
+        xhr.open(defs.type, url, async);
+        for(var k in defs.header){
+            xhr.setRequestHeader(k, defs.header[k]);
+        }
+        xhr.onreadystatechange = function(){
+           if(xhr.readyState === 4){
+               xhr.onreadystatechange = null;
+                if(xhr.status === 200){
+                    callFunction(xhr.responseText, defs.dataType, defs.success);
+                }else{
+                    callFunction(xhr, defs.dataType, defs.error);
+                }
+               callComplate(xhr, defs.dataType, defs.complate);
+            }
+        };
+        xhr.send(body);
+
+    };
+
+    if(SYST){
+        SYST.ajax = _ajax;
+        SYST.Model.prototype.ajax = _ajax;
+    }
+
+})(SYST);
+
+
 /**
  * Created by Rodey on 2015/10/16.
  *

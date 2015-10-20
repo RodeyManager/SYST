@@ -189,10 +189,10 @@
          * @param name
          * @returns {*}
          */
-        params: function(name){
+        params: function(name, url){
             if(this._pars && this._pars[name])
                 return this._pars[name];
-            var search = location.search || location.href.split('?')[1];
+            var search = url ? url.split('?')[1] : location.search || location.href.split('?')[1];
             if(!search) return {};
             (search && search.indexOf('?') !== -1) && ( search = search.replace(/^\?/, '') );
             var mas = search.split('&');
@@ -209,9 +209,9 @@
 
         },
         //获取get模式下url中的指定参数值
-        getParams: function(name) {
+        getParams: function(name, url) {
             var reg = new RegExp('(^|&)' + name + '=([^&]*)(&|$)', 'i');
-            var r = window.location.search.substr(1).match(reg);
+            var r = (url || window.location.search).substr(1).match(reg);
             if(r) {
                 return decodeURI(r[2]);
             }
@@ -219,6 +219,7 @@
         },
         //格式化参数 flag: 表示前面是否加上‘?’返回，true: 加上；false: 不加(默认)
         paramData: function(object, flag){
+            if(SYST.V.isEmpty(object) || !SYST.V.isObject(object))  return '';
             var data = object, s = '';
             for(var k in data)  (s += '&' + k + '=' + data[k]);
             s = s.substr(1);
