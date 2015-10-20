@@ -35,15 +35,10 @@
                 try{ c = JSON.stringify(c) }catch(e){}
             }
             elm && (elm.innerHTML = c);
+            console.log(c);
         }
 
-        if('console' in window){
-            console.html = _html;
-        }else{
-            console = {
-                html: _html
-            };
-        }
+        console.html = _html;
 
         SYST.Model({
             init: function(){

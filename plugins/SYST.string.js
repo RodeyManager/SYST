@@ -69,7 +69,8 @@
 
     //将方法注入SYST.Tools中，直接返回对象
     if(SYST && SYST.T){
-        SYST.T = SYST.extend(SYST.T, tools);
+        //SYST.T = SYST.extend(SYST.T, tools);
+        SYST.T = SYST.extend(tools, SYST.Tools.prototype);
     }
 
 })(SYST);
