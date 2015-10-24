@@ -462,9 +462,8 @@
         params: function(name, url){
             if(this._pars && this._pars[name])
                 return this._pars[name];
-            var search = url ? url.split('?')[1] : location.search || location.href.split('?')[1];
-            if(!search) return {};
-            (search && search.indexOf('?') !== -1) && ( search = search.replace(/^\?/, '') );
+            var search = (url ? url.split('?')[1] : location.search || location.href.split('?')[1]).replace(/^\?/, '');
+            if(SYST.V.isEmpty(search)) return {};
             var mas = search.split('&');
             if(!mas || [] === mas) return null;
             var i = 0, len = mas.length, ps = {};
@@ -481,7 +480,7 @@
         //获取get模式下url中的指定参数值
         getParams: function(name, url) {
             var reg = new RegExp('(^|&)' + name + '=([^&]*)(&|$)', 'i');
-            var r = (url || window.location.search).substr(1).match(reg);
+            var r = (url && url.split('?')[1] || window.location.search.substr(1)).match(reg);
             if(r) {
                 return decodeURI(r[2]);
             }
@@ -491,7 +490,7 @@
         paramData: function(object, flag){
             if(SYST.V.isEmpty(object) || !SYST.V.isObject(object))  return '';
             var data = object, s = '';
-            for(var k in data)  (s += '&' + k + '=' + data[k]);
+            for(var k in data)  (s += '&' + k + '=' + encodeURI(data[k]));
             s = s.substr(1);
             return (flag === true) ? '?'+ s : s;
         },
@@ -759,12 +758,16 @@
 
 ;(function(SYST){
 
+
+
     var xhr = new XMLHttpRequest(),
         //defaulst params
         defs = {
             dataType: 'json',
             type: 'POST',
             async: true,
+            timeout: 5000,
+            crossDomain: true,
             header: {
                 'Content-type': 'application/x-www-form-urlencoded'
             }
@@ -1069,6 +1072,7 @@
 
 /**
  * Created by Rodey on 2015/10/16.
+ * Module Router 路由相关
  */
 
 ;(function(SYST){
@@ -1077,7 +1081,6 @@
 
     //Router info
     /**
-     * Module web通用公共函数对象
      * @type {Function}
      */
     var Router = SYST.Router = function(child){
@@ -1090,7 +1093,6 @@
             return new SYST.Router({});
         }
     };
-
 
     var uri = window.location,
         host = uri.host,
@@ -1154,8 +1156,8 @@
         },
         _execMAction: function(routeOption, tpl){
             this.tpl = tpl;
-            var vadding = { model: routeOption.model, tpl: tpl, params: self.params, router: this},
-                cadding = { model: routeOption.model, tpl: tpl, params: self.params, router: this, view: routeOption.view };
+            var vadding = { model: routeOption.model, tpl: tpl, params: this.params, router: this},
+                cadding = { model: routeOption.model, tpl: tpl, params: this.params, router: this, view: routeOption.view };
             //转换成SYST.Model
             routeOption.model && (function(){ return SYST.Model(routeOption.model); })();
             routeOption.view && (function(){ return SYST.View(SYST.extend(routeOption.view, vadding)); })();

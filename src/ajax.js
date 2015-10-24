@@ -6,12 +6,16 @@
 
 ;(function(SYST){
 
+
+
     var xhr = new XMLHttpRequest(),
         //defaulst params
         defs = {
             dataType: 'json',
             type: 'POST',
             async: true,
+            timeout: 5000,
+            crossDomain: true,
             header: {
                 'Content-type': 'application/x-www-form-urlencoded'
             }

@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title></title>
+    <meta charset="UTF-8"/>
+    <meta content="descriptions" charset="">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-status-bar-style" content="black-translucent">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+    <meta name="format-detection" content="telephone=no"/>
+    <style>
+        *{padding: 0; margin: 0;}
+        html, body{ width: 100%; height: 50%; }
+        body{ height: 100%; }
+        button{
+            display: inline-block;
+            width: 100px;
+            height: 30px;
+            line-height: 30px;
+            font-size: 16px;
+            border: none;
+            background-color: #009999;
+            color: white;
+            margin: 10px auto 0 35px;
+
+        }
+        #message{
+            padding: 20px 0;
+            width: 90%;
+            margin: 0 auto;
+            height: 100%;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="message"></div>
+    <button id="testClick">click me</button>
+    <button id="testClick-2">click me2</button>
+
+    <script src="../../bower_components/jquery/dist/jquery.min.js"></script>
+    <script src="../../dist/ts/dist/SYST.js"></script>
+
+    <script>
+
+        $(function(){
+
+            console.log = function(text){
+                $('#message').append($('<p />').html(text));
+            };
+
+            var syst = new SYST();
+            var model = syst.Model({ name: '_test model_' });
+            console.log(model);
+            console.log(syst.Controller());
+            console.log(syst.Validate());
+            console.log(syst.Tools());
+
+            var ctrl = syst.Controller({
+                getDate: function(){
+                    return syst.Tools().setDateFormat(Date.now());
+                }
+            });
+
+            var view = syst.View({
+                model: model,
+                controller: ctrl,
+                events: {
+                    'click window': 'testClick',
+                    'click body': 'testClick',
+                    'click #testClick': 'testClick'
+                },
+                init: function(){
+                    console.log('...view init...');
+                    console.log(this.model.name);
+                    console.log(this.controller.getDate());
+                    console.log(syst.Validate().isMobile('13723768899'));
+                    this.index = 1;
+                },
+                testClick: function(evt){
+                    var target = evt.currentTarget || evt.target;
+                    console.log(target.tagName ? target.tagName : target);
+                    //卸载元素事件侦听
+                    this.offEvent('#testClick', 'click', 'testClick');
+                    //添加元素事件侦听
+                    this.onEvent('#testClick-2', 'click', 'testClick2');
+
+                },
+                testClick2: function(evt){
+                    console.log('testClick-2');
+                }
+            });
+            console.log(view);
+
+//            console.log(SYST);
+
+
+
+        });
+
+    </script>
+
+
+</body>
+</html>

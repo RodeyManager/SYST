@@ -1,5 +1,6 @@
 /**
  * Created by Rodey on 2015/10/16.
+ * Module Router 路由相关
  */
 
 ;(function(SYST){
@@ -8,7 +9,6 @@
 
     //Router info
     /**
-     * Module web通用公共函数对象
      * @type {Function}
      */
     var Router = SYST.Router = function(child){
@@ -21,7 +21,6 @@
             return new SYST.Router({});
         }
     };
-
 
     var uri = window.location,
         host = uri.host,
@@ -85,8 +84,8 @@
         },
         _execMAction: function(routeOption, tpl){
             this.tpl = tpl;
-            var vadding = { model: routeOption.model, tpl: tpl, params: self.params, router: this},
-                cadding = { model: routeOption.model, tpl: tpl, params: self.params, router: this, view: routeOption.view };
+            var vadding = { model: routeOption.model, tpl: tpl, params: this.params, router: this},
+                cadding = { model: routeOption.model, tpl: tpl, params: this.params, router: this, view: routeOption.view };
             //转换成SYST.Model
             routeOption.model && (function(){ return SYST.Model(routeOption.model); })();
             routeOption.view && (function(){ return SYST.View(SYST.extend(routeOption.view, vadding)); })();
