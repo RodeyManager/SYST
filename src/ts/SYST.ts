@@ -19,35 +19,31 @@ class SYST {
         public constructor() {
         }
 
-        public Model(child:any):any {
-            this._model = new YT.Model(child);
-            return this._model;
+        public Model(child?: any):any {
+            return new YT.Model(child);
         }
 
-        public View(child:any):any {
+        public View(child?: any):any {
             /*this._view = new YT.View(child);
             return this._view;*/
-            return YT.View.getInstance(child);
+            //return YT.View.getInstance(child);
+            return new YT.View(child);
         }
 
-        public Controller(child:any):any {
-            this._controller = new YT.Controller(child);
-            return this._controller;
+        public Controller(child?: any):any {
+            return new YT.Controller(child);
         }
 
-         public Event() {
-            this._event = new YT.Event();
-            return this._event;
+        public Validate(child?: any) {
+            return new YT.Validate(child);
         }
 
-        public Validate() {
-            this._validate = new YT.Validate();
-            return this._validate;
+        public Tools(child?: any) {
+            return new YT.Tools(child);
         }
 
-        public Tools() {
-            this._tools = new YT.Tools();
-            return this._tools;
+        public Router() {
+            return new YT.Router();
         }
 
         public static noConflict() {
