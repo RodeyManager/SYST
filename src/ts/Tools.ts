@@ -201,10 +201,16 @@ module YT {
         public params(name?: string, url?: string) {
             if (this._pars && this._pars[name])
                 return this._pars[name];
-            var search: string = (url ? url.split('?')[1] : location.search || location.href.split('?')[1]).replace(/^\?/, '');
+            //var search: string = (url ? url.split('?')[1] : location.search || location.href.split('?')[1]).replace(/^\?/, '');
+            var search: string = '';
+            if(!this._v.isEmpty(url)){
+                search = url.split('?')[1] || '';
+            }else{
+                search = window.location.search.substr(1);
+            }
             if (this._v.isEmpty(search)) return {};
-            var mas: any = search.split('&');
-            if (!mas || [] === mas) return null;
+            var mas: any = search.replace(/^\?/, '').split('&');
+            if (!mas || [] === mas) return {};
             var i: number = 0, len: number = mas.length, ps: any = {};
             for (; i < len; ++i) {
                 //a=b | a=
@@ -224,10 +230,15 @@ module YT {
 
         //获取get模式下url中的指定参数值
         public getParams(name: string, url?: string) {
-            var reg = new RegExp('(^|&)' + name + '=([^&]*)(&|$)', 'i');
-            var r = (url && url.split('?')[1] || window.location.search.substr(1)).match(reg);
-            if (r) {
-                return decodeURI(r[2]);
+            var reg: RegExp = new RegExp('(^|&)' + name + '=([^&]*)(&|$)', 'i'), search: any;
+            //var r = (url && url.split('?')[1] || window.location.search.substr(1)).match(reg);
+            if(!this._v.isEmpty(url)){
+                search = (url.split('?')[1] || '').match(reg);
+            }else{
+                search = window.location.search.substr(1).match(reg);
+            }
+            if (search) {
+                return decodeURI(search[2]);
             }
             return null;
         }

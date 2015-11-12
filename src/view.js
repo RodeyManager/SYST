@@ -130,12 +130,22 @@
             return [selector, evtType, func];
         },
 
-        onEvent: function(){
-            this.autoHandleEvent('on');
+        onEvent: function(selector, event, func){
+            if(SYST.V.isEmpty(selector)) {
+                this.autoHandleEvent('on');
+            }else{
+                SYST.Events.initEvent(SYST.V.isString(selector) ? $(selector) : selector, this, event, func, 'on', this.triggerContainer);
+            }
         },
 
-        offEvent: function(){
-            this.autoHandleEvent('off');
+        offEvent: function(selector, event, func){
+            //this.autoHandleEvent('off');
+            if(SYST.V.isEmpty(selector)){
+                this.autoHandleEvent('off');
+            }else{
+                //this._e.uninitEvent(selector, event, func);
+                SYST.Events.initEvent(SYST.V.isString(selector) ? $(selector) : selector, this, event, func, 'off', this.triggerContainer);
+            }
         },
 
         /**

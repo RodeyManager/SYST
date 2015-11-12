@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head lang="en">
-    <title>SYST JS MINI Framework --- Router</title>
+    <title>Router --- SYST JS MINI Framework</title>
     <meta charset="UTF-8"/>
     <meta content="descriptions" charset="">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -29,6 +29,13 @@
         .links a.add{background-color: rgb(92, 169, 18);}
         .links a.info{background-color: rgb(10, 150, 146);}
         .links a.delete{background-color: rgb(226, 110, 110);}
+        .container{ min-height: 320px; }
+        .container img{
+            display: block;
+            border: none;
+            outline: none;
+            margin: 0 auto;
+        }
     </style>
 
 </head>
@@ -53,73 +60,45 @@
 <!--载入js-->
 <script src="../bower_components/jquery/dist/jquery.min.js"></script>
 <script src="../dist/SYST.js"></script>
+<script src="assets/js/model.js"></script>
+<script src="assets/js/list.js"></script>
+<script src="assets/js/add.js"></script>
+<script src="assets/js/edit.js"></script>
 <script>
 
     $(function(){
 
-        var userListModel = {
+        /*var userListModel = {
             init: function(){
                 console.log('... init user list model ...');
             },
             test: function(d, s, f){
                 this.doAjax('test.json', d, s, f);
             }
-        };
+        };*/
 
         //SYST Router
         var router = new SYST.Router();
-        router.when('user/', {
-            container: '#container',
-            template: 'tpl/user_list.html',
-            view: {
-                triggerContainer: '#u-list',
-                events: {
-                    'click li': 'liClick'
-                },
-                liClick: function(evt){
-                    console.log(evt.currentTarget.innerHTML);
-                }
-            },
-            controller: {
-                init: function(){
-                    console.log(this.tpl);
-                    this.login();
-                },
-                login: function(){
-                    this.model.test({}, function(res){
-                        console.log(res);
-                    }, function(err){
-                        console.log(err);
-                    });
-                }
-            },
-            model: userListModel
-        });
-        router.when('user/add', {
-            container: '#container',
-            template: 'tpl/user_add.html',
-            action: function(){
-                console.log('......add action.....', this.params);
-            },
-            model: {
-                init: function(){
-                    console.log('... init user add model ...');
-                }
-            }
-        });
-        router.when('user/edit', {
-            container: '#container',
-            template: 'tpl/user_edit.html',
-            action: function(){
-                console.log('......edit action.....', this.params);
-            }
-        });
+        router.when('user/', listController);
+        router.when('user/add', addController);
+        router.when('user/edit', editController);
         router.when('user/delete', {
             container: '#container',
-            template: '<h2>这里是删除的模板 (—^_^—)</h2>',
+            animate: 'fade',
+            template: '<h2>这里是删除的模板 (—^_^—)</h2>' +
+                      '<img src="https://cdn4.iconfinder.com/data/icons/flat-color-icons/504/disclaimer-64.png">',
             action: function(){
                 console.log('......delete action....., for id = ' + this.params['id']);
-                alert('id = ' + this.params['id']);
+                console.log('id = ' + this.params['id']);
+            },
+            onReady: function(){
+                console.log('路由开始状态');
+            },
+            onRender: function(){
+                console.log('模板渲染完成状态');
+            },
+            onDestroy: function(){
+                console.log('路由销毁状态');
             }
         });
 

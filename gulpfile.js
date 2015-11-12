@@ -44,7 +44,7 @@ gulp.task('build.syst', function(){
         .pipe(concat('SYST.js'))                    //合并所有js到main.js
         .pipe(gulp.dest('dist'))                    //输出到文件夹
         .pipe(livereload())
-        .pipe(notify({ message: 'SYST.js created success!' }))
+        //.pipe(notify({ message: 'SYST.js created success!' }))
 
         //SYST.min.js
         .pipe(rename({suffix: '.min'}))             //rename压缩后的文件名
@@ -79,5 +79,6 @@ gulp.task('watch', function(){
 
 //执行任务
 gulp.task('default', ['dist.clean'], function(){
-    gulp.start('build.syst', 'build.ts', 'watch');
+    //gulp.start('build.syst', 'build.ts', 'watch');
+    gulp.start('build.syst', 'watch');
 });

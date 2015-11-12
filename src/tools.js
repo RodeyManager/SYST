@@ -192,10 +192,16 @@
         params: function(name, url){
             if(this._pars && this._pars[name])
                 return this._pars[name];
-            var search = (url ? url.split('?')[1] : location.search || location.href.split('?')[1]).replace(/^\?/, '');
+            //var search = (url ? url.split('?')[1] : location.search || location.href.split('?')[1]).replace(/^\?/, '');
+            var search = '';
+            if(!SYST.V.isEmpty(url)){
+                search = url.split('?')[1] || '';
+            }else{
+                search = window.location.search.substr(1);
+            }
             if(SYST.V.isEmpty(search)) return {};
-            var mas = search.split('&');
-            if(!mas || [] === mas) return null;
+            var mas = search.replace(/^\?/, '').split('&');
+            if(!mas || [] === mas) return {};
             var i = 0, len = mas.length, ps = {};
             for( ; i < len; ++i ){
                 //a=b | a=
@@ -209,10 +215,15 @@
         },
         //获取get模式下url中的指定参数值
         getParams: function(name, url) {
-            var reg = new RegExp('(^|&)' + name + '=([^&]*)(&|$)', 'i');
-            var r = (url && url.split('?')[1] || window.location.search.substr(1)).match(reg);
-            if(r) {
-                return decodeURI(r[2]);
+            var reg = new RegExp('(^|&)' + name + '=([^&]*)(&|$)', 'i'), search = '';
+            //var search = (url && url.split('?')[1] || window.location.search.substr(1)).match(reg);
+            if(!SYST.V.isEmpty(url)){
+                search = (url.split('?')[1] || '').match(reg);
+            }else{
+                search = window.location.search.substr(1).match(reg);
+            }
+            if(search) {
+                return decodeURI(search[2]);
             }
             return null;
         },
