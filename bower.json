@@ -12,11 +12,12 @@
   ],
   "private": true,
   "ignore": [
-    "**/.*",
     "node_modules",
     "bower_components",
     "test",
-    "tests"
+    "tests",
+    "example",
+    "src"
   ],
   "devDependencies": {
     "jquery": "~2.1.4",
