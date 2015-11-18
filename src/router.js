@@ -16,6 +16,7 @@
         if(child){
             child.__SuperName__ = 'SYST Router';
             child = SYST.extend(SYST.Router.prototype, child);
+            this._initialize();
             return child;
         }else{
             return new SYST.Router({});
@@ -28,6 +29,8 @@
         origin = uri.origin || (uri.protocol + '//' + host),
         pathname = uri.pathname,
         hash = uri.hash;
+    //history
+    var isSupportPushState = 'pushState' in window.history;
 
     var _getRouteKey = function(hash){
         return hash.replace(/[#!]/gi, '').split('?')[0];
@@ -35,6 +38,32 @@
 
     SYST.R = SYST.Router.prototype = {
         _cache: {},
+        routers: {},
+
+        /**
+         * 初始化
+         * @private
+         */
+        _initialize: function(){
+            if(this.routers && this.routers !== {}){
+                this._initRouters();
+            }
+            this.init && SYST.V.isFunction(this.init) && this.init.apply(this);
+        },
+
+        /**
+         * 将路由加入到缓存
+         * @param route    路由字符串
+         * @param object   路由处理对象
+         * @private
+         */
+        _initRouters: function(route, object){
+            this.routers[route] = object;
+            for(var k in this.routers){
+                if(this.routers.hasOwnProperty(k))
+                    this._cache[k] = this.routers[k];
+            }
+        },
 
         /**
          * 开始执行路由
@@ -57,11 +86,13 @@
          * @param object
          */
         when: function(route, object){
-
+            var self = this;
             if(SYST.V.isObject(object)){
-                this._cache[route] = object;
+                this._initRouters(route, object);
             }else if(SYST.V.isFunction(object)){
-                this._cache[route] = object();
+                this._initRouters(route, function(){
+                    object.apply(self, this.params);
+                });
             }
 
             return this;
