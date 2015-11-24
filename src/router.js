@@ -38,6 +38,11 @@
 
     SYST.R = SYST.Router.prototype = {
         _cache: {},
+        //一个路由对象，包涵当前所有的路由列表
+        //exp: {
+        //      'user/': 'listController',
+        //      'user/add': 'addController'
+        // }
         routers: {},
 
         /**
@@ -46,7 +51,14 @@
          */
         _initialize: function(){
             if(this.routers && this.routers !== {}){
-                this._initRouters();
+
+                var routers = this.routers;
+                for(var k in routers){
+                    this._initRouters(k, routers[k]);
+                }
+
+                this.start();
+
             }
             this.init && SYST.V.isFunction(this.init) && this.init.apply(this);
         },
@@ -58,11 +70,9 @@
          * @private
          */
         _initRouters: function(route, object){
-            this.routers[route] = object;
-            for(var k in this.routers){
-                if(this.routers.hasOwnProperty(k))
-                    this._cache[k] = this.routers[k];
-            }
+
+            this._cache[route] = object;
+
         },
 
         /**
@@ -70,7 +80,6 @@
          * @returns {SYST.Router}
          */
         start: function(){
-
             //如果初始化带有hash
             if(hash && '' !== hash){
                 var currentRoute = _getRouteKey(hash);
@@ -94,7 +103,6 @@
                     object.apply(self, this.params);
                 });
             }
-
             return this;
         },
 

@@ -4,7 +4,7 @@
 
 var listController = {
     container: '#container',
-    template: 'tpl/user_list.html',
+    template: '../tpl/user_list.html',
     animate: 'fade',
     view: {
         triggerContainer: '#u-list',

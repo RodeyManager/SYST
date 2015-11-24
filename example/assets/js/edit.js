@@ -4,7 +4,7 @@
 
 var editController = {
     container: '#container',
-    template: 'tpl/user_edit.html',
+    template: '../tpl/user_edit.html',
     animate: 'fade',
     action: function(){
         console.log('......edit action.....', this.params);

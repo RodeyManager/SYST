@@ -13,7 +13,7 @@
         html,body{ margin:0; padding:0; width: 100%;height: 100%; overflow-x: hidden; overflow-y: scroll;}
         body{}
         .app{ padding: 10px; margin: 0 auto; width: 100%;}
-        .links a{
+        .links a, .links button{
             display: block;
             background-color: rgb(0, 139, 127);
             width: 50%;
@@ -29,7 +29,8 @@
         .links a.add{background-color: rgb(92, 169, 18);}
         .links a.info{background-color: rgb(10, 150, 146);}
         .links a.delete{background-color: rgb(226, 110, 110);}
-        .container{ min-height: 320px; }
+        .links .info{background-color: rgb(10, 150, 146);}
+        .container{ min-height: 200px; }
         .container img{
             display: block;
             border: none;
@@ -50,6 +51,7 @@
             <a class="add" href="#!user/add">add user</a>
             <a class="edit" href="#!user/edit?id=5">edit user</a>
             <a class="delete" href="#!user/delete?id=5">delete user</a>
+            <button class="info">Click me</button>
         </div>
         <!--<ul>
             <li>点击我没反应</li>
@@ -58,12 +60,12 @@
     </div>
 
 <!--载入js-->
-<script src="../bower_components/jquery/dist/jquery.min.js"></script>
-<script src="../dist/SYST.js"></script>
-<script src="assets/js/model.js"></script>
-<script src="assets/js/list.js"></script>
-<script src="assets/js/add.js"></script>
-<script src="assets/js/edit.js"></script>
+<script src="../../bower_components/jquery/dist/jquery.min.js"></script>
+<script src="../../dist/SYST.js"></script>
+<script src="../assets/js/model.js"></script>
+<script src="../assets/js/list.js"></script>
+<script src="../assets/js/add.js"></script>
+<script src="../assets/js/edit.js"></script>
 <script>
 
     $(function(){
@@ -85,8 +87,7 @@
         router.when('user/delete', {
             container: '#container',
             animate: 'fade',
-            template: '<h2>这里是删除的模板 (—^_^—)</h2>' +
-                      '<img src="https://cdn4.iconfinder.com/data/icons/flat-color-icons/504/disclaimer-64.png">',
+            template: '<h2>这里是删除的模板 (—^_^—)</h2>',
             action: function(){
                 console.log('......delete action....., for id = ' + this.params['id']);
                 console.log('id = ' + this.params['id']);

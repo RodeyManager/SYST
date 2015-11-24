@@ -5,7 +5,7 @@
 var addController = function(){
     return {
         container: '#container',
-        template: 'tpl/user_add.html',
+        template: '../tpl/user_add.html',
         animate: 'fade',
         action: function(){
             console.log('......add action.....', this.params);
