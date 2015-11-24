@@ -227,15 +227,16 @@
         },
         //路由之间切换动画
         _onAnimate: function(type, cb){
-            var animate = this.currentRouter.animate,
-                duration = this.currentRouter.animateDuration || 300,
+            var router = this.currentRouter;
+            if(!router)
+                return;
+
+            var animate = router.animate,
+                duration = router.animateDuration || 300,
                 container = this.container,
                 type = type || 'on';
-            if(SYST.V.isEmpty(animate)){
-                container.show(cb);
-                return false;
-            }
-            if(this.currentRouter && container){
+
+            if(router && container){
                 switch (animate){
                     case 'slide':
                         type === 'on' ? container.slideDown(duration, cb) : container.slideUp(100, cb);
