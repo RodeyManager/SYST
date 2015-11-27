@@ -1,7 +1,14 @@
+<% if(users){ %>
 <div class="u-list" id="u-list">
+    <header><h3><%= title %></h3></header>
     <ul>
-        <li>jack</li>
-        <li>tom</li>
-        <li>rodey</li>
+        <%
+            for(var i = 0, len = users.length; i < len; ++i){
+                var user = users[i];
+        %>
+        <li>name: <%= user.name %>,  <% if(user.age) %>age: <%= user.age || '' %></li>
+        <% } %>
     </ul>
 </div>
+
+<% } %>

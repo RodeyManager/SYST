@@ -239,6 +239,7 @@
 
         },
         _execMAction: function(router, tpl){
+            //保存当前模板字符串
             this.tpl = tpl;
             var vadding = { model: router.model, tpl: tpl, params: this.params, router: this},
                 cadding = { model: router.model, tpl: tpl, params: this.params, router: this, view: router.view };
@@ -300,7 +301,6 @@
 
             //模板是html字符串
             if(/<|>/g.test(html)){
-                this.container.html(html);
                 callback && SYST.V.isFunction(callback) && callback.call(self, html);
             }
             //模板是文件
@@ -328,8 +328,14 @@
             var router = this.currentRouter;
             //this._onAnimate('on', cb);
             cb && SYST.V.isFunction(cb) && cb();
+
+            //模板渲染
+            var html = SYST.Render(this.tpl, router.data);
+            this.container.html(html);
+            this.tpl = html;
+
             if(router && router.onRender){
-                router.onRender.call(this, this.tpl);
+                router.onRender.call(this, html);
             }
 
         },

@@ -11,25 +11,16 @@
      * @type {{open: string, close: string}}
      */
     SYST.tplConfig = { open: '<%', close: '%>'};
-    var trimSpaceRegx = /^\s*|\s*$/i,
-        lineFeedRegx = /\\|'|\r|\n|\u2028|\u2029/g,
+    var lineFeedRegx = /\\|'|\r|\n|\u2028|\u2029/g,
         body = '([\\s\\S]+?)',
         empty = /^=+\s*|\s*$/gi,
         lg = SYST.tplConfig.open,
         rg = SYST.tplConfig.close,
+        regxs,
         macs;
 
     var _tplCache = {};
 
-    //需要转移的字符
-    var escapeMap = {
-        '&': '&amp;',
-        '<': '&lt;',
-        '>': '&gt;',
-        '"': '&quot;',
-        "'": '&#x27;',
-        '`': '&#x60;'
-    };
     //模板字符串中需要替换的特殊字符
     var escapes = {
         "'": "'",
@@ -40,22 +31,9 @@
         '\u2029': 'u2029'
     };
 
-    //转移字符
-    var escapeHtml = function(html){
-        return html.replace(/&(?![\w#]+;)|[<>"']/g, function($1){
-            return escapeMap[$1];
-        });
-    };
     //替换特殊字符
     var escapeSpecial = function(match) {
         return '\\' + escapes[match];
-    };
-
-    //匹配正则
-    var regxs = {
-        execter:  new RegExp(lg + body + rg, 'g'),
-        exporter: new RegExp(lg + '\\s*=' + body + rg, 'g'),
-        escaper: new RegExp(lg + '\\s*==' + body + rg, 'g')
     };
 
     //将匹配正则对象转换为数据正则字符串
@@ -66,8 +44,19 @@
         }
         return rs.join('|').replace(/|$/i, '');
     };
-    //定义模板全局匹配正则对象
-    macs = new RegExp(fromatRegx(regxs), 'g');
+
+    var _reset = function(){
+        lg = SYST.tplConfig.open;
+        rg = SYST.tplConfig.close;
+        //匹配正则
+        regxs = {
+            execter:  new RegExp(lg + body + rg, 'g'),
+            exporter: new RegExp(lg + '\\s*=' + body + rg, 'g'),
+            escaper: new RegExp(lg + '\\s*==' + body + rg, 'g')
+        };
+        //定义模板全局匹配正则对象
+        macs = new RegExp(fromatRegx(regxs), 'g');
+    };
 
     /**
      * 渲染模板并输出结果
@@ -80,7 +69,7 @@
 
         var $source = [],
             $text = [],
-            $tplString = "",
+            $tplString = 'var _s=""; with($d || {}){ ',
             index = 0,
             data = data;
 
@@ -116,7 +105,7 @@
             source = $source[i];
             text = $text[i + 1];
             if(source.indexOf('==') !== -1){
-                source = '_s+=(' + escapeHtml(source.replace(empty, '')) + ');';
+                source = '_s+=(SYST.T.escapeHtml(' + source.replace(empty, "") + '));';
             }
             //转移处理
             else if(/^=[^=]+?/i.test(source)){
@@ -126,11 +115,11 @@
         }
 
         //遍历数据
-        $tplString = 'var _s=""; with($d || {}){ '+ $tplString +' }; return _s;';
+        $tplString = ''+ $tplString +' }; return _s;';
         //创建function对象
         var Render = new Function('$d', $tplString);
         //执行渲染方法
-        $tplString = Render(data);
+        $tplString = Render.call(this, data);
         return $tplString;
     };
 
@@ -146,6 +135,9 @@
     var Render = function(content, data, flag){
 
         var element, tplContent = '';
+
+        _reset();
+
 
         //如果直接是模板字符串
         if(flag === true || content.search(/[<|>|\/]/i) !== -1){

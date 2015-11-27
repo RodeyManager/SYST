@@ -6,6 +6,16 @@
 
     'use strict';
 
+    //需要转移的字符
+    var escapeMap = {
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#x27;',
+        '`': '&#x60;'
+    };
+
     /**
      * Module web通用公共函数对象
      * @type {Function}
@@ -131,6 +141,16 @@
             return s.toUpperCase();
         },
         /**
+         * 转移html字符
+         * @param html
+         * @returns {string}
+         */
+        escapeHtml: function(html){
+            return html.replace(/&(?![\w#]+;)|[<>"']/gi, function($1){
+                return escapeMap[$1];
+            });
+        },
+        /**
          * Function 格式化小于10的值
          * @param n
          * @return {String}
@@ -192,12 +212,9 @@
          * @return {String}
          */
         randomChar: function(size, flag){
-            var start = 48,
-                end = 122,
-                i = 0,
-                len = size,
-                random,
-                rs = '',
+            var start = 48,     end = 122,
+                i = 0,          len = size,
+                random,         rs = '',
                 //特殊字符
                 filter = [58, 59, 60, 61, 62, 63, 64, 91, 92, 93, 94, 95, 96],
                 //去除扰乱视线 I L l o O
@@ -243,7 +260,12 @@
             return (!name ? ps : decodeURI(ps[name]));
 
         },
-        //获取get模式下url中的指定参数值
+        /**
+         * 获取get模式下url中的指定参数值
+         * @param name      参数名
+         * @param url       传入的url地址
+         * @returns {*}
+         */
         getParams: function(name, url) {
             var reg = new RegExp('(^|&)' + name + '=([^&]*)(&|$)', 'i'), search = '';
             //var search = (url && url.split('?')[1] || window.location.search.substr(1)).match(reg);
@@ -257,7 +279,12 @@
             }
             return null;
         },
-        //格式化参数 flag: 表示前面是否加上‘?’返回，true: 加上；false: 不加(默认)
+        /**
+         * 格式化参数 flag: 表示前面是否加上‘?’返回，true: 加上；false: 不加(默认)
+         * @param object
+         * @param flag
+         * @returns {*}
+         */
         paramData: function(object, flag){
             if(SYST.V.isEmpty(object) || !SYST.V.isObject(object))  return '';
             var data = object, s = '';
@@ -287,7 +314,6 @@
                 }
 
                 value = String(value);
-
                 return (document.cookie = [encodeURIComponent(key), '=', options.raw ? value : encodeURIComponent(value), options.expires ? '; expires=' + options.expires.toUTCString() : '', options.path ? '; path=' + options.path : '', options.domain ? '; domain=' + options.domain : '', options.secure ? '; secure' : ''].join(''));
             }
             options = value || {};

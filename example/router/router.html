@@ -15,7 +15,7 @@
         .app{ padding: 10px; margin: 0 auto; width: 100%;}
         .links a, .links button{
             display: block;
-            background-color: rgb(0, 139, 127);
+            background-color: rgb(200, 200, 200);
             width: 50%;
             margin: 5px auto;
             padding: 10px;
@@ -23,6 +23,7 @@
             border-radius: 5px;
             color: rgb(255, 255, 255);
             cursor: pointer;
+            border: none;
         }
         .links a:active{background-color: rgb(20, 173, 160);}
         .links a.edit{background-color: rgb(88, 123, 218);}
@@ -51,7 +52,7 @@
             <a class="add" href="#!user/add">add user</a>
             <a class="edit" href="#!user/edit/100?id=5">edit user</a>
             <a class="delete" href="#!user/delete?id=5">delete user</a>
-            <button class="info">Click me</button>
+            <button class="info" id="click-me" disabled="disabled">Click me</button>
         </div>
         <!--<ul>
             <li>点击我没反应</li>

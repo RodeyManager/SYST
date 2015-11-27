@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <title>SYST JS MINI Framework</title>
+    <meta charset="UTF-8"/>
+    <meta content="descriptions" charset="">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-status-bar-style" content="black-translucent">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+    <meta name="format-detection" content="telephone=no" />
+    <style>
+        *{outline: none;}
+        html,body{ margin:0; padding:0; width: 100%;height: 100%; overflow-x: hidden; overflow-y: scroll;}
+        body{padding-top: 30px;}
+        .app{ padding: 10px 20px; width: 100%; margin: 0 auto; }
+    </style>
+
+</head>
+<body>
+
+<div class="app member-app" id="app" scroll="no">
+
+
+</div>
+
+<script type="text/syst" id="tpl">
+
+    <%= title %>
+
+    <% if(posts){
+        for(var i = 0; i < posts.length; i++) {　
+            var post = posts[i];
+    %>
+        <% if(SYST.V.isEmpty(post.expert)){ %>
+            <span>expert is null</span><br/>
+        <% }else{ %>
+            <% console.log(SYST.T.escapeHtml(post.expert)); %>
+            <span><%== post.expert %> at <%= SYST.T.setDateFormat(post.time) %></span><br/>
+        <% } %>
+    <% }} %>
+
+    <p>
+        <%= SYST.V.isFunction(say) && say('hello world!!!') %>
+    </p>
+
+    <ul>
+        <li><%= name %></li>
+        <li><%= version %></li>
+        <li><%= author %></li>
+        <li><%= email %></li>
+    </ul>
+
+</script>
+
+<!--载入js-->
+<script src="../../bower_components/jquery/dist/jquery.min.js"></script>
+<script src="../../dist/SYST.js"></script>
+<script>
+
+    $(function(){
+
+        var data = {
+            title: '<h1>&模板渲染实例</h1>',
+            "posts": [{
+                "expert": "<<content 1>>",
+                "time": 1448603587595
+            },{
+                "expert": "content 2",
+                "time": 1448603587595
+            },{
+                "expert": "content 3",
+                "time": 1448603587595
+            },{
+                "expert": null,
+                "time": 1448603587595
+            }],
+
+            say: function(message){
+                return this.author + ' say ' + message + '!';
+            },
+
+            name: 'SYST JS FROMWORK',
+            version: '0.0.5',
+            author: 'Rodey',
+            email: 'rodeyluo@gmail.com'
+        };
+
+        var html = SYST.Render('tpl', data);
+        //console.log(html);
+        document.querySelector('#app').innerHTML = html;
+
+
+    });
+
+</script>
+
+</body>
+</html>
