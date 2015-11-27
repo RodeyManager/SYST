@@ -7,6 +7,6 @@ var userListModel = {
         console.log('... init user list model ...');
     },
     test: function(d, s, f){
-        this.doAjax('test.json', d, s, f);
+        this.doAjax('../test.json', d, s, f);
     }
 };

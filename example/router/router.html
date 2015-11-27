@@ -49,7 +49,7 @@
         <div class="links">
             <a class="info" href="#!user/">find user</a>
             <a class="add" href="#!user/add">add user</a>
-            <a class="edit" href="#!user/edit?id=5">edit user</a>
+            <a class="edit" href="#!user/edit/100?id=5">edit user</a>
             <a class="delete" href="#!user/delete?id=5">delete user</a>
             <button class="info">Click me</button>
         </div>
@@ -70,32 +70,28 @@
 
     $(function(){
 
-        /*var userListModel = {
-            init: function(){
-                console.log('... init user list model ...');
-            },
-            test: function(d, s, f){
-                this.doAjax('test.json', d, s, f);
-            }
-        };*/
-
         //SYST Router
         var router = new SYST.Router();
         router.when('user/', listController);
         router.when('user/add', addController);
-        router.when('user/edit', editController);
+        router.when('user/edit/:userId', editController);
         router.when('user/delete', {
             container: '#container',
             animate: 'fade',
             template: '<h2>这里是删除的模板 (—^_^—)</h2>',
+            view: {
+                init: function(){
+                    console.log(this.params);
+                }
+            },
             action: function(){
                 console.log('......delete action....., for id = ' + this.params['id']);
-                console.log('id = ' + this.params['id']);
             },
             onReady: function(){
                 console.log('路由开始状态');
             },
-            onRender: function(){
+            onRender: function(tpl){
+                console.log(tpl);
                 console.log('模板渲染完成状态');
             },
             onDestroy: function(){

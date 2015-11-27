@@ -28,5 +28,9 @@ var listController = {
             });
         }
     },
-    model: userListModel
+    model: userListModel,
+    onDestroy: function(){
+        console.log('list 路由销毁状态');
+        return confirm('是否销毁当前路由，切换到指定路由？');
+    }
 };

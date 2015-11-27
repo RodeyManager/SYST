@@ -23,7 +23,7 @@
     (typeof exports !== 'undefined') ? (SYST = exports) : (SYST = root.SYST = {});
 
     //框架属性
-    SYST.version = '0.0.5';
+    SYST.version = '1.0.0';
     SYST.author = 'Rodey Luo';
     SYST.name = 'SYST JS MVC mini Framework (JS MVC框架)';
 
@@ -117,87 +117,6 @@
 
 
 }).call(this);
-/**
- * Created by Rodey on 2015/10/16.
- */
-
-;(function(SYST){
-
-    'use strict';
-
-    /**
-     * Module 事件处理（ 事件绑定 ）
-     * @obj     事件侦听对象
-     * @pobj    this作用域被替换对象
-     * @evt     事件名称
-     * @func    事件函数
-     * @type {Function}
-     */
-    var Events = SYST.Events = function(obj, pobj, evt, func, type, trigger){
-        var self = this;
-        var type = type || 'on';
-        var evts = "abort reset click dblclick tap touchstart touchmove touchend change mouseover mouseout mouseup mousedown mousemove mousewheel drag dragend dragenter dragleave dragover dragstart drop resize scroll submit select keydown keyup keypress touchstart touchend load unload blur focus contextmenu formchange forminput input invalid afterprint beforeprint beforeonload haschange message offline online pagehide pageshow popstate redo storage undo canplay canplaythrough durationchange emptied ended loadeddata loadedmetadata loadstart pause play playing progress ratechange readystatechange seeked seeking stalled suspend timeupdate volumechange waiting cut copy paste".split(/\s+/gi);
-        if(!obj) obj = window;
-
-        //对象事件侦听
-        for(var i = 0; i < evts.length; i++){
-            if(evts[i] === evt){
-                if(obj.selector == 'window'){
-                    (type == 'on')
-                        ? $(window).off().on(evt, SYST.hoadEvent(pobj, func))
-                        : $(window).off(evt, SYST.hoadEvent(pobj, func));
-                }else if(obj.selector == 'document' || obj.selector == 'html' || obj.selector == 'body'){
-                    (type == 'on')
-                        ? $(obj.selector).off().on(evt, SYST.hoadEvent(pobj, func))
-                        : $(obj.selector).off(evt, SYST.hoadEvent(pobj, func));
-                }else{
-                    (type == 'on')
-                        ? $(trigger || 'body').undelegate(obj.selector, evt, SYST.hoadEvent(pobj, func))
-                        .delegate(obj.selector, evt, SYST.hoadEvent(pobj, func))
-                        : $(trigger || 'body').undelegate(obj.selector, evt, SYST.hoadEvent(pobj, func));
-                }
-            }
-        }
-
-    };
-
-})(SYST);
-
-/**
- * Created by Rodey on 2015/10/16.
- */
-
-;(function(SYST){
-
-    'use strict';
-
-    /**
-     * Module 共享数据模型
-     * @type {Object}
-     */
-    SYST._shareModels = [];
-    var ShareModel = SYST.shareModel = {
-        add: function(val){
-            SYST._shareModels.push(val);
-        },
-        get: function(val){
-            if(null == val){ return SYST._shareModels; }
-            for(var i = 0; i < SYST._shareModels.length; ++i)
-                if(val == SYST._shareModels[i])
-                    return SYST._shareModels[i];
-            return null;
-        },
-        remove: function(val){
-            SYST.T.arrRemove(SYST._shareModels, val);
-            return SYST._shareModels;
-        },
-        has: function(val){
-            return SYST.T.indexOf(SYST._shareModels, val) !== -1;
-        }
-    };
-
-})(SYST);
-
 /**
  * Created by Rodey on 2015/10/16.
  *
@@ -454,6 +373,36 @@
                 return CDays;
             }
         },
+
+        /**
+         * Function 获取随机字符（包括数字和字母）
+         * @param len:  字符长度
+         * @param flag: 是否去除干扰
+         * @return {String}
+         */
+        randomChar: function(size, flag){
+            var start = 48,
+                end = 122,
+                i = 0,
+                len = size,
+                random,
+                rs = '',
+                //特殊字符
+                filter = [58, 59, 60, 61, 62, 63, 64, 91, 92, 93, 94, 95, 96],
+                //去除扰乱视线 I L l o O
+                f2 = [48, 49, 73, 76, 79, 108, 111];
+
+            for( ; i < len; ++i ){
+                random = Math.floor(Math.random() * s + Math.random() * e);
+                if(random >= start && random <= end && filter.indexOf(r) === -1){
+                    if(flag === true)   (f2.indexOf(r) === -1) ? rs += String.fromCharCode(10, random) : len++;
+                    else                rs += String.fromCharCode(10, r);
+                }else{
+                    len++;
+                }
+            }
+            return rs.replace(/[\n\t\r]*/gi, '');
+        },
         /**
          * Function 获取指定参数或者所有参数列表
          * @param name
@@ -554,53 +503,250 @@
     'use strict';
 
     /**
+     * Module 事件处理（ 事件绑定 ）
+     * @obj     事件侦听对象
+     * @pobj    this作用域被替换对象
+     * @evt     事件名称
+     * @func    事件函数
+     * @type {Function}
+     */
+    var Events = SYST.Events = function(obj, pobj, evt, func, type, trigger){
+        var self = this;
+        var type = type || 'on';
+        var evts = "abort reset click dblclick tap touchstart touchmove touchend change mouseover mouseout mouseup mousedown mousemove mousewheel drag dragend dragenter dragleave dragover dragstart drop resize scroll submit select keydown keyup keypress touchstart touchend load unload blur focus contextmenu formchange forminput input invalid afterprint beforeprint beforeonload haschange message offline online pagehide pageshow popstate redo storage undo canplay canplaythrough durationchange emptied ended loadeddata loadedmetadata loadstart pause play playing progress ratechange readystatechange seeked seeking stalled suspend timeupdate volumechange waiting cut copy paste".split(/\s+/gi);
+        if(!obj) obj = window;
+
+        //对象事件侦听
+        for(var i = 0; i < evts.length; i++){
+            if(evts[i] === evt){
+                if(obj.selector == 'window'){
+                    (type == 'on')
+                        ? $(window).off().on(evt, SYST.hoadEvent(pobj, func))
+                        : $(window).off(evt, SYST.hoadEvent(pobj, func));
+                }else if(obj.selector == 'document' || obj.selector == 'html' || obj.selector == 'body'){
+                    (type == 'on')
+                        ? $(obj.selector).off().on(evt, SYST.hoadEvent(pobj, func))
+                        : $(obj.selector).off(evt, SYST.hoadEvent(pobj, func));
+                }else{
+                    (type == 'on')
+                        ? $(trigger || 'body').undelegate(obj.selector, evt, SYST.hoadEvent(pobj, func))
+                        .delegate(obj.selector, evt, SYST.hoadEvent(pobj, func))
+                        : $(trigger || 'body').undelegate(obj.selector, evt, SYST.hoadEvent(pobj, func));
+                }
+            }
+        }
+
+    };
+
+})(SYST);
+
+/**
+ * Created by Rodey on 2015/10/16.
+ */
+
+;(function(SYST){
+
+    'use strict';
+
+    /**
+     * Module 共享数据模型
+     * @type {Object}
+     */
+    SYST._shareModels = [];
+    var ShareModel = SYST.shareModel = {
+        add: function(val){
+            SYST._shareModels.push(val);
+        },
+        get: function(val){
+            if(null == val){ return SYST._shareModels; }
+            for(var i = 0; i < SYST._shareModels.length; ++i)
+                if(val == SYST._shareModels[i])
+                    return SYST._shareModels[i];
+            return null;
+        },
+        remove: function(val){
+            SYST.T.arrRemove(SYST._shareModels, val);
+            return SYST._shareModels;
+        },
+        has: function(val){
+            return SYST.T.indexOf(SYST._shareModels, val) !== -1;
+        }
+    };
+
+})(SYST);
+
+/**
+ * Created by Rodey on 2015/10/16.
+ */
+
+;(function(SYST){
+
+    'use strict';
+
+    /**
      * SYST Template Render mini engine
      * @type {{open: string, close: string}}
      */
     SYST.tplConfig = { open: '<%', close: '%>'};
     var trimSpaceRegx = /^\s*|\s*$/i,
-        regOut = /(^( )?(if|for|else|switch|case|break|{|}))(.*)?/g;
+        lineFeedRegx = /\\|'|\r|\n|\u2028|\u2029/g,
+        body = '([\\s\\S]+?)',
+        empty = /^=+\s*|\s*$/gi,
+        lg = SYST.tplConfig.open,
+        rg = SYST.tplConfig.close,
+        macs;
 
-    var _Render = function(tpl, data){
-        var outIndex = 0, ms, conf = SYST.tplConfig,
-            reg = new RegExp(conf.open + '([^'+ conf.close +']+)?' + conf.close, 'g'), // /<%([^%>]+)?%>/g,
-            code = 'var r = [];\n';
-        //添加字符串
-        var make = function(line, js){
-            js? (code += line.match(regOut) ? line + '\n' : 'r.push(' + line + ');\n') :
-                (code += line != '' ? 'r.push("' + line.replace(/"/g, '\\"') + '");\n' : '');
-            return make;
-        };
-        while(ms = reg.exec(tpl)){
-            make(tpl.slice(outIndex, ms.index))(ms[1], true);
-            outIndex = ms.index + ms[0].length;
-        }
-        make(tpl.substr(outIndex, tpl.length - outIndex));
-        code += 'return r.join("");';
-        return new Function(code.replace(/[\r\t\n]/g, '')).apply(data);
+    var _tplCache = {};
+
+    //需要转移的字符
+    var escapeMap = {
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#x27;',
+        '`': '&#x60;'
     };
+    //模板字符串中需要替换的特殊字符
+    var escapes = {
+        "'": "'",
+        '\\': '\\',
+        '\r': 'r',
+        '\n': 'n',
+        '\u2028': 'u2028',
+        '\u2029': 'u2029'
+    };
+
+    //转移字符
+    var escapeHtml = function(html){
+        return html.replace(/&(?![\w#]+;)|[<>"']/g, function($1){
+            return escapeMap[$1];
+        });
+    };
+    //替换特殊字符
+    var escapeSpecial = function(match) {
+        return '\\' + escapes[match];
+    };
+
+    //匹配正则
+    var regxs = {
+        execter:  new RegExp(lg + body + rg, 'g'),
+        exporter: new RegExp(lg + '\\s*=' + body + rg, 'g'),
+        escaper: new RegExp(lg + '\\s*==' + body + rg, 'g')
+    };
+
+    //将匹配正则对象转换为数据正则字符串
+    var fromatRegx = function (rgs){
+        var rs = [];
+        for(var k in rgs){
+            rs.push(rgs[k].source);
+        }
+        return rs.join('|').replace(/|$/i, '');
+    };
+    //定义模板全局匹配正则对象
+    macs = new RegExp(fromatRegx(regxs), 'g');
+
+    /**
+     * 渲染模板并输出结果
+     * @param tplContent    模板字符串
+     * @param data          模板数据变量
+     * @returns {string}    渲染后的字符串
+     * @private
+     */
+    var _template = function(tplContent, data){
+
+        var $source = [],
+            $text = [],
+            $tplString = "",
+            index = 0,
+            data = data;
+
+        /**
+         * 采用替换查找方式
+         * @params $1: match
+         * @params $2: escape
+         * @params $5: offset
+         */
+        tplContent.replace(macs, function($1, $2, $3, $4, $5){
+
+            var text = tplContent.slice(index, $5).replace(lineFeedRegx, escapeSpecial);
+            if(text && '' != text){
+                text = "_s+='" + (text) + "';";
+            }else{
+                text = null;
+            }
+            index = $5 + $1.length;
+            $text.push(text);
+            $source.push(SYST.T.trim($2));
+
+            return $1;
+        });
+
+        //如果没有匹配到任何模板语句的话直接返回
+        if($source.length === 0){
+            return tplContent;
+        }
+
+        //生成 Function 主体字符串
+        var source, text;
+        for(var i = 0, len = $source.length; i < len; ++i){
+            source = $source[i];
+            text = $text[i + 1];
+            if(source.indexOf('==') !== -1){
+                source = '_s+=(' + escapeHtml(source.replace(empty, '')) + ');';
+            }
+            //转移处理
+            else if(/^=[^=]+?/i.test(source)){
+                source = '_s+=(' + (source.replace(empty, '')) + ');';
+            }
+            $tplString += (source || '') + (text || '');
+        }
+
+        //遍历数据
+        $tplString = 'var _s=""; with($d || {}){ '+ $tplString +' }; return _s;';
+        //创建function对象
+        var Render = new Function('$d', $tplString);
+        //执行渲染方法
+        $tplString = Render(data);
+        return $tplString;
+    };
+
     /**
      * 提供外部接口
      * @param content   元素id或者是模板字符串
      * @param data      渲染需要的数据
+     * @param flag      content是否为模板字符串, 如果是模板id值，则可以忽略；
+     *                  如果传递的是模板字符串，则为true
      * @returns {*}
      * @constructor
      */
-    SYST.Render = function(content, data){
-        var elm = document.querySelector('#' + content.replace('#')), tpl = '';
-        if(elm){
-            var tplStr = /^(TEXTEREA|INPUT)$/i.test(elm.nodeName) ? elm.value : elm.innerHTML;
-            tpl = tplStr.replace(trimSpaceRegx, '');
-        }else{
-            tpl = content.replace(trimSpaceRegx, '');
+    var Render = function(content, data, flag){
+
+        var element, tplContent = '';
+
+        //如果直接是模板字符串
+        if(flag === true || content.search(/[<|>|\/]/i) !== -1){
+            tplContent = SYST.T.trim(content);
         }
-        try{
-            this.cache = _Render(tpl, data);
-        }catch(e){
-            delete this.cache;
+        //content为element id
+        else{
+
+            if(_tplCache[content]){
+                return _tplCache[content];
+            }
+            element = document.querySelector('#' + content.replace('#'));
+            if(element){
+                var tplStr = /^(TEXTEREA|INPUT)$/i.test(element.nodeName) ? element.value : element.innerHTML;
+                tplContent = SYST.T.trim(tplStr);
+            }
+            _tplCache[content] = tplContent;
         }
-        return this.cache ? this.cache : _Render(tpl, data);
+
+        return _template(tplContent, data);
+
     };
+
+    SYST.Render = Render;
 
 })(SYST);
 /**
@@ -1109,7 +1255,7 @@
         if(child){
             child.__SuperName__ = 'SYST Router';
             child = SYST.extend(SYST.Router.prototype, child);
-            this._initialize();
+            //this._initialize();
             return child;
         }else{
             return new SYST.Router({});
@@ -1121,9 +1267,14 @@
         port = uri.port,
         origin = uri.origin || (uri.protocol + '//' + host),
         pathname = uri.pathname,
-        hash = uri.hash;
-    //history
-    var isSupportPushState = 'pushState' in window.history;
+        hash = uri.hash,
+        supportPushState = 'pushState' in history,
+        isReplaceState = 'replaceState' in history;
+
+    var optionalParam = /\((.*?)\)/g;
+    var namedParam    = /(\(\?)?:\w+/g;
+    var splatParam    = /\*\w+/g;
+    var escapeRegExp  = /[\-{}\[\]+?.,\\\^$|#\s]/g;
 
     var _getRouteKey = function(hash){
         return hash.replace(/[#!]/gi, '').split('?')[0];
@@ -1131,19 +1282,22 @@
 
     SYST.R = SYST.Router.prototype = {
         _cache: {},
+        _stateCache: [],
+
         //一个路由对象，包涵当前所有的路由列表
-        //exp: {
+        //exp:
+        // routers: {
         //      'user/': 'listController',
         //      'user/add': 'addController'
         // }
         routers: {},
 
         /**
-         * 初始化
+         * $private 初始化
          * @private
          */
         _initialize: function(){
-            if(this.routers && this.routers !== {}){
+            if(this.routers && this.routers != {}){
 
                 var routers = this.routers;
                 for(var k in routers){
@@ -1157,7 +1311,7 @@
         },
 
         /**
-         * 将路由加入到缓存
+         * $private 将路由加入到缓存
          * @param route    路由字符串
          * @param object   路由处理对象
          * @private
@@ -1169,7 +1323,7 @@
         },
 
         /**
-         * 开始执行路由
+         * $public 控制执行路由
          * @returns {SYST.Router}
          */
         start: function(){
@@ -1178,29 +1332,31 @@
                 var currentRoute = _getRouteKey(hash);
                 this.switch(currentRoute);
             }
-            this._change();
+            this._changeStart();
             return this;
+        },
+        stop: function(){
+            this._changeStop();
         },
 
         /**
-         * 匹配路由，添加到缓存
+         * $public 匹配路由，添加到缓存
          * @param route
          * @param object
          */
         when: function(route, object){
-            var self = this;
+            if(SYST.V.isEmpty(route))  return;
             if(SYST.V.isObject(object)){
-                this._initRouters(route, object);
+                this._cache[route] = object;
             }else if(SYST.V.isFunction(object)){
-                this._initRouters(route, function(){
-                    object.apply(self, this.params);
-                });
+                this._cache[route] = object();
             }
+
             return this;
         },
 
         /**
-         * 路由更新时执行对应操作
+         * $public 路由更新时执行对应操作
          * @param route
          * @returns {SYST.Router}
          */
@@ -1212,17 +1368,97 @@
             this._exec(route);
             return this;
         },
+
+        //$private 根据路由获取当前路由配置对象
+        _getRouter: function(route){
+
+            if(!this._cache || this._cache === {})  return;
+            var router, routeKey;
+            for(var k in this._cache){
+                var rt = this._routeToRegExp(k);
+                if(rt.test(route)){
+                    routeKey = k;
+                    router = this._cache[k];
+                    break;
+                }
+            }
+
+            return {routeKey: routeKey, router: router};
+
+        },
+
         /**
-         * 执行
+         * $private 路由到正则
+         * @param route
+         * @returns {RegExp}
+         * @private
+         */
+        _routeToRegExp: function(route) {
+            route = route.replace(escapeRegExp, '\\$&')
+                .replace(optionalParam, '(?:$1)?')
+                .replace(namedParam, function(match, optional) {
+                    return optional ? match : '([^/?]+)';
+                })
+                .replace(splatParam, '([^?]*?)');
+            return new RegExp('^' + route + '(?:\\?([\\s\\S]*))?$');
+        },
+
+        /**
+         * $private 提取路由中的参数
+         * @param route     路由匹配正则
+         * @param route     路由配置中的规则字符串
+         * @param fragment  当前url上的路由（hash）
+         * @private
+         */
+        _extractParameters: function(route, rawRoute, fragment) {
+            var params = route.exec(fragment).slice(1),
+                keys = route.exec(rawRoute).slice(1),
+                ps = [], rs = {};
+
+            if(SYST.V.isArray(params) && params.length > 0){
+                for(var i = 0, len = params.length; i < len; ++i){
+                    var param = params[i];
+                    ps.push(param ? decodeURIComponent(param) : null);
+                }
+            }
+
+            if(SYST.V.isArray(keys) && keys.length > 0){
+                for(var j = 0, len = keys.length; j < len; ++j){
+                    var key = keys[j];
+                    if(key){
+                        rs[key.replace(/^[^\w]|[^\w]$/i, '')] = ps[j];
+                    }
+                }
+            }
+
+            return {paramsObject: rs, params: ps};
+        },
+
+        /**
+         * $private 执行
          * @param route
          */
         _exec: function(route){
-            var routeOption = this._cache[route];
+            var routeOption = this._getRouter(route),
+                router = routeOption.router,
+                routeKey = routeOption.routeKey;
             //保存当前路由控制对象
-            this.currentRouter = routeOption;
+            this.currentRouter = router;
+            this.currentRouter['route'] = routeKey;
+
+            if(!SYST.V.isRegExp(routeKey))
+                route = this._routeToRegExp(routeKey);
+            var path = _getRouteKey(uri.hash);
+            var parameter = this._extractParameters(route, routeKey, path),
+                paramsObject = parameter.paramsObject,
+                params = parameter.params;
+
+            //合并参数列表
+            this.params = SYST.extend(this.params, paramsObject);
+
             //路由开始状态事件
             this._onReady();
-            this._execRouter(routeOption);
+            this._execRouter(router);
 
         },
         _execRouter: function(router){
@@ -1230,7 +1466,6 @@
 
             if(!router) return;
             if(router.template){
-
                 this._template(router.template, router.container, function(htmlStr){
 
                     self._execMAction(router, htmlStr);
@@ -1247,38 +1482,57 @@
             var vadding = { model: router.model, tpl: tpl, params: this.params, router: this},
                 cadding = { model: router.model, tpl: tpl, params: this.params, router: this, view: router.view };
             //转换成SYST.Model
-            router.model && (function(){ return SYST.Model(router.model); })();
-            router.view && (function(){ return SYST.View(SYST.extend(router.view, vadding)); })();
-            router.controller && (function(){ return SYST.Controller(SYST.extend(router.controller, cadding)); })();
+            router.model && (function(){
+                return SYST.Model(router.model);
+            })();
+            router.view && (function(){
+                return SYST.View(SYST.extend(router.view, vadding));
+            })();
+            router.controller && (function(){
+                return SYST.Controller(SYST.extend(router.controller, cadding));
+            })();
             router.action && SYST.V.isFunction(router.action) && router.action.call(this, router.model, tpl);
 
         },
+
         /**
-         * 开始监听路由变化
+         * $private 开始监听路由变化
          * @param callback
          * @private
          */
-        _change: function(){
-            var self = this;
-            window.removeEventListener('hashchange', _hashChangeHandler, false);
-            window.addEventListener('hashchange', _hashChangeHandler, false);
-            function _hashChangeHandler(evt){
+        _changeStart: function(){
+            this._changeStop();
+            window.addEventListener('hashchange', SYST.hoadEvent(this, '_changeHandler'), false);
+        },
+        _changeStop: function(){
+            window.removeEventListener('hashchange', SYST.hoadEvent(this, '_changeHandler'), false);
+        },
+        _changeHandler: function(evt){
 
-                //前后路由数据保存
-                self.oldURL = '#' + evt.oldURL.split('#')[1];
-                self.newURL = '#' + evt.newURL.split('#')[1];
-                //获取当前路由字符串
-                var currentURL = _getRouteKey(self.newURL);
-                //消费当前路由，加载下一个路由
-                self._onDestroy(function(){
+            var self = this,
+                currentRouter = this.currentRouter;
+
+            //前后路由数据保存
+            this.oldURL = '#' + evt.oldURL.split('#')[1];
+            this.newURL = '#' + evt.newURL.split('#')[1];
+            //获取当前路由字符串
+            var currentURL = _getRouteKey(this.newURL);
+            //消费当前路由，加载下一个路由
+            if(currentRouter){
+                this._onDestroy(function(){
                     //开始路由
                     self.switch(currentURL);
                 });
-
             }
-
         },
-        //解释html
+
+        /**
+         * $private 解释html
+         * @param html      模板字符串|模板地址
+         * @param cid       当前路由容器id
+         * @param callback  如果template为地址，则加载完成后的回调
+         * @private
+         */
         _template: function(html, cid, callback){
             var self = this;
             this.container = $('#' + cid.replace(/#/gi, ''));
@@ -1297,36 +1551,55 @@
                 });
             }
         },
-
         //路由状态相关事件
-
-        //路由开始状态
+        //$private 路由开始状态
         _onReady: function(){
 
-            if(this.currentRouter && this.currentRouter.onReady){
-                this.currentRouter.onReady.call(this);
+            var router = this.currentRouter;
+            if(router && router.onReady){
+                router.onReady.call(this);
             }
 
         },
-        //路由模板渲染完成状态
+        //$private 路由模板渲染完成状态
         _onRender: function(cb){
 
-            this._onAnimate('on', cb);
-            if(this.currentRouter && this.currentRouter.onRender){
-                this.currentRouter.onRender.call(this, this.tpl);
+            var router = this.currentRouter;
+            //this._onAnimate('on', cb);
+            cb && SYST.V.isFunction(cb) && cb();
+            if(router && router.onRender){
+                router.onRender.call(this, this.tpl);
             }
 
         },
-        //路由销毁状态
+        //$private 路由销毁状态
         _onDestroy: function(cb){
-
-            this._onAnimate('off', cb);
-            if(this.currentRouter && this.currentRouter.onDestroy){
-                this.currentRouter.onDestroy.call(this, this.tpl);
+            var currentRouter = this.currentRouter,
+                onDestroy = currentRouter.onDestroy,
+                route = currentRouter.route,
+                destroyState = currentRouter['_destroyState'];
+            //this._onAnimate('off', cb);
+            if(currentRouter && onDestroy){
+                //根据前端返回的值，决定执行行为
+                var ds = onDestroy.apply(this);
+                if(ds !== false){
+                    currentRouter['_destroyState'] = true;
+                    cb && SYST.V.isFunction(cb) && cb();
+                }else{
+                    currentRouter['_destroyState'] = false;
+                    this._updateHash(route);
+                    //this.switch(route);
+                }
+            }else{
+                cb && SYST.V.isFunction(cb) && cb();
             }
 
         },
-        //路由之间切换动画
+        //$private 更新hash值
+        _updateHash: function(hash){
+            window.location.hash = '#!' + hash.replace(/^#!/i, '');
+        },
+        //$private 路由之间切换动画
         _onAnimate: function(type, cb){
             var router = this.currentRouter;
             if(!router)

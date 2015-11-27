@@ -1,29 +1,46 @@
-var gulp = require('gulp'),
-    watch = require('gulp-watch'),
-    rename = require('gulp-rename'),
-    concat = require('gulp-concat'),
-    sourcemaps = require('gulp-sourcemaps'),
-    uglify = require('gulp-uglify'),
-    livereload = require('gulp-livereload'),
-    notify = require('gulp-notify'),
-    clean = require('gulp-clean'),
-    ts = require('gulp-typescript');
+var fs          = require('fs'),
+    gulp        = require('gulp'),
+    watch       = require('gulp-watch'),
+    rename      = require('gulp-rename'),
+    concat      = require('gulp-concat'),
+    sourcemaps  = require('gulp-sourcemaps'),
+    uglify      = require('gulp-uglify'),
+    livereload  = require('gulp-livereload'),
+    notify      = require('gulp-notify'),
+    clean       = require('gulp-clean'),
+    ts          = require('gulp-typescript');
 
-var syst_version = '0.0.4';
+//版本号
+var syst_version = '1.0.0';
+
+//mod version
+if(fs.existsSync('src/SYST.js')){
+    var syst_text = fs.readFileSync('src/SYST.js', 'utf8');
+    syst_text = syst_text.replace(/\s*SYST.version\s*=\s*['|"]([\s\S]*?)['|"];/gi, function(match, version){
+        console.log(version);
+        return match.replace(version, syst_version);
+    });
+
+    fs.writeFileSync('src/SYST.js', syst_text, 'utf8');
+}
+
 var srcs = [
-    'src/SYST.js',
-    'src/event.js',
-    'src/shareModel.js',
-    'src/validate.js',
-    'src/tools.js',
-    'src/template.js',
-    'src/model.js',
-    'src/ajax.js',
-    'src/view.js',
-    'src/controller.js',
-    'src/router.js',
-    'src/native.js'
-];
+    'SYST',
+    'validate',
+    'tools',
+    'event',
+    'shareModel',
+    'template',
+    'model',
+    'ajax',
+    'view',
+    'controller',
+    'router',
+    'native'
+].map(function(src){
+        return 'src/' + src + '.js';
+    });
+
 var tses = srcs.map(function(item){
     return item.replace(/src?/i, 'src/ts').replace(/.js/i, '.ts');
 });

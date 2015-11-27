@@ -184,6 +184,36 @@
                 return CDays;
             }
         },
+
+        /**
+         * Function 获取随机字符（包括数字和字母）
+         * @param len:  字符长度
+         * @param flag: 是否去除干扰
+         * @return {String}
+         */
+        randomChar: function(size, flag){
+            var start = 48,
+                end = 122,
+                i = 0,
+                len = size,
+                random,
+                rs = '',
+                //特殊字符
+                filter = [58, 59, 60, 61, 62, 63, 64, 91, 92, 93, 94, 95, 96],
+                //去除扰乱视线 I L l o O
+                f2 = [48, 49, 73, 76, 79, 108, 111];
+
+            for( ; i < len; ++i ){
+                random = Math.floor(Math.random() * s + Math.random() * e);
+                if(random >= start && random <= end && filter.indexOf(r) === -1){
+                    if(flag === true)   (f2.indexOf(r) === -1) ? rs += String.fromCharCode(10, random) : len++;
+                    else                rs += String.fromCharCode(10, r);
+                }else{
+                    len++;
+                }
+            }
+            return rs.replace(/[\n\t\r]*/gi, '');
+        },
         /**
          * Function 获取指定参数或者所有参数列表
          * @param name
