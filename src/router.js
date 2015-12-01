@@ -110,7 +110,7 @@
             if(SYST.V.isObject(object)){
                 this._cache[route] = object;
             }else if(SYST.V.isFunction(object)){
-                this._cache[route] = object();
+                this._cache[route] = object.call(this);
             }
 
             return this;

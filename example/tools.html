@@ -32,9 +32,40 @@
 
     $(function(){
 
+        var tool = SYST.Tools({
+            init: function(){
+                console.log('... init tools ...');
+            }
+        });
+
+        //一种继承的实现(简单继承)
+        var extendTools = SYST.Tools(SYST.extend(tool, {
+            hello: 'hello world'
+        }));
+
+        console.log(tool);
+        console.log(extendTools);
+
         console.log(SYST.T.randomChar(100));
         console.log(SYST.T.randomString(10));
         console.log(SYST.T.randomNumber(10));
+
+        var testObject = {
+            name: 'Jack',
+            age: 28,
+            porps: ['a', 'b', 'c', 100, 'd']
+        };
+
+
+        SYST.T.each(testObject, function(item, index, key){
+            console.log(item, index, key);
+        });
+
+        SYST.T.each(testObject.porps, function(item, index){
+            console.log(item, index);
+        });
+
+
 
     });
 

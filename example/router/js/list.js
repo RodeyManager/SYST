@@ -15,7 +15,7 @@ var data = {
 
 var listController = {
     container: '#container',
-    template: '../tpl/user_list.html',
+    template: 'tpl/user_list.html',
     animate: 'fade',
     data: data,
 

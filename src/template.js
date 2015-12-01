@@ -62,16 +62,46 @@
      * 渲染模板并输出结果
      * @param tplContent    模板字符串
      * @param data          模板数据变量
+     * @param data          自定义方法，可选类型为：Object中带有多个方法； function；function的toString后结果
      * @returns {string}    渲染后的字符串
      * @private
      */
-    var _template = function(tplContent, data){
+    var _template = function(tplContent, data, helper, target){
 
         var $source = [],
             $text = [],
             $tplString = 'var _s=""; with($d || {}){ ',
+            helperStr = '',
             index = 0,
             data = data;
+
+        //判断helper是否存在
+        if(helper){
+            if(SYST.V.isObject(helper)){
+                for(var k in helper){
+                    helperStr += helper[k].toString() + ';';
+                }
+            }
+            else if(SYST.V.isFunction(helper)){
+                helperStr += helper.toString() + ';';
+            }
+            else if(SYST.V.isString(helper) && /function\(\)/gi.test(helper)){
+                helperStr += helper.replace(/;$/i, '') + ';';
+            }else{
+                throw new EvalError('helper can be function');
+            }
+
+            $tplString = helperStr + $tplString;
+        }
+
+        /**
+         * 将SYST.T.each方法置入Function字符串中
+         * use:
+         *  <% each(object|array, function(item, index, [key: options]) %>
+         *      <%= item %>
+         *  <% }); %>
+         */
+        $tplString = 'var each = ' + SYST.T.each.toString() + ';' + $tplString;
 
         /**
          * 采用替换查找方式
@@ -119,7 +149,7 @@
         //创建function对象
         var Render = new Function('$d', $tplString);
         //执行渲染方法
-        $tplString = Render.call(this, data);
+        $tplString = Render.call(target || this, data);
         return $tplString;
     };
 
@@ -127,20 +157,19 @@
      * 提供外部接口
      * @param content   元素id或者是模板字符串
      * @param data      渲染需要的数据
-     * @param flag      content是否为模板字符串, 如果是模板id值，则可以忽略；
-     *                  如果传递的是模板字符串，则为true
+     * @param helper    自定义方法，可选类型为：Object中带有多个方法； function；function的toString后结果
      * @returns {*}
      * @constructor
      */
-    var Render = function(content, data, flag){
+    var Render = function(content, data, helper, target){
 
         var element, tplContent = '';
 
+        //重置配置
         _reset();
 
-
         //如果直接是模板字符串
-        if(flag === true || content.search(/[<|>|\/]/i) !== -1){
+        if(content.search(/[<|>|\/]/i) !== -1){
             tplContent = SYST.T.trim(content);
         }
         //content为element id
@@ -157,7 +186,7 @@
             _tplCache[content] = tplContent;
         }
 
-        return _template(tplContent, data);
+        return _template(tplContent, data, helper, target);
 
     };
 

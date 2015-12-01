@@ -70,6 +70,29 @@
         </div>
 
     </div>
+    <br/>
+    <br/>
+    <br/>
+    <br/>
+    <div class="app member-app" id="app-2" scroll="no">
+        <div class="form-group">
+            <label for="username" class="icon icon-usname username"></label>
+            <input type="tel" id="username2" class="put username" maxlength="11" placeholder="请输入用户名或手机号码"/>
+            <p class="tips flash" id="username-tip2"></p>
+        </div>
+        <div class="form-group">
+            <label for="password" class="icon icon-lock password"></label>
+            <input type="password" id="password2" class="put password" placeholder="请输入登录密码"/>
+            <p class="tips flash" id="pwd-tip2"></p>
+        </div>
+        <div  class="form-group" id="btns2">
+            <div class="btn grade-btn" id="login-btn2">
+                <span class="text">登录2</span>
+                <span class="loading">正在登录...</span>
+            </div>
+        </div>
+
+    </div>
 
 <!--载入js-->
 <script src="../../bower_components/jquery/dist/jquery.min.js"></script>
@@ -128,7 +151,8 @@
             triggerContainer: '#app',
             //页面时间触发对象集合  exp: '事件名称 元素对象':  '事件回调名称'
             events: {
-                'click #btns'   : 'login'
+                'click #btns'   : 'login',
+                'click #btns2'   : 'login2'
             },
             //初始化方法
             init: function(){
@@ -140,6 +164,7 @@
                 this.posting = false;
 
             },
+
             login: function(evt){
                 if(this.posting)    return;
                 var self = this, postData,
@@ -194,6 +219,10 @@
             //Error callback
             loginError: function(res){
                 this.pwdTipDom.innerHTML = res.msg || '登录异常，请稍后重试！';
+            },
+
+            login2: function(evt){
+                console.log(evt.currentTarget);
             }
 
         });

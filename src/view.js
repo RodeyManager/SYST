@@ -30,16 +30,14 @@
             //document.body.appendChild(this.$el[0]);
             //自定义init初始化
             this.init && this.init.apply(this, arguments);
-            if(this.render){
+            if(this.render && SYST.V.isFunction(this.render)){
                 var panel = '<' + self.tagPanel + '/>';
-                self.$el = SYST.$ ? SYST.$(panel) : self.parseDom('', panel);
+                self.$el = self.parseDom('', panel);
                 self.render.apply(self, arguments);
             }
 
             //自动解析 events对象，处理view中的事件绑定
             this.events && this.events != {} && SYST.V.isObject(this.events) &&  this.onEvent();
-
-
         },
 
         destroy: function(){
@@ -154,22 +152,14 @@
          * @param data
          * @return {*}
          */
-        template: function(htmlStr, data){
-            var compHtml, render;
-            if(root.template){  //采用arttemplate编译
-                render = SYST.template.compile(htmlStr);
-                compHtml = render(data);
-                return compHtml
-            }else if(root._){  //采用underscore编译
-                compHtml = _.template(htmlStr, data);
-            }else{             // 如果模板插件不存在，则直接返回jQuery或者浏览器标准对象
-                compHtml = SYST.Render(htmlStr, data);
-            }
+        template: function(htmlStr, data, helper){
+            var compHtml;
+            compHtml = SYST.Render(htmlStr, data, helper, this);
             return compHtml;
         },
         //将元素转成对象并返回
         parseDom: function(htmlStr, tagPanel){
-            return SYST.T.template(htmlStr, tagPanel);
+            return SYST.T.parseDom(htmlStr, tagPanel);
         },
         getController: function(){
             return this.controller;

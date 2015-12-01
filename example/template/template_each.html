@@ -27,18 +27,20 @@
 
     <%= title %>
 
-    <% if(posts){
-        for(var i = 0; i < posts.length; i++) {　
-            var post = posts[i];
+    <%
+        /**
+         * 也可以采用 SYST.T.each
+         */
+        each(posts, function(post, i) {
     %>
         <% if(SYST.V.isEmpty(post.expert)){ %>
             <span>expert is null</span><br/>
         <% }else{ %>
             <% console.log(SYST.T.escapeHtml(post.expert)); %>
             <% console.log(filter(post.expert)); %>
-            <span><%== post.expert %> at <%= SYST.T.setDateFormat(post.time) %></span><br/>
+            <span><%== post.expert + (i + 1) %> at <%= SYST.T.setDateFormat(post.time) %></span><br/>
         <% } %>
-    <% }} %>
+    <% }); %>
 
     <p>
         <%= SYST.V.isFunction(say) && say('hello world!!!') %>
@@ -71,13 +73,13 @@
         var data = {
             title: '<h1>&模板渲染实例</h1>',
             "posts": [{
-                "expert": "<<content 1>>",
+                "expert": "<<content>>",
                 "time": 1448603587595
             },{
-                "expert": "content 2",
+                "expert": "content",
                 "time": 1448603587595
             },{
-                "expert": "content 3",
+                "expert": "content",
                 "time": 1448603587595
             },{
                 "expert": null,

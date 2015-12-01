@@ -35,16 +35,9 @@
     //外置插件 (加载时一定要考虑依赖性)
     //判断是否有jquery，zepto插件
     try{
-        SYST.$ = root.jQuery || root.Zepto || root.ender || undefined;
+        SYST.$ = root.jQuery || root.Zepto || undefined;
     }catch(e){
-        throw new Error('$不存在，请先引入jQuery|Zepto|Ender插件，依赖其中一个。' + e);
-    }
-    //模板引擎插件，默认使用arttemplate ( https://github.com/aui/artTemplate || www.planeart.cn/?tag=arttemplate )
-    //也支持underscore（ _ ）
-    try{
-        SYST.template = root.template || root._ || undefined;
-    }catch(e){
-        throw new Error('模板解析对象不存在，请先引入arttemplate|underscore插件，依赖其中一个' + e);
+        throw new Error('$不存在，请先引入jQuery|Zepto插件，依赖其中一个。' + e);
     }
 
     /**
@@ -220,14 +213,14 @@
         }
     };
     SYST.T = SYST.Tools.prototype = {
-        template: function(htmlStr, tagPanel){
+        parseDom: function(htmlStr, tagPanel){
             var element = document.createElement(tagPanel || 'div');
-            element.innerHTML = htmlStr;
             //jQuery || zepto
-            if($){
-                $(element).html(htmlStr);
-                return $(element)[0];
+            if(SYST.$){
+                SYST.$(element).html(htmlStr);
+                return SYST.$(element)[0];
             }
+            element.innerHTML = htmlStr;
             return element.childNodes;
         },
         /**
@@ -515,6 +508,29 @@
                     return decode(pair[1] || '');
             }
             return null;
+        },
+
+        /**
+         * 遍历对象
+         * @param object
+         * @param callback
+         */
+        each: function(object, callback){
+            if(SYST.V.isObject(object)){
+                var index = 0;
+                for(var k in object){
+                    callback.call(object, object[k], index++, k);
+                }
+            }
+            else if(SYST.V.isArray(object)){
+                var i = 0, len = object.length;
+                for(; i < len; ++i){
+                    callback(object[i], i);
+                }
+            }
+            else{
+                throw new SyntaxError('args1 is must Object or Array');
+            }
         }
     };
 
@@ -584,16 +600,46 @@
      * 渲染模板并输出结果
      * @param tplContent    模板字符串
      * @param data          模板数据变量
+     * @param data          自定义方法，可选类型为：Object中带有多个方法； function；function的toString后结果
      * @returns {string}    渲染后的字符串
      * @private
      */
-    var _template = function(tplContent, data){
+    var _template = function(tplContent, data, helper, target){
 
         var $source = [],
             $text = [],
             $tplString = 'var _s=""; with($d || {}){ ',
+            helperStr = '',
             index = 0,
             data = data;
+
+        //判断helper是否存在
+        if(helper){
+            if(SYST.V.isObject(helper)){
+                for(var k in helper){
+                    helperStr += helper[k].toString() + ';';
+                }
+            }
+            else if(SYST.V.isFunction(helper)){
+                helperStr += helper.toString() + ';';
+            }
+            else if(SYST.V.isString(helper) && /function\(\)/gi.test(helper)){
+                helperStr += helper.replace(/;$/i, '') + ';';
+            }else{
+                throw new EvalError('helper can be function');
+            }
+
+            $tplString = helperStr + $tplString;
+        }
+
+        /**
+         * 将SYST.T.each方法置入Function字符串中
+         * use:
+         *  <% each(object|array, function(item, index, [key: options]) %>
+         *      <%= item %>
+         *  <% }); %>
+         */
+        $tplString = 'var each = ' + SYST.T.each.toString() + ';' + $tplString;
 
         /**
          * 采用替换查找方式
@@ -641,7 +687,7 @@
         //创建function对象
         var Render = new Function('$d', $tplString);
         //执行渲染方法
-        $tplString = Render.call(this, data);
+        $tplString = Render.call(target || this, data);
         return $tplString;
     };
 
@@ -649,20 +695,19 @@
      * 提供外部接口
      * @param content   元素id或者是模板字符串
      * @param data      渲染需要的数据
-     * @param flag      content是否为模板字符串, 如果是模板id值，则可以忽略；
-     *                  如果传递的是模板字符串，则为true
+     * @param helper    自定义方法，可选类型为：Object中带有多个方法； function；function的toString后结果
      * @returns {*}
      * @constructor
      */
-    var Render = function(content, data, flag){
+    var Render = function(content, data, helper, target){
 
         var element, tplContent = '';
 
+        //重置配置
         _reset();
 
-
         //如果直接是模板字符串
-        if(flag === true || content.search(/[<|>|\/]/i) !== -1){
+        if(content.search(/[<|>|\/]/i) !== -1){
             tplContent = SYST.T.trim(content);
         }
         //content为element id
@@ -679,7 +724,7 @@
             _tplCache[content] = tplContent;
         }
 
-        return _template(tplContent, data);
+        return _template(tplContent, data, helper, target);
 
     };
 
@@ -1054,16 +1099,14 @@
             //document.body.appendChild(this.$el[0]);
             //自定义init初始化
             this.init && this.init.apply(this, arguments);
-            if(this.render){
+            if(this.render && SYST.V.isFunction(this.render)){
                 var panel = '<' + self.tagPanel + '/>';
-                self.$el = SYST.$ ? SYST.$(panel) : self.parseDom('', panel);
+                self.$el = self.parseDom('', panel);
                 self.render.apply(self, arguments);
             }
 
             //自动解析 events对象，处理view中的事件绑定
             this.events && this.events != {} && SYST.V.isObject(this.events) &&  this.onEvent();
-
-
         },
 
         destroy: function(){
@@ -1178,22 +1221,14 @@
          * @param data
          * @return {*}
          */
-        template: function(htmlStr, data){
-            var compHtml, render;
-            if(root.template){  //采用arttemplate编译
-                render = SYST.template.compile(htmlStr);
-                compHtml = render(data);
-                return compHtml
-            }else if(root._){  //采用underscore编译
-                compHtml = _.template(htmlStr, data);
-            }else{             // 如果模板插件不存在，则直接返回jQuery或者浏览器标准对象
-                compHtml = SYST.Render(htmlStr, data);
-            }
+        template: function(htmlStr, data, helper){
+            var compHtml;
+            compHtml = SYST.Render(htmlStr, data, helper, this);
             return compHtml;
         },
         //将元素转成对象并返回
         parseDom: function(htmlStr, tagPanel){
-            return SYST.T.template(htmlStr, tagPanel);
+            return SYST.T.parseDom(htmlStr, tagPanel);
         },
         getController: function(){
             return this.controller;
@@ -1367,7 +1402,7 @@
             if(SYST.V.isObject(object)){
                 this._cache[route] = object;
             }else if(SYST.V.isFunction(object)){
-                this._cache[route] = object();
+                this._cache[route] = object.call(this);
             }
 
             return this;

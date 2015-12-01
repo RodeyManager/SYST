@@ -31,14 +31,14 @@
         }
     };
     SYST.T = SYST.Tools.prototype = {
-        template: function(htmlStr, tagPanel){
+        parseDom: function(htmlStr, tagPanel){
             var element = document.createElement(tagPanel || 'div');
-            element.innerHTML = htmlStr;
             //jQuery || zepto
-            if($){
-                $(element).html(htmlStr);
-                return $(element)[0];
+            if(SYST.$){
+                SYST.$(element).html(htmlStr);
+                return SYST.$(element)[0];
             }
+            element.innerHTML = htmlStr;
             return element.childNodes;
         },
         /**
@@ -326,6 +326,29 @@
                     return decode(pair[1] || '');
             }
             return null;
+        },
+
+        /**
+         * 遍历对象
+         * @param object
+         * @param callback
+         */
+        each: function(object, callback){
+            if(SYST.V.isObject(object)){
+                var index = 0;
+                for(var k in object){
+                    callback.call(object, object[k], index++, k);
+                }
+            }
+            else if(SYST.V.isArray(object)){
+                var i = 0, len = object.length;
+                for(; i < len; ++i){
+                    callback(object[i], i);
+                }
+            }
+            else{
+                throw new SyntaxError('args1 is must Object or Array');
+            }
         }
     };
 

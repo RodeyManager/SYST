@@ -35,16 +35,9 @@
     //外置插件 (加载时一定要考虑依赖性)
     //判断是否有jquery，zepto插件
     try{
-        SYST.$ = root.jQuery || root.Zepto || root.ender || undefined;
+        SYST.$ = root.jQuery || root.Zepto || undefined;
     }catch(e){
-        throw new Error('$不存在，请先引入jQuery|Zepto|Ender插件，依赖其中一个。' + e);
-    }
-    //模板引擎插件，默认使用arttemplate ( https://github.com/aui/artTemplate || www.planeart.cn/?tag=arttemplate )
-    //也支持underscore（ _ ）
-    try{
-        SYST.template = root.template || root._ || undefined;
-    }catch(e){
-        throw new Error('模板解析对象不存在，请先引入arttemplate|underscore插件，依赖其中一个' + e);
+        throw new Error('$不存在，请先引入jQuery|Zepto插件，依赖其中一个。' + e);
     }
 
     /**
