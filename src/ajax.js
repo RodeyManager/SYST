@@ -6,8 +6,6 @@
 
 ;(function(SYST){
 
-
-
     var xhr = new XMLHttpRequest(),
         //defaulst params
         defs = {

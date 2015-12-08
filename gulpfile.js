@@ -28,6 +28,7 @@ var srcs = [
     'SYST',
     'validate',
     'tools',
+    'promise',
     'template',
     'event',
     'shareModel',
