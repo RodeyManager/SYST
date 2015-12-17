@@ -20,6 +20,7 @@ module YT {
         private _e: YT.Event;
         private _type: string;
 
+        public static hoadEvent: any = ST.hoadEvent;
         private static _self: YT.View;
 
         public static getInstance(child?: any): YT.View{
@@ -76,16 +77,16 @@ module YT {
             return this._t.template(htmlStr, tagPanel);
         }
 
-        public static hoadEvent: Function = SYST.hoadEvent;
-
         /**
          * 格式化 events对象
          * @param events对象
          * @return {*}
          */
-        private parseEvent(evtObj: any){
+        private parseEvent(evtObj: any): any{
             if(!evtObj || evtObj.length == 0 || evtObj === {}) return this;
-            var evts: Array<any> = [], objs: Array<any> = [], handleFunctions: Array<any> = [];
+            var evts: Array<any> = [],
+                objs: Array<any> = [],
+                handleFunctions: Array<any> = [];
             for(var evt in evtObj){
                 var eobj = evtObj[evt];
                 if(this._v.isObject(eobj)){

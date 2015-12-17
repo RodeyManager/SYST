@@ -97,14 +97,6 @@
                 p.reject('error-1');
             }, 5000);
 
-            setTimeout(function(){
-                p.resolve('success-2');
-            }, 8000);
-
-            setTimeout(function(){
-                p.reject('error-2');
-            }, 11000);
-
             return p;
         }
 
@@ -117,11 +109,17 @@
         });*/
 
         test().done(function(value){
-            console.log(value); //OUT: success-1
+            console.log(value, this); //OUT: success-1
+
+            setTimeout(function(){
+                this.resolve('....迟到的爱♥');
+            }.bind(this), 8000);
 
         }).success(function(value1, value2){
             console.log(value1 + '---' + value2);    //OUT: success-1 success-2
 
+        }).then(function(v){
+            console.log(v);
         }).catch(function(err){
             console.log(err);   //OUT: error-1
 
@@ -131,81 +129,6 @@
         });
 
         console.log(p);
-
-
-        //串行实例
-        /*var pall = new SYST.Promise();
-
-        function getUser1(){
-            setTimeout(function(){
-                pall.resolve('user-1');
-            }, 1000);
-
-        }
-
-        function getUserError1(){
-            setTimeout(function(){
-                pall.reject('error-1');
-            }, 1000);
-        }
-
-        function getUser2(){
-            setTimeout(function(){
-                //args[1]表示结束串行
-                pall.resolve('user-2', false);
-            }, 2000);
-
-        }
-
-        function getUserError2(){
-            setTimeout(function(){
-                pall.reject('error-2', false);
-            }, 2000);
-        }
-
-        pall.all([getUser1, getUser2, getUserError1, getUserError2]).done(function(v1, v2){
-            console.log(v1);
-            console.log(v2);
-
-        }).catch(function(err1, err2){
-            console.log(err1);
-            console.log(err2);
-        });*/
-
-
-
-        //----登录
-        function login(){
-            usmDom.value = 'admin';
-            pwdDom.value = 'admin';
-            var ap = new SYST.P();
-            setTimeout(function(){
-                $.ajax({
-                    url: '../test.json',
-                    dataType: 'json',
-                    success: function(res){ ap.resolve(res); },
-                    error: function(err){ ap.reject(err); }
-                });
-            }, 5000);
-
-            return ap;
-        }
-
-        login().then(function(res){
-            console.log(res);
-            pwdTipDom.classList.add('success');
-            pwdTipDom.innerHTML = 'Hello, ' + (usmDom.value || res.data.userName) + '！ <br />当前登录时间：【'+ SYST.T.setDateFormat(res.data.loginTime) +'】'
-        });
-
-        var _index = 5;
-        var _stin = setInterval(function(){
-            loginTextBtn.innerHTML = (--_index) + '秒后自动登录';
-            if(_index <= 0){
-                loginTextBtn.parentElement.style.display = 'none';
-                clearInterval(_stin);
-                _stin = null;
-            }
-        }, 1000);
 
 
     });

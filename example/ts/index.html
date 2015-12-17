@@ -50,20 +50,19 @@
                 $('#message').append($('<p />').html(text));
             };
 
-            var syst = new SYST();
-            var model = syst.Model({ name: '_test model_' });
+            var model = SYST.Model({ name: '_test model_' });
             console.log(model);
-            console.log(syst.Controller());
-            console.log(syst.Validate());
-            console.log(syst.Tools());
+            console.log(SYST.Controller());
+            console.log(SYST.Validate());
+            console.log(SYST.Tools());
 
-            var ctrl = syst.Controller({
+            var ctrl = SYST.Controller({
                 getDate: function(){
-                    return syst.Tools().setDateFormat(Date.now());
+                    return SYST.Tools().setDateFormat(Date.now());
                 }
             });
 
-            var view = syst.View({
+            var view = SYST.View({
                 model: model,
                 controller: ctrl,
                 events: {
@@ -75,7 +74,7 @@
                     console.log('...view init...');
                     console.log(this.model.name);
                     console.log(this.controller.getDate());
-                    console.log(syst.Validate().isMobile('13723768899'));
+                    console.log(SYST.Validate().isMobile('13723768899'));
                     this.index = 1;
                 },
                 testClick: function(evt){
@@ -84,11 +83,16 @@
                     //卸载元素事件侦听
                     this.offEvent('#testClick', 'click', 'testClick');
                     //添加元素事件侦听
+                    this.offEvent('#testClick-2', 'click', 'testClick2');
                     this.onEvent('#testClick-2', 'click', 'testClick2');
+                    evt.preventDefault();
+                    evt.stopImmediatePropagation();
 
                 },
                 testClick2: function(evt){
                     console.log('testClick-2');
+                    evt.preventDefault();
+                    evt.stopImmediatePropagation();
                 }
             });
             console.log(view);

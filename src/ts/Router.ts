@@ -1,17 +1,13 @@
 /**
  * Created by Rodey on 2015/10/23.
  */
+/// <reference path="zepto.d.ts" />
 
 module YT{
 
     export class Router{
 
         public uri: any = window.location;
-        public host: string = uri.host;
-        public port: number = uri.port;
-        public origin: string = uri.protocol + '//' + host;
-        public pathname: string = uri.pathname;
-        public hash: string = uri.hash;
         public params: any;
         public tpl: string;
         public oldURL: string;
@@ -20,11 +16,18 @@ module YT{
         private _cache: any = {};
         private _v: YT.Validate;
         private _t: YT.Tools;
-        private _syst: SYST;
+        private _syst: ST;
 
         public constructor(){
             this._v = new YT.Validate();
             this._t = new YT.Tools();
+
+            for(var k in this.uri){
+                if(this.uri.hasOwnProperty(k)){
+                    this[k] = this.uri[k];
+                }
+            }
+
         }
 
         private _getRouteKey(hash: string){
@@ -33,9 +36,10 @@ module YT{
 
         public start(){
             this.params = this._t.params();
+            var hash = this['hash'];
             //如果初始化带有hash
-            if(this.hash && '' !== this.hash){
-                var currentRoute = this._getRouteKey(this.hash);
+            if(hash && '' !== hash){
+                var currentRoute = this._getRouteKey(hash);
                 this._exec(currentRoute);
             }
             this._change();
@@ -84,10 +88,10 @@ module YT{
             var vadding = { model: routeOption.model, tpl: tpl, params: this.params, router: this},
                 cadding = { model: routeOption.model, tpl: tpl, params: this.params, router: this, view: routeOption.view };
             //转换成SYST.Model
-            this._syst = new SYST();
+            this._syst = new ST();
             routeOption.model && (function(){ return this._syst.Model(routeOption.model); })();
-            routeOption.view && (function(){ return this._syst.View(SYST.extend(routeOption.view, vadding)); })();
-            routeOption.controller && (function(){ return this._syst.Controller(SYST.extend(routeOption.controller, cadding)); })();
+            routeOption.view && (function(){ return this._syst.View(ST.extend(routeOption.view, vadding)); })();
+            routeOption.controller && (function(){ return this._syst.Controller(ST.extend(routeOption.controller, cadding)); })();
             routeOption.action && this._v.isFunction(routeOption.action) && routeOption.action.call(this, routeOption.model, tpl);
 
        }
@@ -111,7 +115,7 @@ module YT{
         //解释html
         private _template(html: string, cid: string, callback?: Function){
             var self: YT.Router = this;
-            var container = $('#' + cid.replace(/#/gi, ''));
+            var container = window['$']('#' + cid.replace(/#/gi, ''));
             if(/<|>/.test(html)){
                 container.html(html);
                 callback && this._v.isFunction(callback) && callback.call(self, html);

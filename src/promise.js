@@ -2,7 +2,6 @@
  * Created by Rodey on 2015/12/8.
  */
 
-var SYST;
 ;(function(SYST){
 
     'use strict';
@@ -85,8 +84,10 @@ var SYST;
          */
         resolve: function(value, bunch){
             this.STATE = FULFILLED;
-            this.data = value;
-            this.args.push(value);
+            if(value){
+                this.data = value;
+                this.args.push(value);
+            }
             this._bunchFulfil = bunch !== false ? this._bunchFulfil : bunch;
             //从多列中取出当前为 FULFILLED状态的回调
             var fulfil = this._fulfils.shift();
@@ -111,7 +112,7 @@ var SYST;
          */
         reject: function(err, bunch){
             this.STATE = REJECTED;
-            this.errs.push(err);
+            err && this.errs.push(err);
             this._bunchReject = bunch !== false ? this._bunchReject : bunch;
             //从多列中取出当前为 REJECTED状态的回调
             var reject = this._rejecteds.shift();
@@ -154,4 +155,4 @@ var SYST;
 
     SYST.P = SYST.Promise = Promise;
 
-})(SYST || {});
+})(SYST);

@@ -191,5 +191,6 @@
     };
 
     SYST.Render = Render;
+    SYST.T = SYST.Tools.prototype = SYST.extend(SYST.T, { render: Render });
 
 })(SYST);

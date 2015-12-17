@@ -31,7 +31,7 @@
         /**
          * 也可以采用 SYST.T.each
          */
-        each(posts, function(post, i) {
+        SYST.T.each(posts, function(post, i) {
     %>
         <% if(SYST.V.isEmpty(post.expert)){ %>
             <span>expert is null</span><br/>
@@ -96,7 +96,7 @@
             email: 'rodeyluo@gmail.com'
         };
 
-        var html = SYST.Render('tpl', data, {filter: filter, toMailLink: toMailLink} );
+        var html = SYST.T.render('tpl', data, {filter: filter, toMailLink: toMailLink} );
         //console.log(html);
         document.querySelector('#app').innerHTML = html;
 

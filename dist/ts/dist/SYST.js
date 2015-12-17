@@ -1,451 +1,46 @@
 /**
- * Created by Rodey on 2015/10/23.
- */
-var YT;
-(function (YT) {
-    var Ajax = (function () {
-        function Ajax() {
-        }
-        return Ajax;
-    })();
-    YT.Ajax = Ajax;
-})(YT || (YT = {}));
-/**
- * Created by Rodey on 2015/10/21.
- */
-var YT;
-(function (YT) {
-    var Controller = (function () {
-        function Controller(child) {
-            this.isInit = true;
-            //super();
-            for (var k in child) {
-                if (child.hasOwnProperty(k)) {
-                    //Object.defineProperty(this, k, { value: child[k], writable: false });
-                    this[k] = child[k];
-                }
-            }
-            if (true === this.isInit) {
-                this.init();
-            }
-        }
-        Controller.prototype.init = function () {
-            console.log('...Controller init...');
-        };
-        Controller.prototype.getModel = function () {
-            return this.model;
-        };
-        Controller.prototype.setModel = function (m) {
-            this.model = m;
-        };
-        return Controller;
-    })();
-    YT.Controller = Controller;
-})(YT || (YT = {}));
-/**
  * Created by Rodey on 2015/10/21.
  */
 /// <reference path="zepto.d.ts" />
-var YT;
-(function (YT) {
-    var Event = (function () {
-        function Event() {
-            this.hoadEvent = SYST.hoadEvent;
-            this.trigger = 'body';
-            this.type = 'on';
-        }
-        Event.prototype.initEvent = function (obj, pobj, evt, func, type, trigger) {
-            this.self = this;
-            this.obj = obj;
-            this.pobj = pobj;
-            this.evt = evt;
-            this.func = func;
-            this.type = type || this.type;
-            this.trigger = trigger || this.trigger;
-            var evts = YT.Event.evts;
-            //对象事件侦听
-            for (var i = 0; i < evts.length; i++) {
-                if (evts[i] === evt) {
-                    if (obj.selector == 'window') {
-                        (type == 'on')
-                            ? $(window).off().on(evt, this.hoadEvent(pobj, func))
-                            : $(window).off();
-                    }
-                    else if (obj.selector == 'document' || obj.selector == 'html' || obj.selector == 'body') {
-                        (type == 'on')
-                            ? $(obj.selector).off().on(evt, this.hoadEvent(pobj, func))
-                            : $(obj.selector).off();
-                    }
-                    else {
-                        (type == 'on')
-                            ? $(trigger).undelegate(obj.selector, evt, this.hoadEvent(pobj, func)).delegate(obj.selector, evt, this.hoadEvent(pobj, func))
-                            : $(trigger).undelegate();
-                    }
-                }
-            }
-        };
-        Event.prototype.uninitEvent = function (selector, event, func) {
-            if (selector == 'window') {
-                $(window).off(event, func);
-            }
-            else if (selector == 'document' || selector == 'html' || selector == 'body') {
-                (type == 'on');
-                $(selector).off(event, func);
-            }
-            else {
-                $(this.trigger).undelegate(selector, event, func);
-            }
-        };
-        Event.evts = 'abort reset click dblclick tap touchstart touchmove touchend change mouseover mouseout mouseup mousedown mousemove mousewheel drag dragend dragenter dragleave dragover dragstart drop resize scroll submit select keydown keyup keypress touchstart touchend load unload blur focus contextmenu formchange forminput input invalid afterprint beforeprint beforeonload haschange message offline online pagehide pageshow popstate redo storage undo canplay canplaythrough durationchange emptied ended loadeddata loadedmetadata loadstart pause play playing progress ratechange readystatechange seeked seeking stalled suspend timeupdate volumechange waiting cut copy paste'.split(/\s+/gi);
-        return Event;
-    })();
-    YT.Event = Event;
-})(YT || (YT = {}));
-/**
- * Created by Rodey on 2015/10/21.
- */
-/// <reference path="zepto.d.ts" />
-var YT;
-(function (YT) {
-    var Model = (function () {
-        function Model(child) {
-            this.isInit = true;
-            this._attributes = {};
-            /**
-             * Function 通用AJAX请求方法
-             * @param url
-             * @param postData
-             * @param su
-             * @param fail
-             */
-            this.ajaxDataType = 'json';
-            this.ajaxType = 'POST';
-            this.ajaxBefore = function () { };
-            this.ajaxSuccess = function () { };
-            this.ajaxError = function () { };
-            this.ajaxComplete = function () { };
-            //super();
-            for (var k in child) {
-                if (child.hasOwnProperty(k)) {
-                    //Object.defineProperty(this, k, { value: child[k], writable: false });
-                    this[k] = child[k];
-                }
-            }
-            this._v = new YT.Validate();
-            this.__Name__ = 'SYST Model';
-            if (this.isInit)
-                this.init();
-        }
-        Model.prototype.init = function () {
-            console.log('...model init...');
-        };
-        Model.prototype.set = function (key, value) {
-            if (this._v.isEmpty(key))
-                return this;
-            if (typeof key === 'object') {
-                // this.set({ name: 'Rodey', age: 25 });
-                for (var k in key) {
-                    this._attributes[k] = key[k];
-                }
-            }
-            else if (typeof key === 'string' && key.length > 0) {
-                //this.set('name', 'Rodey') | this.set('one', { name: 'Rodey', age: 25, isBoss: false }
-                this._attributes[key] = value;
-            }
-            else {
-                return this;
-            }
-        };
-        Model.prototype.get = function (key) {
-            return this._attributes[key];
-        };
-        // 在localStorage中存取
-        Model.prototype.getItem = function (key, flag) {
-            var item = (!flag ? window.localStorage : window.sessionStorage).getItem(key);
-            try {
-                item = JSON.parse(item);
-            }
-            catch (e) { }
-            return item;
-        };
-        Model.prototype.setItem = function (key, value, flag) {
-            if (this._v.isObject(key)) {
-                // ({ name: 'Rodey', age: 25, phone: { name: 'iphone 5s', prize: 5000 } });
-                for (var k in key) {
-                    _set(k, key[k]);
-                }
-            }
-            else if (typeof key === 'string' && key.length > 0) {
-                // ('name', 'Rodey') || ('one', { name: 'Rodey', age: 25, isBoss: false });
-                _set(key, value);
-            }
-            else {
-                return this;
-            }
-            function _set(_k, _v) {
-                if (this._v.isObject(_v)) {
-                    _v = JSON.stringify(_v);
-                }
-                (!flag ? window.localStorage : window.sessionStorage).setItem(_k, _v);
-            }
-        };
-        //判断某个属性是否存在
-        Model.prototype.has = function (key) {
-            return Boolean(this._attributes[key]);
-        };
-        Model.prototype.hasItem = function (key, flag) {
-            return Boolean((!flag ? window.localStorage : window.sessionStorage).getItem(key));
-        };
-        //动态添加属性
-        Model.prototype.add = function (key, value) {
-            this.set(key, value);
-        };
-        /*public addItem(key, value, options){ this.setItem(key, value, options) },*/
-        //动态删除属性
-        Model.prototype.remove = function (key) {
-            if (!key || key == '')
-                return this;
-            this._attributes[key] = null;
-            delete this._attributes[key];
-        };
-        Model.prototype.removeItem = function (key, flag) {
-            (!flag ? window.localStorage : window.sessionStorage).removeItem(key);
-        };
-        Model.prototype.removeAll = function (flag) {
-            flag ? (this._attributes = []) : (function () { window.localStorage.clear(); window.sessionStorage.clear(); })();
-        };
-        Model.prototype._getName = function () {
-            return this.__Name__;
-        };
-        Model.prototype.doRequest = function (url, postData, su, fail, options) {
-            var self = this, type, dataType, setting = {};
-            if (!postData || typeof postData !== 'object' || !url || url == '')
-                return;
-            if (options && this._v.isObject(options)) {
-                type = options.type;
-                dataType = options.dataType || this.ajaxDataType;
-                setting = options;
-            }
-            else {
-                type = this.ajaxType || 'POST';
-                dataType = this.ajaxDataType || 'json';
-            }
-            //提交前触犯
-            (this.ajaxBefore && this._v.isFunction(this.ajaxBefore)) && (setting['beforeSend'] = this.ajaxBefore.apply(self));
-            var ajaxSetting = SYST.extend(setting, {
-                url: url,
-                type: type,
-                data: postData,
-                dataType: dataType,
-                success: function (res) {
-                    //console.log('请求成功', res);
-                    (self.ajaxSuccess && this._v.isFunction(self.ajaxSuccess)) && self.ajaxSuccess.call(self, res);
-                    (su && this._v.isFunction(su)) && su.call(self, res);
-                },
-                error: function (xhr, errType) {
-                    //console.log('请求失败');
-                    var response = xhr.response;
-                    try {
-                        response = JSON.parse(response);
-                    }
-                    catch (e) { }
-                    (self.ajaxError && this._v.isFunction(self.ajaxError)) && self.ajaxError.call(self, response, xhr, errType);
-                    (fail && this._v.isFunction(fail)) && fail.call(self, response, xhr, errType);
-                },
-                complete: function (res) {
-                    //console.log('请求完成');gulp
-                    (self.ajaxComplete && this._v.isFunction(self.ajaxComplete)) && self.ajaxComplete.call(self, res);
-                }
-            });
-            if (root.$) {
-                root.$.ajax(ajaxSetting);
-            }
-            else {
-                throw new Error('doRequest: $不存在，此方法依赖于(jQuery||Zepto||Ender)');
-            }
-        };
-        /**
-         * Function doRequest 包装
-         * @param url
-         * @param postData
-         * @param su
-         * @param fail
-         */
-        Model.prototype.doAjax = function (url, postData, su, fail, options) {
-            this.doRequest(url, postData, su, fail, options);
-        };
-        return Model;
-    })();
-    YT.Model = Model;
-})(YT || (YT = {}));
-/**
- * Created by Rodey on 2015/10/23.
- */
-var YT;
-(function (YT) {
-    var Native = (function () {
-        function Native() {
-        }
-        return Native;
-    })();
-    YT.Native = Native;
-})(YT || (YT = {}));
-/**
- * Created by Rodey on 2015/10/23.
- */
-var YT;
-(function (YT) {
-    var Router = (function () {
-        function Router() {
-            this.uri = window.location;
-            this.host = uri.host;
-            this.port = uri.port;
-            this.origin = uri.protocol + '//' + host;
-            this.pathname = uri.pathname;
-            this.hash = uri.hash;
-            this._cache = {};
-            this._v = new YT.Validate();
-            this._t = new YT.Tools();
-        }
-        Router.prototype._getRouteKey = function (hash) {
-            return hash.replace(/[#!]/gi, '').split('?')[0];
-        };
-        Router.prototype.start = function () {
-            this.params = this._t.params();
-            //如果初始化带有hash
-            if (this.hash && '' !== this.hash) {
-                var currentRoute = this._getRouteKey(this.hash);
-                this._exec(currentRoute);
-            }
-            this._change();
-            return this;
-        };
-        Router.prototype.when = function (route, object) {
-            if (this._v.isObject(object)) {
-                this._cache[route] = object;
-            }
-            else if (this._v.isFunction(object)) {
-                this._cache[route] = object();
-            }
-        };
-        Router.prototype.switch = function (route) {
-            var self = this;
-            if (!this._cache || {} === this._cache)
-                return;
-            this.params = this._t.params();
-            this._exec(route);
-            return this;
-        };
-        /**
-         * 执行
-         * @param route
-         */
-        Router.prototype._exec = function (route) {
-            this._execRouter(route);
-        };
-        Router.prototype._execRouter = function (route) {
-            var self = this;
-            var routeOption = this._cache[route];
-            if (!routeOption)
-                return;
-            if (routeOption.template) {
-                this._template(routeOption.template, routeOption.container, function (htmlStr) {
-                    //console.log(htmlStr);
-                    //console.log(this);
-                    self._execMAction(routeOption, htmlStr);
-                });
-            }
-            else {
-                self._execMAction(routeOption);
-            }
-        };
-        Router.prototype._execMAction = function (routeOption, tpl) {
-            this.tpl = tpl;
-            var vadding = { model: routeOption.model, tpl: tpl, params: this.params, router: this }, cadding = { model: routeOption.model, tpl: tpl, params: this.params, router: this, view: routeOption.view };
-            //转换成SYST.Model
-            this._syst = new SYST();
-            routeOption.model && (function () { return this._syst.Model(routeOption.model); })();
-            routeOption.view && (function () { return this._syst.View(SYST.extend(routeOption.view, vadding)); })();
-            routeOption.controller && (function () { return this._syst.Controller(SYST.extend(routeOption.controller, cadding)); })();
-            routeOption.action && this._v.isFunction(routeOption.action) && routeOption.action.call(this, routeOption.model, tpl);
-        };
-        /**
-         * 开始监听路由变化
-         * @param callback
-         * @private
-         */
-        Router.prototype._change = function () {
-            var self = this;
-            window.removeEventListener('hashchange', _hashChangeHandler, false);
-            window.addEventListener('hashchange', _hashChangeHandler, false);
-            function _hashChangeHandler(evt) {
-                self.oldURL = '#' + evt.oldURL.split('#')[1];
-                self.newURL = '#' + evt.newURL.split('#')[1];
-                var currentRoute = self._getRouteKey(self.newURL);
-                self.switch(currentRoute);
-            }
-        };
-        //解释html
-        Router.prototype._template = function (html, cid, callback) {
-            var self = this;
-            var container = $('#' + cid.replace(/#/gi, ''));
-            if (/<|>/.test(html)) {
-                container.html(html);
-                callback && this._v.isFunction(callback) && callback.call(self, html);
-            }
-            else {
-                container.load(html, function (res) {
-                    callback && this._v.isFunction(callback) && callback.call(self, res);
-                }, function (err) {
-                    throw new Error('load template is failed!');
-                });
-            }
-        };
-        return Router;
-    })();
-    YT.Router = Router;
-})(YT || (YT = {}));
-/**
- * Created by Rodey on 2015/10/23.
- */
-var YT;
-(function (YT) {
-    var ShareModel = (function () {
-        function ShareModel() {
-        }
-        return ShareModel;
-    })();
-    YT.ShareModel = ShareModel;
-})(YT || (YT = {}));
-/**
- * Created by Rodey on 2015/10/21.
- */
-var SYST = (function () {
-    function SYST() {
+var ST = (function () {
+    function ST() {
+        this.shareModels = YT.ShareModel.getInstance();
+        this.V = new YT.Validate();
+        this.T = new YT.Tools();
+        this.ajax = new YT.Ajax();
     }
-    SYST.prototype.Model = function (child) {
+    ST.prototype.Model = function (child) {
         return new YT.Model(child);
     };
-    SYST.prototype.View = function (child) {
+    ST.prototype.View = function (child) {
         /*this._view = new YT.View(child);
         return this._view;*/
         //return YT.View.getInstance(child);
         return new YT.View(child);
     };
-    SYST.prototype.Controller = function (child) {
+    ST.prototype.Controller = function (child) {
         return new YT.Controller(child);
     };
-    SYST.prototype.Validate = function (child) {
+    ST.prototype.Validate = function (child) {
         return new YT.Validate(child);
     };
-    SYST.prototype.Tools = function (child) {
+    ST.prototype.Tools = function (child) {
         return new YT.Tools(child);
     };
-    SYST.prototype.Router = function () {
+    ST.prototype.Router = function () {
         return new YT.Router();
     };
-    SYST.noConflict = function () {
-        return SYST;
+    ST.noConflict = function () {
+        return window['SYST'] || new ST();
+    };
+    ST.prototype.Render = function (content, data) {
+        return this.Tools().render(content, data);
+    };
+    ST.prototype.Promise = function (resolve, reject) {
+        return new YT.Promise(resolve, reject);
+    };
+    ST.prototype.P = function (resolve, reject) {
+        return this.Promise(resolve, reject);
     };
     /**
      * 对象继承
@@ -453,7 +48,7 @@ var SYST = (function () {
      * @param child
      * @returns {any}
      */
-    SYST.extend = function (parent, child) {
+    ST.extend = function (parent, child) {
         if (!parent || parent === {} || typeof (parent) !== 'object')
             return child;
         if (!child || child === {} || typeof (child) !== 'object')
@@ -474,7 +69,7 @@ var SYST = (function () {
      * @param d
      * @param b
      */
-    SYST.extendClass = function (d, b) {
+    ST.extendClass = function (d, b) {
         for (var p in b)
             if (b.hasOwnProperty(p))
                 d[p] = b[p];
@@ -488,7 +83,7 @@ var SYST = (function () {
      * @param targetObject
      * @returns {Object}
      */
-    SYST.clone = function (targetObject) {
+    ST.clone = function (targetObject) {
         var target = targetObject, out, proto;
         for (proto in target) {
             if (target.hasOwnProperty(proto)) {
@@ -503,7 +98,7 @@ var SYST = (function () {
      * @param func
      * @returns {function(MouseEvent): undefined}
      */
-    SYST.hoadEvent = function (object, func) {
+    ST.hoadEvent = function (object, func) {
         var args = [], self = this;
         var obj = object || window;
         for (var i = 2; i < arguments.length; ++i)
@@ -524,73 +119,120 @@ var SYST = (function () {
         };
     };
     //variables static
-    SYST.author = 'Rodey';
-    SYST.version = '0.0.5';
-    SYST.name = 'SYST JS MVC mini Framework (JS MVC框架)';
-    return SYST;
+    ST.author = 'Rodey';
+    ST.version = '0.0.5';
+    ST.name = 'SYST JS MVC mini Framework (JS MVC框架)';
+    ST.root = window;
+    ST.$ = $;
+    return ST;
 })();
 /**
  * Created by Rodey on 2015/10/23.
  */
 var YT;
 (function (YT) {
-    var Template = (function () {
-        function Template() {
-            this.tplConfig = { open: '<%', close: '%>' };
-            this.trimSpaceRegx = /^\s*|\s*$/i;
-            this.regOut = /(^( )?(if|for|else|switch|case|break|{|}))(.*)?/g;
+    var Validate = (function () {
+        function Validate(child) {
+            for (var k in child) {
+                if (child.hasOwnProperty(k))
+                    this[k] = child[k];
+            }
         }
-        Template.getInstance = function () {
-            if (!this._self)
-                return new YT.Template();
+        //为空时
+        Validate.prototype.isEmpty = function (val) {
+            return (!val || val.length === 0 || val === '' || val == null) ? true : false;
+        };
+        //是否已设置(初始化值)
+        Validate.prototype.isSet = function (val) {
+            return (typeof val !== 'undefined') ? true : false;
+        };
+        //取两个数值之间 (默认不包括两者, flag=>true 包括)
+        Validate.prototype.between = function (val, min, max, flag) {
+            flag = flag || false;
+            if (flag)
+                return (val.length >= min && val.length <= max) ? true : false;
             else
-                return this._self;
+                return (val.length > min && val.length < max) ? true : false;
         };
-        Template.prototype._render = function (tpl, data) {
-            var self = this;
-            var outIndex = 0, ms, conf = this.tplConfig, reg = new RegExp(conf.open + '([^' + conf.close + ']+)?' + conf.close, 'g'), // /<%([^%>]+)?%>/g,
-            code = 'var r = [];\n';
-            //添加字符串
-            var make = function (line, js) {
-                js ? (code += line.match(self.regOut) ? line + '\n' : 'r.push(' + line + ');\n') :
-                    (code += line != '' ? 'r.push("' + line.replace(/"/g, '\\"') + '");\n' : '');
-                return make;
-            };
-            while (ms = reg.exec(tpl)) {
-                make(tpl.slice(outIndex, ms.index))(ms[1], true);
-                outIndex = ms.index + ms[0].length;
-            }
-            make(tpl.substr(outIndex, tpl.length - outIndex));
-            code += 'return r.join("");';
-            return new Function(code.replace(/[\r\t\n]/g, '')).apply(data);
+        //是否含有中文 （flag存在则完全匹配中文，默认不完全匹配）
+        Validate.prototype.isCN = function (str, flag) {
+            if (flag)
+                return (/^[\u4e00-\u9fa5]+$/.test(str));
+            else
+                return (/[\u4e00-\u9fa5]+/gi.test(str));
         };
-        /**
-         * 提供外部接口
-         * @param content   元素id或者是模板字符串
-         * @param data      渲染需要的数据
-         * @returns {*}
-         * @constructor
-         */
-        Template.prototype.Render = function (content, data) {
-            var elm = document.querySelector('#' + content.replace('#', '')), tpl = '';
-            if (elm) {
-                var tplStr = /^(TEXTEREA|INPUT)$/i.test(elm.nodeName) ? elm.value : elm.innerHTML;
-                tpl = tplStr.replace(this.trimSpaceRegx, '');
-            }
-            else {
-                tpl = content.replace(this.trimSpaceRegx, '');
-            }
-            try {
-                this.cache = this._render(tpl, data);
-            }
-            catch (e) {
-                delete this.cache;
-            }
-            return this.cache ? this.cache : this._render(tpl, data);
+        //验证 E-mail 地址
+        Validate.prototype.isEmail = function (email) {
+            return /^\w+([-+.]\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*$/gi.test(email);
         };
-        return Template;
+        //验证 URL 地址
+        Validate.prototype.isURL = function (url) {
+            return /^http:\/\/[A-Za-z0-9]+\.[A-Za-z0-9]+[\/=\?%\-&_~`@[\]\':+!]*([^<>\"\"])*$/i.test(url);
+        };
+        //验证电话号码
+        Validate.prototype.isTel = function (tel) {
+            return /^(\(\d{3,4}\)|\d{3,4}-)?\d{7,8}$/gi.test(tel);
+        };
+        //验证手机号码
+        Validate.prototype.isMobile = function (mobile) {
+            return /^1[3|4|5|7|8]{1}\d{9}$/.test(mobile);
+        };
+        Validate.prototype.isZip = function (zipCode) {
+            return /^\d{6}$/.test(zipCode);
+        };
+        //验证日期, 日期时间, 时间
+        Validate.prototype.isDateLocal = function (date) {
+            return /^(\d{4})-(\d{1,2})-(\d{1,2})$/.test(date);
+        };
+        Validate.prototype.isDateTime = function (dateTime) {
+            return /^(\d{4})-(\d{1,2})-(\d{1,2})\s+(\d{1,2}):(\d{1,2}):(\d{1,2})$/.test(dateTime);
+        };
+        Validate.prototype.isTime = function (time) {
+            return /^(\d{1,2}):(\d{1,2}):(\d{1,2})$/.test(time);
+        };
+        //常用对象判断
+        Validate.prototype.isString = function (value) {
+            return typeof value === 'string';
+        };
+        Validate.prototype.isNumber = function (value) {
+            return typeof value === 'number';
+        };
+        Validate.prototype.isArray = function (value) {
+            return toString.call(value) === '[object Array]';
+        };
+        Validate.prototype.isDate = function (value) {
+            return toString.call(value) === '[object Date]';
+        };
+        Validate.prototype.isObject = function (value) {
+            return value != null && typeof value === 'object';
+        };
+        Validate.prototype.isFunction = function (value) {
+            return typeof value === 'function';
+        };
+        Validate.prototype.isFile = function (value) {
+            return toString.call(value) === '[object File]';
+        };
+        Validate.prototype.isBlob = function (value) {
+            return toString.call(value) === '[object Blob]';
+        };
+        Validate.prototype.isBoolean = function (value) {
+            return typeof value === 'boolean';
+        };
+        Validate.prototype.isdefined = function (value) {
+            return typeof value !== 'undefined';
+        };
+        Validate.prototype.isRegExp = function (value) {
+            return toString.call(value) === '[object RegExp]';
+        };
+        Validate.prototype.isWindow = function (value) {
+            return value && value.document && value.location && value.alert && value.setInterval;
+        };
+        Validate.prototype.isElement = function (value) {
+            return !!(value && (value.nodeName || (value.prop && value.attr && value.find)));
+        };
+        return Validate;
     })();
-    YT.Template = Template;
+    YT.Validate = Validate;
 })(YT || (YT = {}));
 /**
  * Created by Rodey on 2015/10/23.
@@ -876,6 +518,10 @@ var YT;
             }
             return null;
         };
+        Tools.prototype.render = function (content, data) {
+            var template = YT.Template.getInstance(content, data);
+            return template.Render(content, data);
+        };
         return Tools;
     })();
     YT.Tools = Tools;
@@ -885,108 +531,584 @@ var YT;
  */
 var YT;
 (function (YT) {
-    var Validate = (function () {
-        function Validate(child) {
+    var Ajax = (function () {
+        function Ajax(options) {
+            this._v = new YT.Validate();
+            this._t = new YT.Tools();
+            this.setting = {
+                dataType: 'json',
+                type: 'POST',
+                async: true,
+                timeout: 5000,
+                crossDomain: true,
+                header: {
+                    'Content-type': 'application/x-www-form-urlencoded'
+                }
+            };
+            this.setting = ST.extend(options, this.setting);
+            this.xhr = new XMLHttpRequest();
+        }
+        //callback ajax finish
+        Ajax.prototype._format = function (text, type) {
+            var res = text;
+            if ('json' === type) {
+                try {
+                    res = JSON.parse(text);
+                }
+                catch (e) { }
+            }
+            else if ('text' === type) {
+                try {
+                    res = JSON.stringify(text);
+                }
+                catch (e) { }
+            }
+            return res;
+        };
+        Ajax.prototype._callFunction = function (text, type, cb) {
+            var res = this._format(text, type);
+            this._v.isFunction(cb) && cb(res);
+        };
+        Ajax.prototype._callComplate = function (xhr, type, cb) {
+            this._v.isFunction(cb) && cb(this._format(xhr.responseText, type), xhr);
+        };
+        /**
+         * Ajax Method
+         * @param options
+         * options use exp: {
+         *      url: '/list',
+         *      data: { id: 2},
+         *      type: 'GET',
+         *      dataType: 'json',
+         *      ajaxBefore: function(){},
+         *      success: function(res){},
+         *      error: function(err){},
+         *      complate: function(res){}
+         * }
+             */
+        Ajax.prototype.request = function (options) {
+            var _this = this;
+            var defs;
+            if (options && this._v.isObject(options)) {
+                defs = ST.extend(options, this.setting);
+            }
+            if (this._v.isEmpty(defs['url']))
+                return;
+            var data = defs['data'], dataType = defs['dataType'], type = defs['type'], url = type.toUpperCase() === 'GET' ? defs['url'].split('?')[0] + this._t.paramData(defs['data'], true) : defs['url'], body = type.toUpperCase() === 'GET' ? undefined : data, header = defs['header'], async = 'async' in defs ? defs['async'] : true;
+            //open before 请求之前
+            this._callFunction(undefined, dataType, defs['ajaxBefore']);
+            this.xhr.open(type, url, async);
+            for (var k in header) {
+                this.xhr.setRequestHeader(k, header[k]);
+            }
+            this.xhr.onreadystatechange = function () {
+                if (_this.xhr.readyState === 4) {
+                    _this.xhr.onreadystatechange = null;
+                    if (_this.xhr.status === 200) {
+                        _this._callFunction(_this.xhr.responseText, dataType, defs['success']);
+                    }
+                    else {
+                        _this._callFunction(_this.xhr, dataType, defs['error']);
+                    }
+                    _this._callComplate(_this.xhr, dataType, defs['complate']);
+                }
+            };
+            this.xhr.send(body);
+        };
+        return Ajax;
+    })();
+    YT.Ajax = Ajax;
+})(YT || (YT = {}));
+/**
+ * Created by Rodey on 2015/12/8.
+ */
+var YT;
+(function (YT) {
+    var PENDING = 1, FULFILLED = 2, REJECTED = 3;
+    var Promise = (function () {
+        function Promise(fulfil, reject) {
+            this.state = PENDING;
+            this._v = new YT.Validate();
+            this._t = new YT.Tools();
+            this._fulfils = [];
+            this._rejecteds = [];
+            this._bunchFulfil = false;
+            this._bunchReject = false;
+            this.args = [];
+            this.errs = [];
+            this.data = null;
+            this.then(fulfil, reject);
+        }
+        Promise.prototype.then = function (fulfil, reject) {
+            //this.STATE = 'pending';
+            if (this.state === PENDING) {
+                fulfil && this._v.isFunction(fulfil) && this._fulfils.push(fulfil);
+                reject && this._v.isFunction(reject) && this._rejecteds.push(reject);
+            }
+            else if (this.state === FULFILLED) {
+                this.resolve();
+            }
+            else if (this.state === REJECTED) {
+                this.reject();
+            }
+            return this;
+        };
+        /**
+         * 将 fulfilled状态的回调 加入到执行队列中
+         * @param fulfil
+         * @returns {*}
+         */
+        Promise.prototype.done = function (fulfil) {
+            return this.then(fulfil);
+        };
+        Promise.prototype.success = function (fulfil) {
+            return this.then(fulfil);
+        };
+        //将 rejected状态的回调 加入到执行队列中
+        Promise.prototype.catch = function (reject) {
+            return this.then(null, reject);
+        };
+        Promise.prototype.error = function (reject) {
+            return this.then(null, reject);
+        };
+        Promise.prototype.resolve = function (value, bunch) {
+            this.state = FULFILLED;
+            if (value) {
+                this.data = value;
+                this.args.push(value);
+            }
+            this._bunchFulfil = bunch !== false ? this._bunchFulfil : bunch;
+            //从多列中取出当前为 FULFILLED状态的回调
+            var fulfil = this._fulfils.shift();
+            if (fulfil && typeof fulfil === 'function') {
+                //如果是指定为 bunch（串行）,使用all调用的
+                if (this._bunchFulfil) {
+                    this._fulfils.push(fulfil);
+                }
+                else {
+                    this._bunchFulfil = false;
+                    fulfil.apply(this, this.args);
+                }
+            }
+            else {
+                throw new TypeError('no found a function object to [then|all|done|success]');
+            }
+        };
+        Promise.prototype.reject = function (err, bunch) {
+            this.state = REJECTED;
+            err && this.errs.push(err);
+            this._bunchReject = bunch !== false ? this._bunchReject : bunch;
+            //从多列中取出当前为 REJECTED状态的回调
+            var reject = this._rejecteds.shift();
+            if (reject && typeof reject === 'function') {
+                //如果是指定为 bunch（串行）,使用all调用的
+                if (this._bunchReject) {
+                    this._rejecteds.push(reject);
+                }
+                else {
+                    this._bunchReject = false;
+                    reject.apply(this, this.errs);
+                }
+            }
+            else {
+                throw new TypeError('no found a function object to [then|catch|error]');
+            }
+        };
+        /**
+         * 串行，依次执行队列中的函数，用一个统一的回调进行处理
+         * 回调中的参数依据队列进行排列
+         * 注意：在最后一个调用resolve之前，必须对bunch进行确认 promise.resolve(value, bunch=true)
+         * @param iterable 数组  执行队列
+         * @returns {SYST.Promise}
+         * exp:  promise.all([func1, func2, func3]).done(function(v1, v2, v3){ }).cache(function(e1, e2, e3){ });
+         */
+        Promise.prototype.all = function (iterable) {
+            var _this = this;
+            if (!this._v.isArray(iterable)) {
+                throw new TypeError('args me be a array, queue element is be function');
+            }
+            this._bunchFulfil = true;
+            this._bunchReject = true;
+            this._t.each(iterable, function (item) {
+                _this._t.isFunction(item) && item();
+            });
+            return this;
+        };
+        return Promise;
+    })();
+    YT.Promise = Promise;
+})(YT || (YT = {}));
+/**
+ * Created by Rodey on 2015/10/23.
+ */
+var YT;
+(function (YT) {
+    var Template = (function () {
+        function Template(content, data) {
+            this.tplConfig = { open: '<%', close: '%>' };
+            this.cache = {};
+            this.trimSpaceRegx = /^\s*|\s*$/i;
+            this.regOut = /(^( )?(if|for|else|switch|case|break|{|}))(.*)?/g;
+            this.content = content;
+            this.data = data;
+            this.Render(content, data);
+        }
+        Template.getInstance = function (content, data) {
+            if (!this._instance)
+                return new YT.Template(content, data);
+            else
+                return this._instance;
+        };
+        Template.prototype._render = function (tpl, data) {
+            var self = this;
+            var outIndex = 0, ms, conf = this.tplConfig, reg = new RegExp(conf.open + '([^' + conf.close + ']+)?' + conf.close, 'g'), // /<%([^%>]+)?%>/g,
+            code = 'var r = [];\n';
+            //添加字符串
+            var make = function (line, js) {
+                js ? (code += line.match(self.regOut) ? line + '\n' : 'r.push(' + line + ');\n') :
+                    (code += line != '' ? 'r.push("' + line.replace(/"/g, '\\"') + '");\n' : '');
+                return make;
+            };
+            while (ms = reg.exec(tpl)) {
+                make(tpl.slice(outIndex, ms.index))(ms[1], true);
+                outIndex = ms.index + ms[0].length;
+            }
+            make(tpl.substr(outIndex, tpl.length - outIndex));
+            code += 'return r.join("");';
+            return new Function(code.replace(/[\r\t\n]/g, '')).apply(data);
+        };
+        /**
+         * 提供外部接口
+         * @param content   元素id或者是模板字符串
+         * @param data      渲染需要的数据
+         * @returns {*}
+         * @constructor
+         */
+        Template.prototype.Render = function (content, data) {
+            if (!content)
+                return '';
+            var content = content || this.content, data = data || this.data;
+            var elm = document.querySelector('#' + content.replace('#', '')), tpl = '';
+            if (elm) {
+                var tplStr = /^(TEXTEREA|INPUT)$/i.test(elm.nodeName) ? elm.value : elm.innerHTML;
+                tpl = tplStr.replace(this.trimSpaceRegx, '');
+                try {
+                    this.cache[content] = this._render(tpl, data);
+                }
+                catch (e) {
+                    delete this.cache[content];
+                }
+            }
+            else {
+                tpl = content.replace(this.trimSpaceRegx, '');
+            }
+            return this.cache[content] ? this.cache[content] : this._render(tpl, data);
+        };
+        return Template;
+    })();
+    YT.Template = Template;
+})(YT || (YT = {}));
+/**
+ * Created by Rodey on 2015/10/21.
+ */
+/// <reference path="zepto.d.ts" />
+var YT;
+(function (YT) {
+    var Event = (function () {
+        function Event() {
+            this.hoadEvent = ST.hoadEvent;
+            this.trigger = 'body';
+            this.type = 'on';
+        }
+        /**
+         * 事件侦听
+         * @param obj   当前对象
+         * @param pobj  父对象
+         * @param evt   事件名
+         * @param func  事件回调
+         * @param type  类型 on: 侦听; off: 卸载
+         * @param trigger   代理元素
+         */
+        Event.prototype.initEvent = function (obj, pobj, evt, func, type, trigger) {
+            this.self = this;
+            this.obj = obj;
+            this.pobj = pobj;
+            this.evt = evt;
+            this.func = func;
+            this.type = type || this.type;
+            this.trigger = trigger || this.trigger;
+            var evts = YT.Event.evts;
+            if (this.type === 'off') {
+                this.uninitEvent(obj.selector, evt, func);
+            }
+            //对象事件侦听
+            for (var i = 0; i < evts.length; i++) {
+                if (evts[i] === evt) {
+                    if (obj.selector == 'window') {
+                        (type == 'on')
+                            ? $(window).off().on(evt, this.hoadEvent(pobj, func))
+                            : $(window).off();
+                    }
+                    else if (obj.selector == 'document' || obj.selector == 'html' || obj.selector == 'body') {
+                        (type == 'on')
+                            ? $(obj.selector).off().on(evt, this.hoadEvent(pobj, func))
+                            : $(obj.selector).off();
+                    }
+                    else {
+                        (type == 'on')
+                            ? $(this.trigger).undelegate(obj.selector, evt, this.hoadEvent(pobj, func))
+                                .delegate(obj.selector, evt, this.hoadEvent(pobj, func))
+                            : $(this.trigger).undelegate(obj.selector, evt, this.hoadEvent(pobj, func));
+                    }
+                }
+            }
+        };
+        /**
+         * 卸载事件
+         * @param selector  元素
+         * @param event     事件名
+         * @param func      事件回调
+         */
+        Event.prototype.uninitEvent = function (selector, event, func) {
+            if (selector == 'window') {
+                $(window).off(event, func);
+            }
+            else if (selector == 'document' || selector == 'html' || selector == 'body') {
+                $(selector).off(event, func);
+            }
+            else {
+                $(this.trigger).undelegate(selector, event, func);
+            }
+        };
+        Event.evts = 'abort reset click dblclick tap touchstart touchmove touchend change mouseover mouseout mouseup mousedown mousemove mousewheel drag dragend dragenter dragleave dragover dragstart drop resize scroll submit select keydown keyup keypress touchstart touchend load unload blur focus contextmenu formchange forminput input invalid afterprint beforeprint beforeonload haschange message offline online pagehide pageshow popstate redo storage undo canplay canplaythrough durationchange emptied ended loadeddata loadedmetadata loadstart pause play playing progress ratechange readystatechange seeked seeking stalled suspend timeupdate volumechange waiting cut copy paste'.split(/\s+/gi);
+        return Event;
+    })();
+    YT.Event = Event;
+})(YT || (YT = {}));
+/**
+ * Created by Rodey on 2015/10/21.
+ */
+/// <reference path="zepto.d.ts" />
+var YT;
+(function (YT) {
+    var Model = (function () {
+        function Model(child) {
+            this.isInit = true;
+            this._attributes = {};
+            /**
+             * Function 通用AJAX请求方法
+             * @param url
+             * @param postData
+             * @param su
+             * @param fail
+             */
+            this.ajaxDataType = 'json';
+            this.ajaxType = 'POST';
+            this.ajaxBefore = function () { };
+            this.ajaxSuccess = function () { };
+            this.ajaxError = function () { };
+            this.ajaxComplete = function () { };
+            //super();
             for (var k in child) {
-                if (child.hasOwnProperty(k))
+                if (child.hasOwnProperty(k)) {
+                    //Object.defineProperty(this, k, { value: child[k], writable: false });
                     this[k] = child[k];
+                }
+            }
+            this.ajax = new YT.Ajax();
+            this._v = new YT.Validate();
+            this.__Name__ = 'SYST Model';
+            if (this.isInit)
+                this.init();
+        }
+        Model.prototype.init = function () {
+            //console.log('...model init...');
+        };
+        Model.prototype.set = function (key, value) {
+            if (this._v.isEmpty(key))
+                return this;
+            if (typeof key === 'object') {
+                // this.set({ name: 'Rodey', age: 25 });
+                for (var k in key) {
+                    this._attributes[k] = key[k];
+                }
+            }
+            else if (typeof key === 'string' && key.length > 0) {
+                //this.set('name', 'Rodey') | this.set('one', { name: 'Rodey', age: 25, isBoss: false }
+                this._attributes[key] = value;
+            }
+            else {
+                return this;
+            }
+        };
+        Model.prototype.get = function (key) {
+            return this._attributes[key];
+        };
+        // 在localStorage中存取
+        Model.prototype.getItem = function (key, flag) {
+            var item = (!flag ? window.localStorage : window.sessionStorage).getItem(key);
+            try {
+                item = JSON.parse(item);
+            }
+            catch (e) { }
+            return item;
+        };
+        Model.prototype.setItem = function (key, value, flag) {
+            if (this._v.isObject(key)) {
+                // ({ name: 'Rodey', age: 25, phone: { name: 'iphone 5s', prize: 5000 } });
+                for (var k in key) {
+                    _set(k, key[k]);
+                }
+            }
+            else if (typeof key === 'string' && key.length > 0) {
+                // ('name', 'Rodey') || ('one', { name: 'Rodey', age: 25, isBoss: false });
+                _set(key, value);
+            }
+            else {
+                return this;
+            }
+            function _set(_k, _v) {
+                if (this._v.isObject(_v)) {
+                    _v = JSON.stringify(_v);
+                }
+                (!flag ? window.localStorage : window.sessionStorage).setItem(_k, _v);
+            }
+        };
+        //判断某个属性是否存在
+        Model.prototype.has = function (key) {
+            return Boolean(this._attributes[key]);
+        };
+        Model.prototype.hasItem = function (key, flag) {
+            return Boolean((!flag ? window.localStorage : window.sessionStorage).getItem(key));
+        };
+        //动态添加属性
+        Model.prototype.add = function (key, value) {
+            this.set(key, value);
+        };
+        /*public addItem(key, value, options){ this.setItem(key, value, options) },*/
+        //动态删除属性
+        Model.prototype.remove = function (key) {
+            if (!key || key == '')
+                return this;
+            this._attributes[key] = null;
+            delete this._attributes[key];
+        };
+        Model.prototype.removeItem = function (key, flag) {
+            (!flag ? window.localStorage : window.sessionStorage).removeItem(key);
+        };
+        Model.prototype.removeAll = function (flag) {
+            flag ? (this._attributes = []) : (function () { window.localStorage.clear(); window.sessionStorage.clear(); })();
+        };
+        Model.prototype._getName = function () {
+            return this.__Name__;
+        };
+        Model.prototype.doRequest = function (url, postData, su, fail, options) {
+            var self = this, type, dataType, setting = {};
+            if (!postData || typeof postData !== 'object' || !url || url == '')
+                return;
+            if (options && this._v.isObject(options)) {
+                type = options.type;
+                dataType = options.dataType || this.ajaxDataType;
+                setting = options;
+            }
+            else {
+                type = this.ajaxType || 'POST';
+                dataType = this.ajaxDataType || 'json';
+            }
+            //提交前触犯
+            (this.ajaxBefore && this._v.isFunction(this.ajaxBefore)) && (setting['beforeSend'] = this.ajaxBefore.apply(self));
+            var ajaxSetting = ST.extend(setting, {
+                url: url,
+                type: type,
+                data: postData,
+                dataType: dataType,
+                success: function (res) {
+                    //console.log('请求成功', res);
+                    (self.ajaxSuccess && this._v.isFunction(self.ajaxSuccess)) && self.ajaxSuccess.call(self, res);
+                    (su && this._v.isFunction(su)) && su.call(self, res);
+                },
+                error: function (xhr, errType) {
+                    //console.log('请求失败');
+                    var response = xhr.response;
+                    try {
+                        response = JSON.parse(response);
+                    }
+                    catch (e) { }
+                    (self.ajaxError && this._v.isFunction(self.ajaxError)) && self.ajaxError.call(self, response, xhr, errType);
+                    (fail && this._v.isFunction(fail)) && fail.call(self, response, xhr, errType);
+                },
+                complete: function (res) {
+                    //console.log('请求完成');gulp
+                    (self.ajaxComplete && this._v.isFunction(self.ajaxComplete)) && self.ajaxComplete.call(self, res);
+                }
+            });
+            if (window['$']) {
+                window['$'].ajax(ajaxSetting);
+            }
+            else {
+                throw new Error('doRequest: $不存在，此方法依赖于(jQuery||Zepto||Ender)');
+            }
+        };
+        /**
+         * Function doRequest 包装
+         * @param url
+         * @param postData
+         * @param su
+         * @param fail
+         */
+        Model.prototype.doAjax = function (url, postData, su, fail, options) {
+            this.doRequest(url, postData, su, fail, options);
+        };
+        return Model;
+    })();
+    YT.Model = Model;
+})(YT || (YT = {}));
+/**
+ * Created by Rodey on 2015/10/23.
+ */
+var YT;
+(function (YT) {
+    var ShareModel = (function () {
+        function ShareModel() {
+            if (window['SYST']) {
+                window['SYST']['_shareModels'] = {};
             }
         }
-        //为空时
-        Validate.prototype.isEmpty = function (val) {
-            return (!val || val.length === 0 || val === '' || val == null) ? true : false;
+        ShareModel.getInstance = function () {
+            if (!this._instance) {
+                return new ShareModel();
+            }
+            return this._instance;
         };
-        //是否已设置(初始化值)
-        Validate.prototype.isSet = function (val) {
-            return (typeof val !== 'undefined') ? true : false;
+        ShareModel.prototype.add = function (key, model) {
+            window['SYST']['_shareModels'][key] = model;
         };
-        //取两个数值之间 (默认不包括两者, flag=>true 包括)
-        Validate.prototype.between = function (val, min, max, flag) {
-            flag = flag || false;
-            if (flag)
-                return (val.length >= min && val.length <= max) ? true : false;
-            else
-                return (val.length > min && val.length < max) ? true : false;
+        ShareModel.prototype.get = function (key) {
+            var shareModels = window['SYST']['_shareModels'];
+            if (null == key) {
+                return shareModels;
+            }
+            if (shareModels[key] && shareModels[key] instanceof YT.Model) {
+                return shareModels[key];
+            }
+            return null;
         };
-        //是否含有中文 （flag存在则完全匹配中文，默认不完全匹配）
-        Validate.prototype.isCN = function (str, flag) {
-            if (flag)
-                return (/^[\u4e00-\u9fa5]+$/.test(str));
-            else
-                return (/[\u4e00-\u9fa5]+/gi.test(str));
+        ShareModel.prototype.remove = function (key) {
+            var shareModels = window['SYST']['_shareModels'];
+            var model = shareModels[key];
+            if (model && model instanceof (YT.Model)) {
+                shareModels[key] = null;
+                delete shareModels[key];
+            }
+            return model;
         };
-        //验证 E-mail 地址
-        Validate.prototype.isEmail = function (email) {
-            return /^\w+([-+.]\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*$/gi.test(email);
+        ShareModel.prototype.has = function (key) {
+            var shareModels = window['SYST']['_shareModels'];
+            return shareModels[key];
         };
-        //验证 URL 地址
-        Validate.prototype.isURL = function (url) {
-            return /^http:\/\/[A-Za-z0-9]+\.[A-Za-z0-9]+[\/=\?%\-&_~`@[\]\':+!]*([^<>\"\"])*$/i.test(url);
-        };
-        //验证电话号码
-        Validate.prototype.isTel = function (tel) {
-            return /^(\(\d{3,4}\)|\d{3,4}-)?\d{7,8}$/gi.test(tel);
-        };
-        //验证手机号码
-        Validate.prototype.isMobile = function (mobile) {
-            return /^1[3|4|5|7|8]{1}\d{9}$/.test(mobile);
-        };
-        Validate.prototype.isZip = function (zipCode) {
-            return /^\d{6}$/.test(zipCode);
-        };
-        //验证日期, 日期时间, 时间
-        Validate.prototype.isDateLocal = function (date) {
-            return /^(\d{4})-(\d{1,2})-(\d{1,2})$/.test(date);
-        };
-        Validate.prototype.isDateTime = function (dateTime) {
-            return /^(\d{4})-(\d{1,2})-(\d{1,2})\s+(\d{1,2}):(\d{1,2}):(\d{1,2})$/.test(dateTime);
-        };
-        Validate.prototype.isTime = function (time) {
-            return /^(\d{1,2}):(\d{1,2}):(\d{1,2})$/.test(time);
-        };
-        //常用对象判断
-        Validate.prototype.isString = function (value) {
-            return typeof value === 'string';
-        };
-        Validate.prototype.isNumber = function (value) {
-            return typeof value === 'number';
-        };
-        Validate.prototype.isArray = function (value) {
-            return toString.call(value) === '[object Array]';
-        };
-        Validate.prototype.isDate = function (value) {
-            return toString.call(value) === '[object Date]';
-        };
-        Validate.prototype.isObject = function (value) {
-            return value != null && typeof value === 'object';
-        };
-        Validate.prototype.isFunction = function (value) {
-            return typeof value === 'function';
-        };
-        Validate.prototype.isFile = function (value) {
-            return toString.call(value) === '[object File]';
-        };
-        Validate.prototype.isBlob = function (value) {
-            return toString.call(value) === '[object Blob]';
-        };
-        Validate.prototype.isBoolean = function (value) {
-            return typeof value === 'boolean';
-        };
-        Validate.prototype.isdefined = function (value) {
-            return typeof value !== 'undefined';
-        };
-        Validate.prototype.isRegExp = function (value) {
-            return toString.call(value) === '[object RegExp]';
-        };
-        Validate.prototype.isWindow = function (value) {
-            return value && value.document && value.location && value.alert && value.setInterval;
-        };
-        Validate.prototype.isElement = function (value) {
-            return !!(value && (value.nodeName || (value.prop && value.attr && value.find)));
-        };
-        return Validate;
+        return ShareModel;
     })();
-    YT.Validate = Validate;
+    YT.ShareModel = ShareModel;
 })(YT || (YT = {}));
 /**
  * Created by Rodey on 2015/10/21.
@@ -1143,8 +1265,173 @@ var YT;
         View.prototype.getModel = function () {
             return this.model || this.getController().getModel();
         };
-        View.hoadEvent = SYST.hoadEvent;
+        View.hoadEvent = ST.hoadEvent;
         return View;
     })();
     YT.View = View;
 })(YT || (YT = {}));
+/**
+ * Created by Rodey on 2015/10/21.
+ */
+var YT;
+(function (YT) {
+    var Controller = (function () {
+        function Controller(child) {
+            this.isInit = true;
+            //super();
+            for (var k in child) {
+                if (child.hasOwnProperty(k)) {
+                    //Object.defineProperty(this, k, { value: child[k], writable: false });
+                    this[k] = child[k];
+                }
+            }
+            if (true === this.isInit) {
+                this.init();
+            }
+        }
+        Controller.prototype.init = function () {
+            console.log('...Controller init...');
+        };
+        Controller.prototype.getModel = function () {
+            return this.model;
+        };
+        Controller.prototype.setModel = function (m) {
+            this.model = m;
+        };
+        return Controller;
+    })();
+    YT.Controller = Controller;
+})(YT || (YT = {}));
+/**
+ * Created by Rodey on 2015/10/23.
+ */
+/// <reference path="zepto.d.ts" />
+var YT;
+(function (YT) {
+    var Router = (function () {
+        function Router() {
+            this.uri = window.location;
+            this._cache = {};
+            this._v = new YT.Validate();
+            this._t = new YT.Tools();
+            for (var k in this.uri) {
+                if (this.uri.hasOwnProperty(k)) {
+                    this[k] = this.uri[k];
+                }
+            }
+        }
+        Router.prototype._getRouteKey = function (hash) {
+            return hash.replace(/[#!]/gi, '').split('?')[0];
+        };
+        Router.prototype.start = function () {
+            this.params = this._t.params();
+            var hash = this['hash'];
+            //如果初始化带有hash
+            if (hash && '' !== hash) {
+                var currentRoute = this._getRouteKey(hash);
+                this._exec(currentRoute);
+            }
+            this._change();
+            return this;
+        };
+        Router.prototype.when = function (route, object) {
+            if (this._v.isObject(object)) {
+                this._cache[route] = object;
+            }
+            else if (this._v.isFunction(object)) {
+                this._cache[route] = object();
+            }
+        };
+        Router.prototype.switch = function (route) {
+            var self = this;
+            if (!this._cache || {} === this._cache)
+                return;
+            this.params = this._t.params();
+            this._exec(route);
+            return this;
+        };
+        /**
+         * 执行
+         * @param route
+         */
+        Router.prototype._exec = function (route) {
+            this._execRouter(route);
+        };
+        Router.prototype._execRouter = function (route) {
+            var self = this;
+            var routeOption = this._cache[route];
+            if (!routeOption)
+                return;
+            if (routeOption.template) {
+                this._template(routeOption.template, routeOption.container, function (htmlStr) {
+                    //console.log(htmlStr);
+                    //console.log(this);
+                    self._execMAction(routeOption, htmlStr);
+                });
+            }
+            else {
+                self._execMAction(routeOption);
+            }
+        };
+        Router.prototype._execMAction = function (routeOption, tpl) {
+            this.tpl = tpl;
+            var vadding = { model: routeOption.model, tpl: tpl, params: this.params, router: this }, cadding = { model: routeOption.model, tpl: tpl, params: this.params, router: this, view: routeOption.view };
+            //转换成SYST.Model
+            this._syst = new ST();
+            routeOption.model && (function () { return this._syst.Model(routeOption.model); })();
+            routeOption.view && (function () { return this._syst.View(ST.extend(routeOption.view, vadding)); })();
+            routeOption.controller && (function () { return this._syst.Controller(ST.extend(routeOption.controller, cadding)); })();
+            routeOption.action && this._v.isFunction(routeOption.action) && routeOption.action.call(this, routeOption.model, tpl);
+        };
+        /**
+         * 开始监听路由变化
+         * @param callback
+         * @private
+         */
+        Router.prototype._change = function () {
+            var self = this;
+            window.removeEventListener('hashchange', _hashChangeHandler, false);
+            window.addEventListener('hashchange', _hashChangeHandler, false);
+            function _hashChangeHandler(evt) {
+                self.oldURL = '#' + evt.oldURL.split('#')[1];
+                self.newURL = '#' + evt.newURL.split('#')[1];
+                var currentRoute = self._getRouteKey(self.newURL);
+                self.switch(currentRoute);
+            }
+        };
+        //解释html
+        Router.prototype._template = function (html, cid, callback) {
+            var self = this;
+            var container = window['$']('#' + cid.replace(/#/gi, ''));
+            if (/<|>/.test(html)) {
+                container.html(html);
+                callback && this._v.isFunction(callback) && callback.call(self, html);
+            }
+            else {
+                container.load(html, function (res) {
+                    callback && this._v.isFunction(callback) && callback.call(self, res);
+                }, function (err) {
+                    throw new Error('load template is failed!');
+                });
+            }
+        };
+        return Router;
+    })();
+    YT.Router = Router;
+})(YT || (YT = {}));
+/**
+ * Created by Rodey on 2015/10/23.
+ */
+var YT;
+(function (YT) {
+    var Native = (function () {
+        function Native() {
+        }
+        return Native;
+    })();
+    YT.Native = Native;
+})(YT || (YT = {}));
+/**
+ * Created by Rodey on 2015/12/17.
+ */
+window['SYST'] = new ST();

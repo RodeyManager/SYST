@@ -11,7 +11,7 @@ var fs          = require('fs'),
     ts          = require('gulp-typescript');
 
 //版本号
-var syst_version = '1.0.0';
+var syst_version = '1.0.2';
 
 //mod version
 if(fs.existsSync('src/SYST.js')){
@@ -31,9 +31,9 @@ var srcs = [
     'promise',
     'template',
     'event',
-    'shareModel',
     'model',
     'ajax',
+    'shareModel',
     'view',
     'controller',
     'router',
@@ -43,7 +43,11 @@ var srcs = [
     });
 
 var tses = srcs.map(function(item){
-    return item.replace(/src?/i, 'src/ts').replace(/.js/i, '.ts');
+    var ts = item.replace(/src?/i, 'src/ts').replace(/.js/i, '.ts');
+    if(!fs.existsSync(ts)){
+        return null;
+    }
+    return ts;
 });
 
 //清理dist目录下的js文件
@@ -76,13 +80,27 @@ gulp.task('build.syst', function(){
 //编译 TypeScript 文件
 gulp.task('build.ts', function(){
 
-    //console.log(tses);
-
-    gulp.src('src/ts/*.ts')
+    var tses = [
+        'ST',
+        'validate',
+        'tools',
+        'promise',
+        'template',
+        'event',
+        'ajax',
+        'model',
+        'shareModel',
+        'view',
+        'controller',
+        'router',
+        'native',
+        'Global'
+    ].map(function(src){
+            return 'src/ts/' + src + '.ts';
+        });
+    gulp.src(tses)
         .pipe(ts({
             declaration: true,
-            noExternalResolve: true,
-            noImplicitAny: true,
             out: 'dist/SYST.js'
         }))
         .pipe(gulp.dest('dist/ts'));
@@ -92,7 +110,7 @@ gulp.task('build.ts', function(){
 gulp.task('watch', function(){
     //livereload.listen();
     gulp.watch(srcs, ['build.syst']);
-    gulp.watch(tses, ['build.ts']);
+    gulp.watch('src/ts/*', ['build.ts']);
 });
 
 //执行任务

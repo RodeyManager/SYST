@@ -6,17 +6,22 @@ module YT{
 
     export class Template{
 
-        private static _self: YT.Template;
-        public constructor(){
-
-        }
-        public static getInstance(): YT.Template{
-            if(!this._self) return new YT.Template();
-            else            return this._self;
+        public constructor(content: string, data: any){
+            this.content = content;
+            this.data = data;
+            this.Render(content, data);
         }
 
+        private static _instance: YT.Template;
+        public static getInstance(content: string, data: any): YT.Template{
+            if(!this._instance) return new YT.Template(content, data);
+            else            return this._instance;
+        }
+
+        public content: string;
+        public data: any;
         public tplConfig = { open: '<%', close: '%>'};
-        public cache: any;
+        public cache: any = {};
         private trimSpaceRegx = /^\s*|\s*$/i;
         private regOut = /(^( )?(if|for|else|switch|case|break|{|}))(.*)?/g;
 
@@ -46,22 +51,28 @@ module YT{
          * @returns {*}
          * @constructor
          */
-        public Render(content: string, data: any){
+        public Render(content?: string, data?: any){
+            if(!content) return '';
+            var content: string = content || this.content,
+                data: any = data || this.data;
             var elm: any = document.querySelector('#' + content.replace('#', '')), tpl = '';
             if(elm){
                 var tplStr = /^(TEXTEREA|INPUT)$/i.test(elm.nodeName) ? elm.value : elm.innerHTML;
                 tpl = tplStr.replace(this.trimSpaceRegx, '');
+                try{
+                    this.cache[content] = this._render(tpl, data);
+                }catch(e){
+                    delete this.cache[content];
+                }
             }else{
                 tpl = content.replace(this.trimSpaceRegx, '');
             }
-            try{
-                this.cache = this._render(tpl, data);
-            }catch(e){
-                delete this.cache;
-            }
-            return this.cache ? this.cache : this._render(tpl, data);
+
+            return this.cache[content] ? this.cache[content] : this._render(tpl, data);
         }
 
     }
+
+
 
 }

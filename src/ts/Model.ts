@@ -10,6 +10,7 @@ module YT {
         public view: YT.View;
         public controller: YT.Controller;
         public isInit:boolean = true;
+        public ajax: YT.Ajax;
         private _attributes: any = {};
         private _v: YT.Validate;
         private __Name__: string;
@@ -23,6 +24,7 @@ module YT {
                 }
             }
 
+            this.ajax = new YT.Ajax();
             this._v = new YT.Validate();
             this.__Name__ = 'SYST Model';
 
@@ -31,7 +33,7 @@ module YT {
         }
 
         public init():void {
-            console.log('...model init...');
+            //console.log('...model init...');
         }
 
         public set(key: string, value: any): any{
@@ -39,7 +41,7 @@ module YT {
 
             if(typeof key === 'object'){
                 // this.set({ name: 'Rodey', age: 25 });
-                for(var k in key){
+                for(var k in <Object>key){
                     this._attributes[k] = key[k];
                 }
             }else if(typeof key === 'string' && key.length > 0){
@@ -146,7 +148,7 @@ module YT {
             //提交前触犯
             (this.ajaxBefore && this._v.isFunction(this.ajaxBefore)) && (setting['beforeSend'] = this.ajaxBefore.apply(self));
 
-            var ajaxSetting: any = SYST.extend(setting, {
+            var ajaxSetting: any = ST.extend(setting, {
                 url: url,
                 type: type,
                 data: postData,
@@ -171,8 +173,8 @@ module YT {
                 }
             });
 
-            if(root.$){
-                root.$.ajax(ajaxSetting);
+            if(window['$']){
+                window['$'].ajax(ajaxSetting);
             }else{
                 throw new Error('doRequest: $不存在，此方法依赖于(jQuery||Zepto||Ender)');
             }

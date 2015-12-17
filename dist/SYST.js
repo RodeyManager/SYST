@@ -23,7 +23,7 @@
     (typeof exports !== 'undefined') ? (SYST = exports) : (SYST = root.SYST = {});
 
     //框架属性
-    SYST.version = '1.0.0';
+    SYST.version = '1.0.1';
     SYST.author = 'Rodey Luo';
     SYST.name = 'SYST JS MVC mini Framework (JS MVC框架)';
 
@@ -540,7 +540,6 @@
  * Created by Rodey on 2015/12/8.
  */
 
-var SYST;
 ;(function(SYST){
 
     'use strict';
@@ -623,8 +622,10 @@ var SYST;
          */
         resolve: function(value, bunch){
             this.STATE = FULFILLED;
-            this.data = value;
-            this.args.push(value);
+            if(value){
+                this.data = value;
+                this.args.push(value);
+            }
             this._bunchFulfil = bunch !== false ? this._bunchFulfil : bunch;
             //从多列中取出当前为 FULFILLED状态的回调
             var fulfil = this._fulfils.shift();
@@ -649,7 +650,7 @@ var SYST;
          */
         reject: function(err, bunch){
             this.STATE = REJECTED;
-            this.errs.push(err);
+            err && this.errs.push(err);
             this._bunchReject = bunch !== false ? this._bunchReject : bunch;
             //从多列中取出当前为 REJECTED状态的回调
             var reject = this._rejecteds.shift();
@@ -692,7 +693,7 @@ var SYST;
 
     SYST.P = SYST.Promise = Promise;
 
-})(SYST || {});
+})(SYST);
 
 /**
  * Created by Rodey on 2015/10/16.
@@ -887,6 +888,7 @@ var SYST;
     };
 
     SYST.Render = Render;
+    SYST.T = SYST.Tools.prototype = SYST.extend(SYST.T, { render: Render });
 
 })(SYST);
 /**
@@ -931,41 +933,6 @@ var SYST;
             }
         }
 
-    };
-
-})(SYST);
-
-/**
- * Created by Rodey on 2015/10/16.
- */
-
-;(function(SYST){
-
-    'use strict';
-
-    /**
-     * Module 共享数据模型
-     * @type {Object}
-     */
-    SYST._shareModels = [];
-    var ShareModel = SYST.shareModel = {
-        add: function(val){
-            SYST._shareModels.push(val);
-        },
-        get: function(val){
-            if(null == val){ return SYST._shareModels; }
-            for(var i = 0; i < SYST._shareModels.length; ++i)
-                if(val == SYST._shareModels[i])
-                    return SYST._shareModels[i];
-            return null;
-        },
-        remove: function(val){
-            SYST.T.arrRemove(SYST._shareModels, val);
-            return SYST._shareModels;
-        },
-        has: function(val){
-            return SYST.T.indexOf(SYST._shareModels, val) !== -1;
-        }
     };
 
 })(SYST);
@@ -1222,6 +1189,48 @@ var SYST;
 
 })(SYST);
 
+
+/**
+ * Created by Rodey on 2015/10/16.
+ */
+
+;(function(SYST){
+
+    'use strict';
+
+    /**
+     * Module 共享数据模型
+     * @type {Object}
+     */
+    SYST._shareModels = {};
+    var ShareModel = SYST.shareModel = {
+        add: function(key, model){
+            SYST._shareModels[key] = model;
+        },
+        get: function(key){
+            var shareModels = SYST._shareModels;
+            if(null == key){
+                return shareModels;
+            }
+            if(shareModels[key])
+                    return shareModels[key];
+            return null;
+        },
+        remove: function(key){
+            var shareModels = SYST._shareModels,
+                model = shareModels[key];
+            if(model){
+                SYST._shareModels[key] = null;
+                delete SYST._shareModels[key];
+            }
+            return model;
+        },
+        has: function(key){
+            return SYST._shareModels[key];
+        }
+    };
+
+})(SYST);
 
 /**
  * Created by Rodey on 2015/10/16.
