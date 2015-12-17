@@ -4,6 +4,12 @@
 /// <reference path="zepto.d.ts" />
 var ST = (function () {
     function ST() {
+        //variables static
+        this.author = 'Rodey';
+        this.version = '1.0.2';
+        this.name = 'SYST JS MVC mini Framework (JS MVC框架)';
+        this.root = window;
+        this.$ = $;
         this.shareModels = YT.ShareModel.getInstance();
         this.V = new YT.Validate();
         this.T = new YT.Tools();
@@ -118,12 +124,6 @@ var ST = (function () {
                 throw new Error(func + ' 函数未定义！');
         };
     };
-    //variables static
-    ST.author = 'Rodey';
-    ST.version = '0.0.5';
-    ST.name = 'SYST JS MVC mini Framework (JS MVC框架)';
-    ST.root = window;
-    ST.$ = $;
     return ST;
 })();
 /**
@@ -527,99 +527,6 @@ var YT;
     YT.Tools = Tools;
 })(YT || (YT = {}));
 /**
- * Created by Rodey on 2015/10/23.
- */
-var YT;
-(function (YT) {
-    var Ajax = (function () {
-        function Ajax(options) {
-            this._v = new YT.Validate();
-            this._t = new YT.Tools();
-            this.setting = {
-                dataType: 'json',
-                type: 'POST',
-                async: true,
-                timeout: 5000,
-                crossDomain: true,
-                header: {
-                    'Content-type': 'application/x-www-form-urlencoded'
-                }
-            };
-            this.setting = ST.extend(options, this.setting);
-            this.xhr = new XMLHttpRequest();
-        }
-        //callback ajax finish
-        Ajax.prototype._format = function (text, type) {
-            var res = text;
-            if ('json' === type) {
-                try {
-                    res = JSON.parse(text);
-                }
-                catch (e) { }
-            }
-            else if ('text' === type) {
-                try {
-                    res = JSON.stringify(text);
-                }
-                catch (e) { }
-            }
-            return res;
-        };
-        Ajax.prototype._callFunction = function (text, type, cb) {
-            var res = this._format(text, type);
-            this._v.isFunction(cb) && cb(res);
-        };
-        Ajax.prototype._callComplate = function (xhr, type, cb) {
-            this._v.isFunction(cb) && cb(this._format(xhr.responseText, type), xhr);
-        };
-        /**
-         * Ajax Method
-         * @param options
-         * options use exp: {
-         *      url: '/list',
-         *      data: { id: 2},
-         *      type: 'GET',
-         *      dataType: 'json',
-         *      ajaxBefore: function(){},
-         *      success: function(res){},
-         *      error: function(err){},
-         *      complate: function(res){}
-         * }
-             */
-        Ajax.prototype.request = function (options) {
-            var _this = this;
-            var defs;
-            if (options && this._v.isObject(options)) {
-                defs = ST.extend(options, this.setting);
-            }
-            if (this._v.isEmpty(defs['url']))
-                return;
-            var data = defs['data'], dataType = defs['dataType'], type = defs['type'], url = type.toUpperCase() === 'GET' ? defs['url'].split('?')[0] + this._t.paramData(defs['data'], true) : defs['url'], body = type.toUpperCase() === 'GET' ? undefined : data, header = defs['header'], async = 'async' in defs ? defs['async'] : true;
-            //open before 请求之前
-            this._callFunction(undefined, dataType, defs['ajaxBefore']);
-            this.xhr.open(type, url, async);
-            for (var k in header) {
-                this.xhr.setRequestHeader(k, header[k]);
-            }
-            this.xhr.onreadystatechange = function () {
-                if (_this.xhr.readyState === 4) {
-                    _this.xhr.onreadystatechange = null;
-                    if (_this.xhr.status === 200) {
-                        _this._callFunction(_this.xhr.responseText, dataType, defs['success']);
-                    }
-                    else {
-                        _this._callFunction(_this.xhr, dataType, defs['error']);
-                    }
-                    _this._callComplate(_this.xhr, dataType, defs['complate']);
-                }
-            };
-            this.xhr.send(body);
-        };
-        return Ajax;
-    })();
-    YT.Ajax = Ajax;
-})(YT || (YT = {}));
-/**
  * Created by Rodey on 2015/12/8.
  */
 var YT;
@@ -884,6 +791,99 @@ var YT;
         return Event;
     })();
     YT.Event = Event;
+})(YT || (YT = {}));
+/**
+ * Created by Rodey on 2015/10/23.
+ */
+var YT;
+(function (YT) {
+    var Ajax = (function () {
+        function Ajax(options) {
+            this._v = new YT.Validate();
+            this._t = new YT.Tools();
+            this.setting = {
+                dataType: 'json',
+                type: 'POST',
+                async: true,
+                timeout: 5000,
+                crossDomain: true,
+                header: {
+                    'Content-type': 'application/x-www-form-urlencoded'
+                }
+            };
+            this.setting = ST.extend(options, this.setting);
+            this.xhr = new XMLHttpRequest();
+        }
+        //callback ajax finish
+        Ajax.prototype._format = function (text, type) {
+            var res = text;
+            if ('json' === type) {
+                try {
+                    res = JSON.parse(text);
+                }
+                catch (e) { }
+            }
+            else if ('text' === type) {
+                try {
+                    res = JSON.stringify(text);
+                }
+                catch (e) { }
+            }
+            return res;
+        };
+        Ajax.prototype._callFunction = function (text, type, cb) {
+            var res = this._format(text, type);
+            this._v.isFunction(cb) && cb(res);
+        };
+        Ajax.prototype._callComplate = function (xhr, type, cb) {
+            this._v.isFunction(cb) && cb(this._format(xhr.responseText, type), xhr);
+        };
+        /**
+         * Ajax Method
+         * @param options
+         * options use exp: {
+         *      url: '/list',
+         *      data: { id: 2},
+         *      type: 'GET',
+         *      dataType: 'json',
+         *      ajaxBefore: function(){},
+         *      success: function(res){},
+         *      error: function(err){},
+         *      complate: function(res){}
+         * }
+             */
+        Ajax.prototype.request = function (options) {
+            var _this = this;
+            var defs;
+            if (options && this._v.isObject(options)) {
+                defs = ST.extend(options, this.setting);
+            }
+            if (this._v.isEmpty(defs['url']))
+                return;
+            var data = defs['data'], dataType = defs['dataType'], type = defs['type'], url = type.toUpperCase() === 'GET' ? defs['url'].split('?')[0] + this._t.paramData(defs['data'], true) : defs['url'], body = type.toUpperCase() === 'GET' ? undefined : data, header = defs['header'], async = 'async' in defs ? defs['async'] : true;
+            //open before 请求之前
+            this._callFunction(undefined, dataType, defs['ajaxBefore']);
+            this.xhr.open(type, url, async);
+            for (var k in header) {
+                this.xhr.setRequestHeader(k, header[k]);
+            }
+            this.xhr.onreadystatechange = function () {
+                if (_this.xhr.readyState === 4) {
+                    _this.xhr.onreadystatechange = null;
+                    if (_this.xhr.status === 200) {
+                        _this._callFunction(_this.xhr.responseText, dataType, defs['success']);
+                    }
+                    else {
+                        _this._callFunction(_this.xhr, dataType, defs['error']);
+                    }
+                    _this._callComplate(_this.xhr, dataType, defs['complate']);
+                }
+            };
+            this.xhr.send(body);
+        };
+        return Ajax;
+    })();
+    YT.Ajax = Ajax;
 })(YT || (YT = {}));
 /**
  * Created by Rodey on 2015/10/21.

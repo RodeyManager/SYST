@@ -23,7 +23,7 @@
     (typeof exports !== 'undefined') ? (SYST = exports) : (SYST = root.SYST = {});
 
     //框架属性
-    SYST.version = '1.0.1';
+    SYST.version = '1.0.2';
     SYST.author = 'Rodey Luo';
     SYST.name = 'SYST JS MVC mini Framework (JS MVC框架)';
 

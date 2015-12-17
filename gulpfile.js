@@ -14,14 +14,20 @@ var fs          = require('fs'),
 var syst_version = '1.0.2';
 
 //mod version
-if(fs.existsSync('src/SYST.js')){
-    var syst_text = fs.readFileSync('src/SYST.js', 'utf8');
-    syst_text = syst_text.replace(/\s*SYST.version\s*=\s*['|"]([\s\S]*?)['|"];/gi, function(match, version){
-        console.log(version);
-        return match.replace(version, syst_version);
-    });
+modVersion('src/SYST.js');
+modVersion('src/ts/ST.ts');
 
-    fs.writeFileSync('src/SYST.js', syst_text, 'utf8');
+function modVersion(src){
+    if(fs.existsSync(src)){
+        var syst_text = fs.readFileSync('src/SYST.js', 'utf8');
+        syst_text = syst_text.replace(/\s*SYST.version\s*=\s*['|"]([\s\S]*?)['|"];/gi, function(match, version){
+            return match.replace(version, syst_version);
+        }).replace(/static version:[\s\S]*?=['|"]([\s\S]*?)['|"];/gi, function(match, version){
+            return match.replace(version, syst_version);
+        });
+
+        fs.writeFileSync('src/SYST.js', syst_text, 'utf8');
+    }
 }
 
 var srcs = [

@@ -6,18 +6,11 @@
 class ST {
 
     //variables static
-    public static author:string = 'Rodey';
-    public static version:string = '0.0.5';
-    public static name:string = 'SYST JS MVC mini Framework (JS MVC框架)';
-
-    public _model: YT.Model;
-    public _view: YT.View;
-    public _controller: YT.Controller;
-    private _event: YT.Event;
-    private _validate: YT.Validate;
-    private _tools: YT.Tools;
-    static root: Window = window;
-    static $: ZeptoStatic = $;
+    author:string = 'Rodey';
+    version:string = '1.0.2';
+    name:string = 'SYST JS MVC mini Framework (JS MVC框架)';
+    root: Window = window;
+    $: ZeptoStatic = $;
 
     public shareModels: YT.ShareModel;
     public V: YT.Validate;
