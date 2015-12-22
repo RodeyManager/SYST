@@ -10,7 +10,7 @@ SYST JS 是一个js MVC框架 功能比较纯粹简单, 使用起来也比较简
  
  <pre>
 		'SYST' : {
-			deps : ['jQuery', 'arttemplate'],
+			deps : ['Zepto'],
 			exports: 'SYST'
 		}
  </pre>
