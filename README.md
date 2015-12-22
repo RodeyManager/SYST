@@ -3,7 +3,7 @@ SYST
 
 SYST JS 是一个js MVC框架 功能比较纯粹简单, 使用起来也比较简单，里面有案例
 
- * 此框架依赖于: jQuery || Zepto || Ender   依赖于模板插件: Arttemplate || Underscore
+ * 此框架依赖于: jQuery || Zepto
  * 使用前请先引入依赖插件
  *
  * requireJS 引入:
