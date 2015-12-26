@@ -289,9 +289,9 @@ module YT {
             return null;
         }
 
-        public render(content: string, data: any): string{
-            var template: YT.Template = YT.Template.getInstance(content, data);
-            return template.Render(content, data);
+        public render(content: string, data?: any, helper?: any, target?: any): string{
+            var template: YT.Template = YT.Template.getInstance(content, data, helper, target);
+            return template.Render(content, data, helper, target);
         }
 
     }

@@ -101,7 +101,7 @@
          *      <%= item %>
          *  <% }); %>
          */
-        $tplString = 'var each = ' + SYST.T.each.toString() + ';' + $tplString;
+        $tplString = 'var each = SYST.T.each;' + $tplString;
 
         /**
          * 采用替换查找方式
@@ -134,7 +134,7 @@
         for(var i = 0, len = $source.length; i < len; ++i){
             source = $source[i];
             text = $text[i + 1];
-            if(source.indexOf('==') !== -1){
+            if(source.search(/^\s*={2}/) !== -1){
                 source = '_s+=(SYST.T.escapeHtml(' + source.replace(empty, "") + '));';
             }
             //转移处理

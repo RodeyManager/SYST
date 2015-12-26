@@ -11,7 +11,7 @@ var fs          = require('fs'),
     ts          = require('gulp-typescript');
 
 //版本号
-var syst_version = '1.0.2';
+var syst_version = '1.0.3';
 
 //mod version
 modVersion('src/SYST.js');

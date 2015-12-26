@@ -293,6 +293,19 @@
             return (flag === true) ? '?'+ s : s;
         },
         /**
+         * 跳转
+         * @param url       地址
+         * @param params    参数 [object|string]
+         */
+        jumpTo: function(url, params){
+            var url = url || '#';
+            if(SYST.V.isString(params))
+                url = url + '?' + params;
+            else if(SYST.V.isObject(params))
+                url = url + SYST.T.paramData(params, true);
+            location.href = url;
+        },
+        /**
          * Function 浏览器 cookie操作
          * @param key       键名
          * @param value     键值

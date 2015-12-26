@@ -17,6 +17,15 @@ class ST {
     public T: YT.Tools;
     public ajax: YT.Ajax;
 
+    //template
+    public static tplConfig: Object = { open: '<%', close: '%>'};
+
+    private static _instace: ST;
+    public static getInstance(): ST{
+        if(!this._instace)  return new ST();
+        return this._instace;
+    }
+
     public constructor() {
         this.shareModels = YT.ShareModel.getInstance();
         this.V = new YT.Validate();
@@ -55,8 +64,8 @@ class ST {
         return window['SYST'] || new ST();
     }
 
-    public Render(content: string, data: any): string{
-        return this.Tools().render(content, data);
+    public Render(content: string, data?: any, helper?: any, target?: any): string{
+        return this.Tools().render(content, data, helper, target);
     }
 
     public Promise(resolve?: any, reject?: any): YT.Promise{

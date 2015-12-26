@@ -15,6 +15,11 @@ var ST = (function () {
         this.T = new YT.Tools();
         this.ajax = new YT.Ajax();
     }
+    ST.getInstance = function () {
+        if (!this._instace)
+            return new ST();
+        return this._instace;
+    };
     ST.prototype.Model = function (child) {
         return new YT.Model(child);
     };
@@ -39,8 +44,8 @@ var ST = (function () {
     ST.noConflict = function () {
         return window['SYST'] || new ST();
     };
-    ST.prototype.Render = function (content, data) {
-        return this.Tools().render(content, data);
+    ST.prototype.Render = function (content, data, helper, target) {
+        return this.Tools().render(content, data, helper, target);
     };
     ST.prototype.Promise = function (resolve, reject) {
         return new YT.Promise(resolve, reject);
@@ -124,6 +129,8 @@ var ST = (function () {
                 throw new Error(func + ' 函数未定义！');
         };
     };
+    //template
+    ST.tplConfig = { open: '<%', close: '%>' };
     return ST;
 })();
 /**
@@ -518,9 +525,9 @@ var YT;
             }
             return null;
         };
-        Tools.prototype.render = function (content, data) {
-            var template = YT.Template.getInstance(content, data);
-            return template.Render(content, data);
+        Tools.prototype.render = function (content, data, helper, target) {
+            var template = YT.Template.getInstance(content, data, helper, target);
+            return template.Render(content, data, helper, target);
         };
         return Tools;
     })();
@@ -651,65 +658,170 @@ var YT;
 var YT;
 (function (YT) {
     var Template = (function () {
-        function Template(content, data) {
-            this.tplConfig = { open: '<%', close: '%>' };
-            this.cache = {};
-            this.trimSpaceRegx = /^\s*|\s*$/i;
-            this.regOut = /(^( )?(if|for|else|switch|case|break|{|}))(.*)?/g;
+        function Template(content, data, helper, target) {
+            this._lineFeedRegx = /\\|'|\r|\n|\u2028|\u2029/g;
+            this._body = '([\\s\\S]+?)';
+            this._empty = /^=+\s*|\s*$/gi;
+            this._tplCache = {};
+            this.lg = ST.tplConfig['open'];
+            this.rg = ST.tplConfig['close'];
+            //模板字符串中需要替换的特殊字符
+            this._escapes = {
+                "'": "'",
+                '\\': '\\',
+                '\r': 'r',
+                '\n': 'n',
+                '\u2028': 'u2028',
+                '\u2029': 'u2029'
+            };
+            this.V = new YT.Validate();
+            this.T = new YT.Tools();
             this.content = content;
             this.data = data;
-            this.Render(content, data);
+            this.helper = helper;
+            this.target = target;
         }
-        Template.getInstance = function (content, data) {
+        Template.getInstance = function (content, data, helper, target) {
             if (!this._instance)
-                return new YT.Template(content, data);
+                return new YT.Template(content, data, helper, target);
             else
                 return this._instance;
         };
-        Template.prototype._render = function (tpl, data) {
-            var self = this;
-            var outIndex = 0, ms, conf = this.tplConfig, reg = new RegExp(conf.open + '([^' + conf.close + ']+)?' + conf.close, 'g'), // /<%([^%>]+)?%>/g,
-            code = 'var r = [];\n';
-            //添加字符串
-            var make = function (line, js) {
-                js ? (code += line.match(self.regOut) ? line + '\n' : 'r.push(' + line + ');\n') :
-                    (code += line != '' ? 'r.push("' + line.replace(/"/g, '\\"') + '");\n' : '');
-                return make;
-            };
-            while (ms = reg.exec(tpl)) {
-                make(tpl.slice(outIndex, ms.index))(ms[1], true);
-                outIndex = ms.index + ms[0].length;
+        /**
+         * 渲染模板并输出结果
+         * @param tplContent    模板字符串
+         * @param data          模板数据变量
+         * @param data          自定义方法，可选类型为：Object中带有多个方法； function；function的toString后结果
+         * @returns {string}    渲染后的字符串
+         * @private
+         */
+        Template.prototype._template = function (tplContent, data, helper, target) {
+            var $source = [], $text = [], $tplString = 'var _s=""; with($d || {}){ ', helperStr = '', index = 0, data = data;
+            //判断helper是否存在
+            if (helper) {
+                if (this.V.isObject(helper)) {
+                    for (var k in helper) {
+                        helperStr += helper[k].toString() + ';';
+                    }
+                }
+                else if (this.V.isFunction(helper)) {
+                    helperStr += helper.toString() + ';';
+                }
+                else if (this.V.isString(helper) && /function\(\)/gi.test(helper)) {
+                    helperStr += helper.replace(/;$/i, '') + ';';
+                }
+                else {
+                    throw new EvalError('helper can be function');
+                }
+                $tplString = helperStr + $tplString;
             }
-            make(tpl.substr(outIndex, tpl.length - outIndex));
-            code += 'return r.join("");';
-            return new Function(code.replace(/[\r\t\n]/g, '')).apply(data);
+            /**
+             * 将SYST.T.each方法置入Function字符串中
+             * use:
+             *  <% each(object|array, function(item, index, [key: options]) %>
+             *      <%= item %>
+             *  <% }); %>
+             */
+            $tplString = 'var each = SYST.T.each;' + $tplString;
+            /**
+             * 采用替换查找方式
+             * @params $1: match
+             * @params $2: escape
+             * @params $5: offset
+             */
+            tplContent.replace(this.macs, function ($1, $2, $3, $4, $5) {
+                var text = tplContent.slice(index, $5).replace(this._lineFeedRegx, this._escapeSpecial);
+                if (text && '' != text) {
+                    text = "_s+='" + (text) + "';";
+                }
+                else {
+                    text = null;
+                }
+                index = $5 + $1.length;
+                $text.push(text);
+                $source.push(this.T.trim($2));
+                return $1;
+            });
+            //如果没有匹配到任何模板语句的话直接返回
+            if ($source.length === 0) {
+                return tplContent;
+            }
+            //生成 Function 主体字符串
+            var source, text;
+            for (var i = 0, len = $source.length; i < len; ++i) {
+                source = $source[i];
+                text = $text[i + 1];
+                if (source.search(/^\s*={2}/) !== -1) {
+                    source = '_s+=(SYST.T.escapeHtml(' + source.replace(this._empty, "") + '));';
+                }
+                else if (/^=[^=]+?/i.test(source)) {
+                    source = '_s+=(' + (source.replace(this._empty, '')) + ');';
+                }
+                $tplString += (source || '') + (text || '');
+            }
+            //遍历数据
+            $tplString = '' + $tplString + ' }; return _s;';
+            //创建function对象
+            var Render = new Function('$d', $tplString);
+            //执行渲染方法
+            $tplString = Render.call(target || this, data);
+            return $tplString;
         };
         /**
          * 提供外部接口
          * @param content   元素id或者是模板字符串
          * @param data      渲染需要的数据
+         * @param helper    自定义方法，可选类型为：Object中带有多个方法； function；function的toString后结果
          * @returns {*}
          * @constructor
          */
-        Template.prototype.Render = function (content, data) {
-            if (!content)
-                return '';
-            var content = content || this.content, data = data || this.data;
-            var elm = document.querySelector('#' + content.replace('#', '')), tpl = '';
-            if (elm) {
-                var tplStr = /^(TEXTEREA|INPUT)$/i.test(elm.nodeName) ? elm.value : elm.innerHTML;
-                tpl = tplStr.replace(this.trimSpaceRegx, '');
-                try {
-                    this.cache[content] = this._render(tpl, data);
-                }
-                catch (e) {
-                    delete this.cache[content];
-                }
+        Template.prototype.Render = function (content, data, helper, target) {
+            var element, tplContent = '', content = content || this.content, data = data || this.data;
+            helper = helper || this.helper,
+                target = target || this.target;
+            //重置配置
+            this._reset();
+            //如果直接是模板字符串
+            if (content.search(/[<|>|\/]/i) !== -1) {
+                tplContent = this.T.trim(content);
             }
             else {
-                tpl = content.replace(this.trimSpaceRegx, '');
+                if (this._tplCache[content]) {
+                    return this._tplCache[content];
+                }
+                element = document.querySelector('#' + content.replace('#', ''));
+                if (element) {
+                    var tplStr = /^(TEXTEREA|INPUT)$/i.test(element.nodeName) ? element['value'] : element.innerHTML;
+                    tplContent = this.T.trim(tplStr);
+                }
+                this._tplCache[content] = tplContent;
             }
-            return this.cache[content] ? this.cache[content] : this._render(tpl, data);
+            return this._template(tplContent, data, helper, target);
+        };
+        //替换特殊字符
+        Template.prototype._escapeSpecial = function (match) {
+            return '\\' + this._escapes[match];
+        };
+        //将匹配正则对象转换为数据正则字符串
+        Template.prototype._fromatRegx = function (rgs) {
+            var rs = [];
+            for (var k in rgs) {
+                rs.push(rgs[k].source);
+            }
+            return rs.join('|').replace(/|$/i, '');
+        };
+        Template.prototype._reset = function () {
+            this.lg = ST.tplConfig['open'];
+            this.rg = ST.tplConfig['close'];
+            var lg = this.lg, rg = this.rg, body = this._body;
+            //匹配正则
+            this.regxs = {
+                execter: new RegExp(lg + body + rg, 'g'),
+                exporter: new RegExp(lg + '\\s*=' + body + rg, 'g'),
+                escaper: new RegExp(lg + '\\s*==' + body + rg, 'g')
+            };
+            //定义模板全局匹配正则对象
+            this.macs = new RegExp(this._fromatRegx(this.regxs), 'g');
         };
         return Template;
     })();
@@ -1434,4 +1546,4 @@ var YT;
 /**
  * Created by Rodey on 2015/12/17.
  */
-window['SYST'] = new ST();
+window['SYST'] = ST.getInstance();
