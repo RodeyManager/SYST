@@ -74,36 +74,39 @@ module YT {
         }
 
         //常用对象判断
+        public isNull(value: any) {
+            return value == null;
+        }
         public isString(value: any) {
-            return typeof value === 'string';
+            return value && typeof value === 'string';
         }
 
         public isNumber(value: any) {
-            return typeof value === 'number';
+            return value != null && typeof value === 'number';
         }
 
         public isArray(value: any) {
-            return toString.call(value) === '[object Array]';
+            return value && toString.call(value) === '[object Array]';
         }
 
         public isDate(value: any) {
-            return toString.call(value) === '[object Date]';
+            return value && toString.call(value) === '[object Date]';
         }
 
         public isObject(value: any) {
-            return value != null && typeof value === 'object';
+            return value && typeof value === 'object';
         }
 
         public isFunction(value: any) {
-            return typeof value === 'function';
+            return value && typeof value === 'function';
         }
 
         public isFile(value: any) {
-            return toString.call(value) === '[object File]';
+            return value && toString.call(value) === '[object File]';
         }
 
         public isBlob(value: any) {
-            return toString.call(value) === '[object Blob]';
+            return value && toString.call(value) === '[object Blob]';
         }
 
         public isBoolean(value: any) {
@@ -115,7 +118,7 @@ module YT {
         }
 
         public isRegExp(value: any) {
-            return toString.call(value) === '[object RegExp]';
+            return value && toString.call(value) === '[object RegExp]';
         }
 
         public isWindow(value: any) {

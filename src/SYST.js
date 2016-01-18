@@ -53,13 +53,13 @@
         if(!child.prototype){
             child.__super__ = parent;
             var proto;
-            for(proto in parent){
-                if(parent.hasOwnProperty(proto)){
-                    child[proto] = parent[proto];
+            for(proto in child){
+                if(child.hasOwnProperty(proto)){
+                    parent[proto] = child[proto];
                 }
             }
         }
-        return child;
+        return parent;
     };
 
     var _clone = function(targetObject){

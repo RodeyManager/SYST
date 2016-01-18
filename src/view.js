@@ -165,8 +165,10 @@
             return this.controller;
         },
         getModel: function(){
-            return this.model || this.getController().getModel();
+            this.model = this.model || this.getController().getModel() || new SYST.Model();
+            return this.model;
         },
+        model: new SYST.Model({}),
         shareModel: SYST.shareModels
     };
 

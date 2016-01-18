@@ -28,7 +28,7 @@
     <%= title %>
 
     <% if(posts){
-        for(var i = 0; i < posts.length; i++) {　
+        for(var i = 0; i < posts.length; ++i) {　
             var post = posts[i];
     %>
         <% if(SYST.V.isEmpty(post.expert)){ %>
@@ -51,6 +51,14 @@
         <li><%= toMailLink(email) %></li>
     </ul>
 
+</script>
+<script type="text/html" id="test">
+    <%
+        for(var i = 0, len = list.length; i < list.length; ++i) {　
+            var item = list[i];
+    %>
+    <li>my name is <%= item.name %>, age is <%= item.age %></li>
+    <% }%>
 </script>
 
 <!--载入js-->
@@ -98,6 +106,21 @@
         //console.log(html);
         document.querySelector('#app').innerHTML = html;
 
+        html = SYST.Render('tpl', data, {filter: filter, toMailLink: toMailLink} );
+        //console.log(html);
+
+        //性能测试
+        var list = [];
+        for(var i = 0; i < 1000; ++i){
+            list.push({ name: 'test', age: i+1 });
+        }
+
+        var start = Date.now();
+        for(var i = 0; i < 100; ++i){
+            SYST.T.render('test', { list: list });
+        }
+        var time = (Date.now() - start) / 1000;
+        console.log(time);
 
     });
 

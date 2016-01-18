@@ -50,6 +50,7 @@
         isDateTime  : function(dateTime){   return /^(\d{4})-(\d{1,2})-(\d{1,2})\s+(\d{1,2}):(\d{1,2}):(\d{1,2})$/.test(dateTime); },
         isTime      : function(time){       return /^(\d{1,2}):(\d{1,2}):(\d{1,2})$/.test(time); },
         //常用对象判断
+        isNull      : function(value){      return value == null; },
         isString    : function(value){      return typeof value === 'string'; },
         isNumber    : function(value){      return typeof value === 'number'; },
         isArray     : function(value){      return toString.call(value) === '[object Array]'; },

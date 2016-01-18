@@ -62,6 +62,11 @@ module YT{
                 index: number = 0,
                 data: any = data;
 
+            if(this._tplCache[this.content]){
+                var Render: Function = this._tplCache[this.content];
+                return Render.call(target || this, data);
+            }
+
             //判断helper是否存在
             if(helper){
                 if(this.V.isObject(helper)){
@@ -135,6 +140,7 @@ module YT{
             $tplString = ''+ $tplString +' }; return _s;';
             //创建function对象
             var Render: Function = new Function('$d', $tplString);
+            this._tplCache[this.content] = Render;
             //执行渲染方法
             $tplString = Render.call(target || this, data);
             return $tplString;
@@ -166,16 +172,11 @@ module YT{
             }
             //content为element id
             else{
-
-                if(this._tplCache[content]){
-                    return this._tplCache[content];
-                }
                 element = <HTMLElement>document.querySelector('#' + content.replace('#', ''));
                 if(element){
                     var tplStr = /^(TEXTEREA|INPUT)$/i.test(element.nodeName) ? element['value'] : element.innerHTML;
                     tplContent = this.T.trim(tplStr);
                 }
-                this._tplCache[content] = tplContent;
             }
 
             return this._template(tplContent, data, helper, target);

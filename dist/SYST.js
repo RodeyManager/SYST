@@ -53,13 +53,13 @@
         if(!child.prototype){
             child.__super__ = parent;
             var proto;
-            for(proto in parent){
-                if(parent.hasOwnProperty(proto)){
-                    child[proto] = parent[proto];
+            for(proto in child){
+                if(child.hasOwnProperty(proto)){
+                    parent[proto] = child[proto];
                 }
             }
         }
-        return child;
+        return parent;
     };
 
     var _clone = function(targetObject){
@@ -162,6 +162,7 @@
         isDateTime  : function(dateTime){   return /^(\d{4})-(\d{1,2})-(\d{1,2})\s+(\d{1,2}):(\d{1,2}):(\d{1,2})$/.test(dateTime); },
         isTime      : function(time){       return /^(\d{1,2}):(\d{1,2}):(\d{1,2})$/.test(time); },
         //常用对象判断
+        isNull      : function(value){      return value == null; },
         isString    : function(value){      return typeof value === 'string'; },
         isNumber    : function(value){      return typeof value === 'number'; },
         isArray     : function(value){      return toString.call(value) === '[object Array]'; },
@@ -487,6 +488,25 @@
                 url = url + SYST.T.paramData(params, true);
             location.href = url;
         },
+
+        /**
+         * 组装字符串
+         * @param str
+         * @returns {*}
+         * use: displace('my name is \s, age is \d', 'rodey', 26);
+         */
+        displace: function(str){
+            if(!str) return;
+            var index = 0, args = [],
+                regx = /\%[s|d|f]?/gi;
+            for(var i = 1, len = arguments.length; i < len; ++i)
+                args.push(arguments[i]);
+            var string = str.replace(regx, function(match){
+                return args[index++];
+            });
+            return string;
+        },
+
         /**
          * Function 浏览器 cookie操作
          * @param key       键名
@@ -729,7 +749,8 @@
         regxs,
         macs;
 
-    var _tplCache = {};
+    var _content,
+        _tplCache = {};
 
     //模板字符串中需要替换的特殊字符
     var escapes = {
@@ -784,6 +805,12 @@
             helperStr = '',
             index = 0,
             data = data;
+
+        if(_tplCache[_content]){
+            var Render =  _tplCache[_content];
+            //执行渲染方法
+            return Render.call(target || this, data);
+        }
 
         //判断helper是否存在
         if(helper){
@@ -858,6 +885,7 @@
         $tplString = ''+ $tplString +' }; return _s;';
         //创建function对象
         var Render = new Function('$d', $tplString);
+        _tplCache[_content] = Render;
         //执行渲染方法
         $tplString = Render.call(target || this, data);
         return $tplString;
@@ -874,7 +902,7 @@
     var Render = function(content, data, helper, target){
 
         var element, tplContent = '';
-
+        _content = content;
         //重置配置
         _reset();
 
@@ -885,15 +913,11 @@
         //content为element id
         else{
 
-            if(_tplCache[content]){
-                return _tplCache[content];
-            }
-            element = document.querySelector('#' + content.replace('#'));
+            element = document.querySelector('#' + content.replace(/^#/i, ''));
             if(element){
                 var tplStr = /^(TEXTEREA|INPUT)$/i.test(element.nodeName) ? element.value : element.innerHTML;
                 tplContent = SYST.T.trim(tplStr);
             }
-            _tplCache[content] = tplContent;
         }
 
         return _template(tplContent, data, helper, target);
@@ -1050,8 +1074,11 @@
          * @param fail
          */
         doRequest: function(url, postData, su, fail, options){
-            var self = this, success, error, complete, type, dataType, setting = {};
+            var self = this, type, dataType, setting = {};
             if(!postData || typeof postData !== 'object' || !url || url == '') return;
+            //记录当前ajax请求个数
+            self._ajaxCount = 0;
+            this.ajaxUrl = url;
 
             if(options){
                 type = options.type;
@@ -1062,17 +1089,20 @@
                 dataType = self.ajaxDataType || 'json';
             }
             //提交前触犯
-            (self.ajaxBefore && SYST.V.isFunction(self.ajaxBefore)) && (setting['beforeSend'] = self.ajaxBefore.apply(self));
+            var rs = before();
+            if(rs === false) return;
 
             var ajaxSetting = SYST.extend(setting, {
                 url: url,
                 type: type,
                 data: postData,
                 dataType: dataType,
-                success: function(res){
+                success: function(res, data, status, xhr){
                     //console.log('请求成功', res);
-                    (self.ajaxSuccess && SYST.V.isFunction(self.ajaxSuccess)) && self.ajaxSuccess.call(self, res);
-                    (su && SYST.V.isFunction(su)) && su.call(self, res);
+                    end(res, data, status, xhr);
+                    //如果ajaxSuccess返回false 则将阻止之后的代码运行
+                    var rs = success(res, data, status, xhr);
+                    rs !== false && SYST.V.isFunction(su) && su.call(self, res, data, status, xhr);
                 },
                 error: function(xhr, errType){
                     //console.log('请求失败');
@@ -1080,17 +1110,46 @@
                     try{
                         response = JSON.parse(response);
                     }catch (e){}
-                    (self.ajaxError && SYST.V.isFunction(self.ajaxError)) && self.ajaxError.call(self, response, xhr, errType);
-                    (fail && SYST.V.isFunction(fail)) && fail.call(self, response, xhr, errType);
+                    end(response, xhr, errType);
+                    //如果ajaxError返回false 则将阻止之后的代码运行
+                    var rs = error(response, xhr, errType);
+                    rs !== false && SYST.V.isFunction(fail) && fail.call(self, response, xhr, errType);
                 },
-                complete: function(res){
-                    //console.log('请求完成');gulp
-                    (self.ajaxComplete && SYST.V.isFunction(self.ajaxComplete)) && self.ajaxComplete.call(self, res);
+                complete: function(res, data, status, xhr){
+                    //console.log('请求完成');
+                    complate(res, data, status, xhr);
                 }
             });
 
+            function before(){
+                SYST.V.isFunction(self.ajaxBefore) && (setting['beforeSend'] = self.ajaxBefore.apply(self));
+                if(setting['beforeSend'] === false) return false;
+            }
+            function success(res, data, status, xhr){
+                var su;
+                SYST.V.isFunction(self.ajaxSuccess) && (su = self.ajaxSuccess.call(self, res, data, status, xhr));
+                if(su === false) return false;
+            }
+            function error(res, xhr, errType){
+                var err;
+                return SYST.V.isFunction(self.ajaxError) && (err = self.ajaxError.call(self, res, xhr, errType));
+                if(err === false) return false;
+            }
+            function complate(res, data, status, xhr){
+                var complete;
+                return SYST.V.isFunction(self.ajaxComplete) && (complete = self.ajaxComplete.call(self, res, data, status, xhr));
+                if(complete === false) return false;
+            }
+            function end(res, data, status, xhr){
+                var end;
+                return SYST.V.isFunction(self.ajaxEnd) && (end = self.ajaxEnd.call(self, res, data, status, xhr));
+                if(end === false) return false;
+            }
+
+
             if(root.$){
                 root.$.ajax(ajaxSetting);
+                self._ajaxCount++;
             }else{
                 throw new Error('doRequest: $不存在，此方法依赖于(jQuery||Zepto||Ender)');
             }
@@ -1412,8 +1471,10 @@
             return this.controller;
         },
         getModel: function(){
-            return this.model || this.getController().getModel();
+            this.model = this.model || this.getController().getModel() || new SYST.Model();
+            return this.model;
         },
+        model: new SYST.Model({}),
         shareModel: SYST.shareModels
     };
 

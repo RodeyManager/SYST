@@ -19,7 +19,8 @@
         regxs,
         macs;
 
-    var _tplCache = {};
+    var _content,
+        _tplCache = {};
 
     //模板字符串中需要替换的特殊字符
     var escapes = {
@@ -74,6 +75,12 @@
             helperStr = '',
             index = 0,
             data = data;
+
+        if(_tplCache[_content]){
+            var Render =  _tplCache[_content];
+            //执行渲染方法
+            return Render.call(target || this, data);
+        }
 
         //判断helper是否存在
         if(helper){
@@ -148,6 +155,7 @@
         $tplString = ''+ $tplString +' }; return _s;';
         //创建function对象
         var Render = new Function('$d', $tplString);
+        _tplCache[_content] = Render;
         //执行渲染方法
         $tplString = Render.call(target || this, data);
         return $tplString;
@@ -164,7 +172,7 @@
     var Render = function(content, data, helper, target){
 
         var element, tplContent = '';
-
+        _content = content;
         //重置配置
         _reset();
 
@@ -175,15 +183,11 @@
         //content为element id
         else{
 
-            if(_tplCache[content]){
-                return _tplCache[content];
-            }
-            element = document.querySelector('#' + content.replace('#'));
+            element = document.querySelector('#' + content.replace(/^#/i, ''));
             if(element){
                 var tplStr = /^(TEXTEREA|INPUT)$/i.test(element.nodeName) ? element.value : element.innerHTML;
                 tplContent = SYST.T.trim(tplStr);
             }
-            _tplCache[content] = tplContent;
         }
 
         return _template(tplContent, data, helper, target);

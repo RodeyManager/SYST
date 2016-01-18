@@ -98,8 +98,11 @@
          * @param fail
          */
         doRequest: function(url, postData, su, fail, options){
-            var self = this, success, error, complete, type, dataType, setting = {};
+            var self = this, type, dataType, setting = {};
             if(!postData || typeof postData !== 'object' || !url || url == '') return;
+            //记录当前ajax请求个数
+            self._ajaxCount = 0;
+            this.ajaxUrl = url;
 
             if(options){
                 type = options.type;
@@ -110,17 +113,20 @@
                 dataType = self.ajaxDataType || 'json';
             }
             //提交前触犯
-            (self.ajaxBefore && SYST.V.isFunction(self.ajaxBefore)) && (setting['beforeSend'] = self.ajaxBefore.apply(self));
+            var rs = before();
+            if(rs === false) return;
 
             var ajaxSetting = SYST.extend(setting, {
                 url: url,
                 type: type,
                 data: postData,
                 dataType: dataType,
-                success: function(res){
+                success: function(res, data, status, xhr){
                     //console.log('请求成功', res);
-                    (self.ajaxSuccess && SYST.V.isFunction(self.ajaxSuccess)) && self.ajaxSuccess.call(self, res);
-                    (su && SYST.V.isFunction(su)) && su.call(self, res);
+                    end(res, data, status, xhr);
+                    //如果ajaxSuccess返回false 则将阻止之后的代码运行
+                    var rs = success(res, data, status, xhr);
+                    rs !== false && SYST.V.isFunction(su) && su.call(self, res, data, status, xhr);
                 },
                 error: function(xhr, errType){
                     //console.log('请求失败');
@@ -128,17 +134,46 @@
                     try{
                         response = JSON.parse(response);
                     }catch (e){}
-                    (self.ajaxError && SYST.V.isFunction(self.ajaxError)) && self.ajaxError.call(self, response, xhr, errType);
-                    (fail && SYST.V.isFunction(fail)) && fail.call(self, response, xhr, errType);
+                    end(response, xhr, errType);
+                    //如果ajaxError返回false 则将阻止之后的代码运行
+                    var rs = error(response, xhr, errType);
+                    rs !== false && SYST.V.isFunction(fail) && fail.call(self, response, xhr, errType);
                 },
-                complete: function(res){
-                    //console.log('请求完成');gulp
-                    (self.ajaxComplete && SYST.V.isFunction(self.ajaxComplete)) && self.ajaxComplete.call(self, res);
+                complete: function(res, data, status, xhr){
+                    //console.log('请求完成');
+                    complate(res, data, status, xhr);
                 }
             });
 
+            function before(){
+                SYST.V.isFunction(self.ajaxBefore) && (setting['beforeSend'] = self.ajaxBefore.apply(self));
+                if(setting['beforeSend'] === false) return false;
+            }
+            function success(res, data, status, xhr){
+                var su;
+                SYST.V.isFunction(self.ajaxSuccess) && (su = self.ajaxSuccess.call(self, res, data, status, xhr));
+                if(su === false) return false;
+            }
+            function error(res, xhr, errType){
+                var err;
+                return SYST.V.isFunction(self.ajaxError) && (err = self.ajaxError.call(self, res, xhr, errType));
+                if(err === false) return false;
+            }
+            function complate(res, data, status, xhr){
+                var complete;
+                return SYST.V.isFunction(self.ajaxComplete) && (complete = self.ajaxComplete.call(self, res, data, status, xhr));
+                if(complete === false) return false;
+            }
+            function end(res, data, status, xhr){
+                var end;
+                return SYST.V.isFunction(self.ajaxEnd) && (end = self.ajaxEnd.call(self, res, data, status, xhr));
+                if(end === false) return false;
+            }
+
+
             if(root.$){
                 root.$.ajax(ajaxSetting);
+                self._ajaxCount++;
             }else{
                 throw new Error('doRequest: $不存在，此方法依赖于(jQuery||Zepto||Ender)');
             }

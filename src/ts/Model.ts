@@ -128,6 +128,7 @@ module YT {
         public ajaxSuccess: Function    = function(){};
         public ajaxError: Function      = function(){};
         public ajaxComplete: Function   = function(){};
+        public ajaxEnd: Function        = function(){};
 
         public doRequest(url: string, postData: any, su: Function, fail?: Function, options?: any){
             var self: YT.Model = this,
@@ -146,17 +147,20 @@ module YT {
                 dataType = this.ajaxDataType || 'json';
             }
             //提交前触犯
-            (this.ajaxBefore && this._v.isFunction(this.ajaxBefore)) && (setting['beforeSend'] = this.ajaxBefore.apply(self));
+            var rs = before();
+            if(rs === false) return;
 
             var ajaxSetting: any = ST.extend(setting, {
                 url: url,
                 type: type,
                 data: postData,
                 dataType: dataType,
-                success: function(res){
+                success: function(res, data, status, xhr){
                     //console.log('请求成功', res);
-                    (self.ajaxSuccess && this._v.isFunction(self.ajaxSuccess)) && self.ajaxSuccess.call(self, res);
-                    (su && this._v.isFunction(su)) && su.call(self, res);
+                    end(res, data, status, xhr);
+                    //如果ajaxSuccess返回false 则将阻止之后的代码运行
+                    var rs: boolean = success(res, data, status, xhr);
+                    rs !== false && this._v.isFunction(su) && su.call(self, res, data, status, xhr);
                 },
                 error: function(xhr, errType){
                     //console.log('请求失败');
@@ -164,14 +168,41 @@ module YT {
                     try{
                         response = JSON.parse(response);
                     }catch (e){}
-                    (self.ajaxError && this._v.isFunction(self.ajaxError)) && self.ajaxError.call(self, response, xhr, errType);
-                    (fail && this._v.isFunction(fail)) && fail.call(self, response, xhr, errType);
+                    end(response, xhr, errType, null);
+                    //如果ajaxError返回false 则将阻止之后的代码运行
+                    var rs: boolean = error(response, xhr, errType);
+                    rs !== false && this._v.isFunction(fail) && fail.call(self, response, xhr, errType);
                 },
-                complete: function(res){
+                complete: function(res, data, status, xhr){
                     //console.log('请求完成');gulp
-                    (self.ajaxComplete && this._v.isFunction(self.ajaxComplete)) && self.ajaxComplete.call(self, res);
+                    this._v.isFunction(self.ajaxComplete) && self.ajaxComplete.call(self, res, data, status, xhr);
                 }
             });
+
+            function before(){
+                this._v.isFunction(self.ajaxBefore) && (setting['beforeSend'] = self.ajaxBefore.apply(self));
+                if(setting['beforeSend'] === false) return false;
+            }
+            function success(res: any, data: any, status: any, xhr: any){
+                var su: any;
+                this._v.isFunction(self.ajaxSuccess) && (su = self.ajaxSuccess.call(self, res, data, status, xhr));
+                if(su === false) return false;
+            }
+            function error(res: any, xhr: any, errType: any){
+                var err: any;
+                return this._v.isFunction(self.ajaxError) && (err = self.ajaxError.call(self, res, xhr, errType));
+                if(err === false) return false;
+            }
+            function complate(res: any, data: any, status: any, xhr: any){
+                var complete: any;
+                return this._v.isFunction(self.ajaxComplete) && (complete = self.ajaxComplete.call(self, res, data, status, xhr));
+                if(complete === false) return false;
+            }
+            function end(res: any, data: any, status: any, xhr: any){
+                var end: any;
+                return this._v.isFunction(self.ajaxEnd) && self.ajaxEnd.call(self, res, data, status, xhr);
+                if(end === false) return false;
+            }
 
             if(window['$']){
                 window['$'].ajax(ajaxSetting);

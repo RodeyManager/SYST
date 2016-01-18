@@ -305,6 +305,25 @@
                 url = url + SYST.T.paramData(params, true);
             location.href = url;
         },
+
+        /**
+         * 组装字符串
+         * @param str
+         * @returns {*}
+         * use: displace('my name is \s, age is \d', 'rodey', 26);
+         */
+        displace: function(str){
+            if(!str) return;
+            var index = 0, args = [],
+                regx = /\%[s|d|f]?/gi;
+            for(var i = 1, len = arguments.length; i < len; ++i)
+                args.push(arguments[i]);
+            var string = str.replace(regx, function(match){
+                return args[index++];
+            });
+            return string;
+        },
+
         /**
          * Function 浏览器 cookie操作
          * @param key       键名
