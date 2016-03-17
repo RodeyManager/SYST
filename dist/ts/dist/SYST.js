@@ -6,7 +6,7 @@ var ST = (function () {
     function ST() {
         //variables static
         this.author = 'Rodey';
-        this.version = '1.0.2';
+        this.version = '1.0.4';
         this.name = 'SYST JS MVC mini Framework (JS MVC框架)';
         this.root = window;
         this.$ = $;
@@ -1210,6 +1210,18 @@ var YT;
          */
         Model.prototype.doAjax = function (url, postData, su, fail, options) {
             this.doRequest(url, postData, su, fail, options);
+        };
+        /**
+         * 根据数组自动生成对象属性
+         * @param apis
+         */
+        Model.prototype.generateApi = function (apis, urls) {
+            var self = this;
+            this._v.isArray(apis) && apis.forEach(function (key) {
+                Object.defineProperty(self, key, { value: function (postData, su, fail) {
+                        self.doAjax(urls[key], postData, su, fail);
+                    } });
+            });
         };
         return Model;
     })();

@@ -7,7 +7,7 @@ class ST {
 
     //variables static
     author:string = 'Rodey';
-    version:string = '1.0.2';
+    version:string = '1.0.4';
     name:string = 'SYST JS MVC mini Framework (JS MVC框架)';
     root: Window = window;
     $: ZeptoStatic = $;

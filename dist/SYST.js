@@ -1146,7 +1146,6 @@
                 if(end === false) return false;
             }
 
-
             if(root.$){
                 root.$.ajax(ajaxSetting);
                 self._ajaxCount++;
@@ -1163,6 +1162,18 @@
          */
         doAjax: function(url, postData, su, fail, options){
             this.doRequest(url, postData, su, fail, options);
+        },
+        /**
+         * 根据数组自动生成对象属性
+         * @param apis
+         */
+        generateApi: function(apis, urls){
+            var self = this;
+            SYST.V.isArray(apis) && apis.forEach(function(key){
+                Object.defineProperty(self, key, { value: function(postData, su, fail){
+                    self.doAjax(urls[key], postData, su, fail);
+                } });
+            });
         }
     };
 
