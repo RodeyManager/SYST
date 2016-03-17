@@ -109,6 +109,10 @@ gulp.task('build.ts', function(){
             declaration: true,
             out: 'dist/SYST.js'
         }))
+        .pipe(gulp.dest('dist/ts'))
+
+        .pipe(rename({suffix: '.min'}))             //rename压缩后的文件名
+        .pipe(uglify({ preserveComments: '!' }))    //压缩
         .pipe(gulp.dest('dist/ts'));
 });
 

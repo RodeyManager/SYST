@@ -65,13 +65,13 @@ var ST = (function () {
         if (!child || child === {} || typeof (child) !== 'object')
             return parent;
         if (!child.prototype) {
-            child.__super__ = parent;
             var proto;
             for (proto in parent) {
                 if (parent.hasOwnProperty(proto)) {
                     child[proto] = parent[proto];
                 }
             }
+            child.__super__ = parent;
         }
         return child;
     };

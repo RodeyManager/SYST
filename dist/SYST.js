@@ -51,13 +51,13 @@
         if(!parent) return child;
         if(!child) return parent;
         if(!child.prototype){
-            child.__super__ = parent;
             var proto;
             for(proto in child){
                 if(child.hasOwnProperty(proto)){
                     parent[proto] = child[proto];
                 }
             }
+            child.__super__ = parent;
         }
         return parent;
     };

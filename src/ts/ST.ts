@@ -86,13 +86,13 @@ class ST {
         if (!parent || parent === {} || typeof(parent) !== 'object') return child;
         if (!child || child === {} || typeof(child) !== 'object') return parent;
         if (!child.prototype) {
-            child.__super__ = parent;
             var proto:any;
             for (proto in parent) {
                 if (parent.hasOwnProperty(proto)) {
                     child[proto] = parent[proto];
                 }
             }
+            child.__super__ = parent;
         }
         return child;
     }
