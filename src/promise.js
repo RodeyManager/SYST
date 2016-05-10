@@ -97,7 +97,7 @@
                     this._fulfils.push(fulfil);
                 }else{
                     this._bunchFulfil = false;
-                    fulfil.apply(this, this.args);
+                    fulfil.call(this, value, this.args);
                 }
             }else{
                 throw new TypeError('no found a function object to [then|all|done|success]');

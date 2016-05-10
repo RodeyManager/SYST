@@ -1,0 +1,203 @@
+    <hr>
+    <h2 id="SYST.Watcher">SYST.Watcher(模型数据绑定监听对象)</h2>
+
+    <article class="method" id="SYST.W.addListener">
+        <h3>addListener <code>Function(propName)</code></h3>
+        <ul>
+            <li><code>propName: </code> 要移除监听的绑定的属性名，<code>this.model.props</code> 中的元素</li>
+        </ul>
+
+        <p>
+            监听属性，在Model初始化的时候会监听所有 props下的元素
+        </p>
+        <h3 class="ex-title">实例：</h3>
+<pre><code>
+
+    &lt;span&gt;{{ name }}&lt;/span&gt;
+
+    var model = SYST.Model();
+    model.set({'name': '张三', age: 23, skill: ['java', 'python', 'javascript']});
+    model.watcher.addListener('name');
+
+</code></pre>
+    </article>
+
+    <article class="method" id="SYST.W.removeListener">
+        <h3>removeListener <code>Function([propName])</code></h3>
+        <ul>
+            <li><code>propName: </code> 要移除监听的绑定的属性名，<code>this.model.props</code> 中的元素</li>
+        </ul>
+
+        <p>
+            移除监听的绑定的属性
+        </p>
+        <h3 class="ex-title">实例：</h3>
+<pre><code>
+
+    &lt;span&gt;{{ name }}&lt;/span&gt;
+
+    var model = SYST.Model();
+    model.set({'name': '张三', age: 23, skill: ['java', 'python', 'javascript']});
+    model.watcher.removeListener('name');
+
+</code></pre>
+    </article>
+
+    <article class="method" id="SYST.W.removeListenerAll">
+        <h3>removeListenerAll <code>Function([propName])</code></h3>
+
+        <p>
+            移除监听的所有绑定的属性
+        </p>
+        <h3 class="ex-title">实例：</h3>
+<pre><code>
+
+    &lt;span&gt;{{ name }}&lt;/span&gt;
+
+    var model = SYST.Model();
+    model.set({'name': '张三', age: 23, skill: ['java', 'python', 'javascript']});
+    model.watcher.removeListenerAll();
+    // == model.watcher.removeListener(null);
+
+</code></pre>
+    </article>
+
+    <article class="method" id="SYST.W.update">
+        <h3>update <code>Function([propName])</code></h3>
+        <ul>
+            <li><code>propName: </code> 属性名，<code>this.model.props</code> 中的元素</li>
+        </ul>
+
+        <p>
+            更新监听器，更新监听数据模型对象中的 props下元素 <br/>
+            使用 <code>SYST.Model().set</code> 时会调用 update方法
+        </p>
+        <h3 class="ex-title">实例：</h3>
+<pre><code>
+    &lt;div st-model="wModel"&gt;
+        &lt;span&gt;姓名: {{ name }}；年龄: {{ age }}&lt;/span&gt;
+    &lt;/div&gt;
+
+    var wModel= SYST.Model({
+        $mid: 'wModel',
+        props: { name: '张三', age: 23 },
+        init: function(){}
+    });
+    $('#w-update-btn').click(function(){
+        wModel.watcher.update('age', 123);
+        wModel.watcher.update('name', '张三丰');
+    });
+
+</code></pre>
+        <div st-model="wModel" style="color: grey;">
+            <span>姓名: {{ name }}；年龄: {{ age }}</span> <br/><br/>
+        </div>
+
+        <button id="w-update-btn">运行实例</button>
+        <script>
+            var wModel;
+            $(function(){
+                wModel= SYST.Model({
+                    $mid: 'wModel',
+                    props: { name: '张三', age: 23 },
+                    init: function(){}
+                });
+                $('#w-update-btn').click(function(){
+                    //wModel.set({ name: '张三丰', age: 123 });
+                    wModel.watcher.update('age', 123);
+                    wModel.watcher.update('name', '张三丰');
+                });
+            });
+        </script>
+
+    </article>
+
+    <article class="method" id="SYST.W.updateRenderTemplate">
+        <h3>updateRenderTemplate <code>Function([templateId])</code></h3>
+        <ul>
+            <li><code>templateId: </code> 模板元素id</li>
+        </ul>
+
+        <p>
+            更新监听器，重新渲染页面以 <code>st-template</code> 绑定的内容 <br/>
+            在 <code>SYST.Model().set</code> 方法最后会调用，也就是当model的props所有元素都更新完后，会触发 st-template 绑定的模板重新渲染。
+        </p>
+        <h3 class="ex-title">实例：</h3>
+<pre><code>
+
+    //html
+    &lt;div st-model="rmodel"&gt;
+        &lt;div st-template="user-info-tpl"&gt;&lt;/div&gt;
+    &lt;/div&gt;
+    //*** 模板元素不能放在st-model属性的元素之内
+    &lt;script type="text/html" id="user-info-tpl"&gt;
+        &lt;ul&gt;
+            &lt;li&gt;{{= name }}&lt;/li&gt;
+            &lt;li&gt;{{= age }}&lt;/li&gt;
+        &lt;/ul&gt;
+    &lt;/script&gt;
+
+    //test.json
+    { name: '张三丰', age: 123 }
+
+    var model = SYST.Model({
+        $mid: 'rmodel',
+        props: {'name': '张三', age: 23}
+    });
+    model.$http.get('../test.json', {}, function(res){
+        //更新
+        model.watcher.updateRenderTemplate('#user-info-tpl', res.data);
+        //==> model.set(res.data);
+    });
+
+</code></pre>
+        <div st-model="rmodel" style="color: grey;">
+            <div st-template="user-info-tpl"></div>
+        </div>
+        <script type="text/html" id="user-info-tpl">
+            <ul>
+                <li>{{== name }}</li>
+                <li>{{= age }}</li>
+            </ul>
+        </script>
+        <br/><br/>
+        <button id="w-updateRenderTemplate-btn">运行实例</button>
+        <script>
+
+            $(function(){
+                var rmodel = SYST.Model({
+                    $mid: 'rmodel'
+                });
+                rmodel.set({'name': '李四', age: 23});
+                $('#w-updateRenderTemplate-btn').click(function(){
+                    rmodel.$http.get('test.json', {}, function(res){
+                        //更新
+                        rmodel.watcher.updateRenderTemplate('#user-info-tpl', res.userData);
+                        //==> rmodel.set(res.userData);
+                    });
+                });
+            });
+
+        </script>
+    </article>
+
+    <article class="method" id="SYST.W.reset">
+        <h3>reset <code>Function([model])</code></h3>
+        <ul>
+            <li><code>model: </code> 数据绑定的模型对象</li>
+        </ul>
+
+        <p>
+            更新监听器，更新监听数据模型对象中的 props下所有元素
+        </p>
+        <h3 class="ex-title">实例：</h3>
+<pre><code>
+
+    &lt;span&gt;{{ name }}&lt;/span&gt;
+
+    var model = SYST.Model();
+    model.set({'name': '张三', age: 23, skill: ['java', 'python', 'javascript']});
+    model.watcher.reset();
+
+</code></pre>
+    </article>

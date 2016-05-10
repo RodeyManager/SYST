@@ -1,0 +1,320 @@
+
+
+    <hr>
+    <h2 id="SYST.Router">SYST.Router(路由器)</h2>
+
+    <article class="method" id="SYST.R.routes">
+        <h3>routes <code>Object</code></h3>
+
+        <p>
+            所有路由配置，支持正则
+        </p>
+        <h3 class="ex-title">实例：</h3>
+<pre><code>
+    var router = SYST.Router({
+        //路由
+        routes: {
+            //流程 1
+            'step1': 'step1Action',
+            //流程 2
+            'step2/:orderId': 'step2Action',
+            //流程 3
+            'step3': 'step3Action'
+            //流程 ...n
+        },
+        step1Action: function(){},
+        step2Action: function(){},
+        step3Action: function(){}
+    });
+</code></pre>
+    </article>
+
+    <article class="method" id="SYST.R.container">
+        <h3>container <code>String</code></h3>
+
+        <p>
+            所有路由配置共用的容器（支持jquery选择器写法）<code>必须是字符串</code>
+        </p>
+        <h3 class="ex-title">实例：</h3>
+<pre><code>
+    var router = SYST.Router({
+        //路由
+        routes: {
+            //流程 1
+            'step1': 'step1Action',
+            //流程 2
+            'step2/:orderId': 'step2Action'
+        },
+        //内容变化容器
+        container: '#main-content',
+        step1Action: function(){
+            console.log(this.container); //=> #main-content
+        },
+        step2Action: function(){
+            console.log(this.container); //=> #main-content
+        }
+
+    });
+</code></pre>
+    </article>
+
+    <article class="method" id="SYST.R.params">
+        <h3>params <code>Object</code></h3>
+
+        <p>
+            当前路由的参数列表
+        </p>
+        <h3 class="ex-title">实例：</h3>
+<pre><code>
+
+    //如果是当前的url为 http://localhost/shop#!step/1000
+
+    var router = SYST.Router({
+        //路由
+        routes: {
+            'step/:orderId': 'stepAction'
+        },
+        //内容变化容器
+        container: '#main-content',
+        stepAction: function(){
+            console.log(this.params); //=> Object { orderId: 1000 }
+        }
+
+    });
+</code></pre>
+    </article>
+
+    <article class="method" id="SYST.R.router">
+        <h3>router <code>Object</code></h3>
+
+        <p>
+            当前路由的处理对象
+        </p>
+        <h3 class="ex-title">实例：</h3>
+<pre><code>
+    var memberAction = function(){
+        return {
+            template: '&lt;div&gt;{{ username }}&lt;/div&gt;',
+            onReady: function(){
+                this.data.username = 'Jack';
+            };
+        };
+    };
+
+    var memberEdit = {
+        template: 'load@member/edit.html',
+        onReady: function(){};
+    };
+
+    var memberRouter = SYST.Router({
+        //路由
+        routes: {
+            'member/:userId'        : memberAction,
+            'member/edit/:userId'   : memberEdit
+        },
+        //内容变化容器
+        container: '#main-content',
+        stepAction: memberAction
+
+    });
+    console.log(memberRouter.router);
+    //如果是当前的url为 http://localhost/shop#!member/1000
+    //=> memberAction
+    //如果是当前的url为 http://localhost/shop#!member/edit/1000
+    //=> memberEdit
+
+</code></pre>
+    </article>
+
+    <article class="method" id="SYST.R.isRender">
+        <h3>isRender <code>Boolean</code></h3>
+
+        <p>
+            加载模板文件或者模板字符串时是否使用 <code>SYST.T.render</code> 进行渲染, 默认为 <code>false</code>
+        </p>
+        <h3 class="ex-title">实例：</h3>
+<pre><code>
+    var memberAction = function(){
+        return {
+            template: '&lt;div&gt;{{ username }}&lt;/div&gt;',
+            onReady: function(){
+                this.data.username = 'Jack';
+            };
+        };
+    };
+
+    var memberEdit = {
+        template: 'load@member/edit.html',
+        isRender: false,
+        onReady: function(){};
+    };
+
+    var memberRouter = SYST.Router({
+        //路由
+        routes: {
+            'member/:userId'        : memberAction,
+            'member/edit/:userId'   : memberEdit
+        },
+        //内容变化容器
+        container: '#main-content',
+        isRender: true,
+
+    });
+
+</code></pre>
+    </article>
+
+    <article class="method" id="SYST.R.start">
+        <h3>start <code>Function</code></h3>
+
+        <p>
+            开启路由（只有开启之后才会响应url路由变化处理事件）
+        </p>
+        <h3 class="ex-title">实例：</h3>
+<pre><code>
+    var listController = {
+        container: '#container',
+        template: 'load@tpl/user_list.html'
+    };
+    //...
+
+    var router = new SYST.Router();
+    router.when('user/', listController);
+    router.when('user/add', addController);
+    router.when('user/edit/:userId', editController);
+    //开启路由功能(监听路由变化)
+    router.start();
+
+</code></pre>
+    </article>
+
+    <article class="method" id="SYST.R.stop">
+        <h3>stop <code>Function()</code></h3>
+
+        <p>
+            停止路由（停止响应url路由变化处理事件）
+        </p>
+        <h3 class="ex-title">实例：</h3>
+<pre><code>
+    var listController = {
+        container: '#container',
+        template: 'load@tpl/user_list.html'
+    };
+
+    var router = new SYST.Router();
+    router.when('user/', listController);
+    //开启路由功能(监听路由变化)
+    router.start();
+    //停止路由功能(监听路由变化)
+    router.stop();
+
+</code></pre>
+    </article>
+
+    <article class="method" id="SYST.R.when">
+        <h3>when <code>Function(route, object)</code></h3>
+        <ul>
+            <li><code>route: </code> 路由</li>
+            <li><code>object: </code> 响应对象，<a href="#SYST.R.routerObject">查看详情</a></li>
+        </ul>
+
+        <p>
+            添加路由
+        </p>
+        <h3 class="ex-title">实例：</h3>
+<pre><code>
+    var listController = {
+        container: '#container',
+        template: 'load@tpl/user_list.html'
+    };
+
+    var router = new SYST.Router();
+    router.when('user/', listController).start();
+
+</code></pre>
+    </article>
+
+    <article class="method" id="SYST.R.getRouter">
+        <h3>getRouter <code>Function(route)</code></h3>
+        <ul>
+            <li><code>route: </code> 路由</li>
+        </ul>
+
+        <p>
+            根据路由字符获取对应的响应对象，<a href="#SYST.R.RouterObject">查看详情</a>
+        </p>
+    </article>
+
+    <article class="method" id="SYST.R.renderBefore">
+        <h3>renderBefore <code>Function()</code></h3>
+
+        <p>
+            onRender之前执行（在加载模板文件或者解析模板字符串之前执行），常用于设置加载进度
+        </p>
+    </article>
+
+    <article class="method" id="SYST.R.rendered">
+        <h3>rendered <code>Function()</code></h3>
+
+        <p>
+            onRender完成执行（在加载模板文件或者解析模板字符串之后执行），常用于清除加载进度
+        </p>
+<pre><code>
+    var router = SYST.Router({
+        //......
+        container: '#container',
+        //加载模板文件之前执行，添加加载进度
+        renderBefore: function(){
+            this.container.addClass('loading');
+        },
+        //加载模板文件完成执行，清除加载进度
+        rendered: function(){
+            this.container.removeClass('loading');
+        }
+    });
+</code></pre>
+    </article>
+
+    <article class="method" id="SYST.R.RouterObject">
+        <h3>RouterObject 路由处理对象</h3>
+        <ul>
+            <li><code>container: String</code> 当前路由对应的页面容器</li>
+            <li><code>isRender: Function</code> 加载模板文件或者模板字符串时是否使用 <code>SYST.T.render</code> 进行渲染, 默认为 <code>false</code></li>
+            <li><code>template: String</code> 当前路由对应的模板（字符串 || 文件）</li>
+            <li><code>onReady: Function</code> 路由加载完成时触发</li>
+            <li><code>onRender: Function</code> 路由加载并渲染模板完成后触发</li>
+            <li><code>onDestroy: Function</code> 切换路由时触发</li>
+            <li><code>onAnimate: Function</code> 切换路由时的动画效果</li>
+        </ul>
+
+        <p>
+            <span class="ex-emp">
+                当 <code>template</code>为加载文件时，字符串开头必须以 <code>'load@' || 'load>'</code>开头,
+                load后面可链接的特色字符为: [@|>|!|#]
+            </span>
+        </p>
+        <h3 class="ex-title">实例：</h3>
+<pre><code>
+    var listController = {
+        container: '#container',
+        isRender: true,
+        template: 'load@tpl/user_list.html',
+        animate: 'fade',
+        data: data,
+        onReady: function(){
+            console.log('list 路由开始渲染状态');
+            this.router.view = view;
+        },
+        onRender: function(tpl){
+            //this.container.html(SYST.T.render(tpl, this.data ));
+            $('#click-me').removeAttr('disabled');
+        },
+        onDestroy: function(){
+            console.log('list 路由销毁状态');
+            return confirm('是否销毁当前路由，切换到指定路由？');
+        }
+
+    };
+
+</code></pre>
+    </article>

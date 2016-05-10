@@ -79,20 +79,25 @@
         router.when('user/delete', {
             container: '#container',
             animate: 'fade',
-            template: '<h2>这里是删除的模板 (—^_^—)</h2>',
-            view: {
+            template: '<h2 id="h2">这里是删除的模板 (—^_^—)</h2>',
+            view: SYST.View({
+                unInit: true,
+                events: {
+                    'click h2': 'h2Click'
+                },
                 init: function(){
-                    console.log(this.params);
-                }
-            },
+                    console.log(this.router.params);
+                },
+                h2Click: function(evt){ console.log(evt); }
+            }),
             action: function(){
                 console.log('......delete action....., for id = ' + this.params['id']);
             },
             onReady: function(){
                 console.log('路由开始状态');
             },
-            onRender: function(tpl){
-                console.log(tpl);
+            onRender: function(){
+                console.log(this.tpl);
                 console.log('模板渲染完成状态');
             },
             onDestroy: function(){

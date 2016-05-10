@@ -9,31 +9,29 @@
 
     'use strict';
 
-    var View = SYST.View = function(child){
-        this.__Name__ = 'View';
-        if(child){
-            child.__SuperName__ = 'SYST View';
-            child = SYST.extend(SYST.View.prototype, child);
-            !child.unInit && child._initialize();
-            return child;
-        }else{
-            return new SYST.View({});
-        }
+    var View = function(){
+        this.__SuperName__ = 'SYST View';
+        this.__Name__ = 'SYST View';
+    };
+    SYST.View = function(){
+        var view = SYST.extendClass(arguments, View);
+        view._initialize();
+        return view;
     };
 
-    SYST.View.prototype = {
-        $el: {},
+    View.prototype = {
+        container: 'body',
         tagPanel: 'selection',
         _initialize: function(){
-            var self = this;
+            this.container = SYST.$(this.container);
+            this.containerSelector = this.container.selector;
             this.model = this.model ? this.model : (this.controller ? this.controller.getModel() : undefined);
-            //document.body.appendChild(this.$el[0]);
+
             //自定义init初始化
-            this.init && this.init.apply(this, arguments);
+            !this.unInit && this.init && this.init.apply(this, arguments);
             if(this.render && SYST.V.isFunction(this.render)){
-                var panel = '<' + self.tagPanel + '/>';
-                self.$el = self.parseDom('', panel);
-                self.render.apply(self, arguments);
+                this.$el = SYST.$('<' + this.tagPanel + '/>');
+                this.render.apply(this, arguments);
             }
 
             //自动解析 events对象，处理view中的事件绑定
@@ -42,6 +40,8 @@
 
         destroy: function(){
             this.$el.remove();
+            this.container.html('');
+            return this;
         },
         /**
          * 改变对象属性作用域 (常用在元素触发事件侦听函数中)
@@ -65,18 +65,18 @@
          * @param events对象
          * @return {*}
          */
-        parseEvent: function(evtObj){
+        _parseEvent: function(evtObj){
             if(!evtObj || evtObj.length == 0 || evtObj === {}) return this;
-            var evts = [], objs = [], handleFunctions = [];
+            var evts = [], objs = [], handleFunctions = [], o, selector, evtType, func;
             for(var evt in evtObj){
                 var eobj = evtObj[evt];
                 if(SYST.V.isObject(eobj)){
                     for(var k in eobj){
-                        var o = this.parseString(eobj, k), selector = o[0], evtType = o[1], func = o[2];
+                        o = this._parseString(eobj, k), selector = o[0], evtType = o[1], func = o[2];
                         pushs(selector, evtType, func);
                     }
                 }else{
-                    var o = this.parseString(evtObj, evt), selector = o[0], evtType = o[1], func = o[2];
+                    o = this._parseString(evtObj, evt), selector = o[0], evtType = o[1], func = o[2];
                     pushs(selector, evtType, func);
                 }
 
@@ -100,8 +100,8 @@
          * 自动绑定事件
          * @param 将被替换的对象
          */
-        autoHandleEvent: function(type){
-            var parseEvents = this.parseEvent(this.events),
+        _autoHandleEvent: function(type){
+            var parseEvents = this._parseEvent(this.events),
                 evts = parseEvents['events'],
                 objs = parseEvents['elements'],
                 funs = parseEvents['functions'];
@@ -115,12 +115,12 @@
                 if(!objs[i])
                     throw new Error('事件函数'+ funs[i] + '不存在');
 
-                SYST.Events($(objs[i]), this, evts[i], funs[i], type, this.triggerContainer || 'body');
+                SYST.Events($(objs[i]), this, evts[i], funs[i], type, this.containerSelector);
             }
             return this;
         },
 
-        parseString: function(obj, k){
+        _parseString: function(obj, k){
             var o = ($.trim(k)).split(/\s+/gi);
             var selector = o[1].replace(/^\$*|[\(*]|[\)*]$/gi, '').replace(/"|'/gi, '\"');
             var evtType = o[0].replace(/^\s*|\s*$/gi, '');
@@ -128,39 +128,42 @@
             return [selector, evtType, func];
         },
 
+        /**
+         * 开始监听
+         * @param selector
+         * @param event
+         * @param func
+         */
         onEvent: function(selector, event, func){
             if(SYST.V.isEmpty(selector)) {
-                this.autoHandleEvent('on');
+                this._autoHandleEvent('on');
             }else{
-                SYST.Events.initEvent(SYST.V.isString(selector) ? $(selector) : selector, this, event, func, 'on', this.triggerContainer);
+                SYST.Events.initEvent(SYST.V.isString(selector) ? $(selector) : selector, this, event, func, 'on', this.containerSelector);
             }
-        },
-
-        offEvent: function(selector, event, func){
-            //this.autoHandleEvent('off');
-            if(SYST.V.isEmpty(selector)){
-                this.autoHandleEvent('off');
-            }else{
-                //this._e.uninitEvent(selector, event, func);
-                SYST.Events.initEvent(SYST.V.isString(selector) ? $(selector) : selector, this, event, func, 'off', this.triggerContainer);
-            }
+            return this;
         },
 
         /**
-         * Function 模板渲染
-         * @param htmlStr
-         * @param data
-         * @return {*}
+         * 结束监听
+         * @param selector
+         * @param event
+         * @param func
          */
-        template: function(htmlStr, data, helper){
-            var compHtml;
-            compHtml = SYST.Render(htmlStr, data, helper, this);
-            return compHtml;
+        offEvent: function(selector, event, func){
+            //this.autoHandleEvent('off');
+            if(SYST.V.isEmpty(selector)){
+                this._autoHandleEvent('off');
+            }else{
+                //this._e.uninitEvent(selector, event, func);
+                SYST.Events.initEvent(SYST.V.isString(selector) ? $(selector) : selector, this, event, func, 'off', this.containerSelector);
+            }
+            return this;
         },
+
+        //Function 模板渲染
+        template: SYST.T.render,
         //将元素转成对象并返回
-        parseDom: function(htmlStr, tagPanel){
-            return SYST.T.parseDom(htmlStr, tagPanel);
-        },
+        parseDom: SYST.T.parseDom,
         getController: function(){
             return this.controller;
         },
@@ -168,7 +171,7 @@
             this.model = this.model || this.getController().getModel() || new SYST.Model();
             return this.model;
         },
-        model: new SYST.Model({}),
+        model: new SYST.Model(),
         shareModel: SYST.shareModels
     };
 

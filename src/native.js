@@ -22,17 +22,14 @@
         IS_PAD = ua.indexOf('IPAD') !== -1,
         IS_MOBILE = (IS_PHONE || IS_PAD) ? true : false;
 
-    var Native = SYST.Native = function(child){
-        this.__Name__ = 'Native';
-        if(child){
-            child.__SuperName__ = 'SYST Native';
-            child = SYST.extend(SYST.Native.prototype, child);
-            return child;
-        }else{
-            return new SYST.Native({});
-        }
+    var Native = function(){
+        this.__SuperName__ = 'SYST Native';
+        this.__Name__ = 'SYST Native';
     };
-    SYST.N = SYST.Native.prototype = {
+    SYST.Native = function(){
+        return SYST.extendClass(arguments, Native);
+    };
+    SYST.N = Native.prototype = {
         isAndroid   : IS_ANDROID,
         isIos       : IS_IOS,
         isNative    : IS_NATIVE,
@@ -43,6 +40,5 @@
             //TODO......
         }
     };
-
 
 })(SYST);

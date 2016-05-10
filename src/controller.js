@@ -11,19 +11,15 @@
      * Module 控制器对象
      * @type {Function}
      */
-    var Controller = SYST.Controller = function(child){
-        this.__Name__ = 'Controller';
-        this.model = undefined;
-        this.superView = undefined;
-        this.shareModels = SYST.shareModel.get(null);
-        if(child){
-            child.__SuperName__ = 'SYST Controller';
-            child = SYST.extend(SYST.Controller.prototype, child);
-            child._initialize();
-            return child;
-        }else{
-            return new SYST.Controller({});
-        }
+
+    var Controller = function(){
+        this.__SuperName__ = 'SYST Controller';
+        this.__Name__ = 'SYST Controller';
+    };
+    SYST.Controller = function(){
+        var ctrl = SYST.extendClass(arguments, Controller);
+        ctrl._initialize();
+        return ctrl;
     };
     SYST.Controller.prototype = {
         defaultHost: location.host,
@@ -35,13 +31,12 @@
             if(key)     return this.shareModel.get(key);
             else        return this.model;
         },
-        setModel: function(val){
-            if(key !== '' || null != val){
-                this.shareModel.add(val);
-            }else if(typeof key === 'object'){
-                this.model = key;
+        setModel: function(model){
+            if(!SYST.V.isEmpty(model)){
+                this.shareModel.add(model);
+                this.model = model;
             }else{
-                throw 'setModel: 参数有误';
+                throw new Error('setModel: 参数有误');
             }
         }
     };

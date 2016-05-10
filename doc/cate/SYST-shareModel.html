@@ -1,0 +1,73 @@
+
+    <hr>
+    <h2 id="SYST.shareModel">SYST.shareModel(共享数据模型)</h2>
+    <article class="method" id="SYST.sm.models">
+        <h3>models <code>Object</code></h3>
+        <p>
+            模型集合
+        </p>
+    </article>
+    <article class="method" id="SYST.sm.add">
+        <h3>add <code>Function (key, model)</code></h3>
+        <ul>
+            <li><code>key: </code> 键值，获取时标识</li>
+            <li><code>model: </code> SYST.Model对象</li>
+        </ul>
+
+        <p>
+            添加 model
+        </p>
+        <h3 class="ex-title">实例：</h3>
+<pre><code>
+    var userModel = SYST.Model({ name: '张三' });
+    SYST.shareModel.add('userModel', userModel);
+
+</code></pre>
+    </article>
+    <article class="method" id="SYST.sm.get">
+        <h3>get <code>Function (key) => <span class="cm">SYST.Model</span></code></h3>
+        <ul>
+            <li><code>key: </code> 键值，标识</li>
+        </ul>
+
+        <p>
+            获取 model
+        </p>
+        <h3 class="ex-title">实例：</h3>
+<pre><code>
+    SYST.shareModel.get('userModel');
+
+</code></pre>
+    </article>
+    <article class="method" id="SYST.sm.remove">
+        <h3>remove <code>Function (key)</code></h3>
+        <ul>
+            <li><code>key: </code> 键值，标识</li>
+        </ul>
+
+        <p>
+            移除 model
+        </p>
+        <h3 class="ex-title">实例：</h3>
+<pre><code>
+    SYST.shareModel.remove('userModel');
+
+</code></pre>
+    </article>
+    <article class="method" id="SYST.sm.has">
+        <h3>has <code>Function (key) => <span class="cm">Boolean</span></code></h3>
+        <ul>
+            <li><code>key: </code> 键值，标识</li>
+        </ul>
+
+        <p>
+            判断某个model是否存在
+        </p>
+        <h3 class="ex-title">实例：</h3>
+<pre><code>
+    var userModel = SYST.Model({ name: '张三' });
+    SYST.shareModel.add('userModel', userModel);
+    SYST.shareModel.has('userModel'); //=> true
+
+</code></pre>
+    </article>

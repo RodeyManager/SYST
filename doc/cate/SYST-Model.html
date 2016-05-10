@@ -1,0 +1,321 @@
+
+    <hr>
+    <h2 id="SYST.Model">SYST.Model(数据模型)</h2>
+    <article class="method" id="SYST.M.$http">
+        <h3>$http <code>Object</code></h3>
+
+        <p>
+            http请求对象，主要包含 <code>ajax</code>，<code>fetch</code>，<code>websocket</code>相关方法 <br/>
+            请查看 <code><a href="#SYST.Http">SYST.Http 对象</a></code>
+        </p>
+    </article>
+
+    <article class="method" id="SYST.M.generateApi">
+        <h3>generateApi <code>Function(apis, urls[, options])</code></h3>
+        <ul>
+            <li><code>apis</code> 接口名称</li>
+            <li><code>urls</code> 接口地址</li>
+            <li><code>options</code> 附加设置</li>
+        </ul>
+
+        <p>
+            据数组自动生成对象属性。
+        </p>
+
+        <h3 class="ex-title">实例：</h3>
+<pre><code>
+    var host = 'http://localhost/mall/';
+    var urls = {
+        login:          host + 'user/login',
+        logout:         host + 'user/logout',
+        getOrderList:   host + 'order/list',
+        addOrder:       host + 'order/add'
+    };
+
+    var model = SYST.Model({
+        init: function(){
+            this.generateApi(urls);
+        }
+    });
+    console.log(model.login);
+    /*
+    function (postData, su, fail){
+        self.$http.doAjax(apis[key], postData, su, fail, { callTarget: self });
+    }
+    */
+
+</code></pre>
+
+    </article>
+
+    <article class="method" id="SYST.M.props">
+        <h3>props <code>Function(key)</code></h3>
+
+        <p>
+            模型中的属性对象
+        </p>
+        <h3 class="ex-title">实例：</h3>
+<pre><code>
+    var model = SYST.Model({ $mid: 1 });
+    model.set('name', '张三');
+    console.log(model.props);
+    //=> Object {name: "张三"}
+</code></pre>
+
+    </article>
+
+    <article class="method" id="SYST.M.add">
+        <h3>add <code>Function(key, val)</code></h3>
+        <ul>
+            <li><code>key: </code> 标识</li>
+            <li><code>val: </code> 数据</li>
+        </ul>
+
+        <p>
+            添加模型属性props元素，有则覆盖
+        </p>
+    </article>
+
+    <article class="method" id="SYST.M.set">
+        <h3>set <code>Function(key, val)</code></h3>
+        <ul>
+            <li><code>key: </code> 标识</li>
+            <li><code>val: </code> 数据</li>
+        </ul>
+
+        <p>
+            设置模型属性props元素，有则覆盖
+        </p>
+    </article>
+
+    <article class="method" id="SYST.M.get">
+        <h3>get <code>Function(key)</code></h3>
+        <ul>
+            <li><code>key: </code> 标识</li>
+        </ul>
+
+        <p>
+            获取模型中的元素
+        </p>
+        <h3 class="ex-title">实例：</h3>
+<pre><code>
+    var model = SYST.Model({ $mid: 1 });
+    model.set('name', '张三');
+    model.add('skill', ['java', 'c++', 'python']);
+    console.log(model.get('name'));
+    //=> 张三
+    console.log(model.get('skill'));
+    //=> ['java', 'c++', 'python']
+    model.add({ 'username': 'Jack', 'password': '123456' });
+</code></pre>
+    </article>
+
+    <article class="method" id="SYST.M.has">
+        <h3>has <code>Function(key) => Boolean</code></h3>
+        <ul>
+            <li><code>key: </code> 标识</li>
+        </ul>
+
+        <p>
+            判断某个属性是否存在，必须是set进去的
+        </p>
+        <h3 class="ex-title">实例：</h3>
+<pre><code>
+    var model = SYST.Model({ $mid: 1 });
+    model.set('name', '张三');
+    console.log(model.has('name'));
+    //=> true
+    console.log(model.has('$mid'));
+    //=> false
+</code></pre>
+    </article>
+
+    <article class="method" id="SYST.M.remove">
+        <h3>remove <code>Function(key)</code></h3>
+        <ul>
+            <li><code>key: </code> 标识</li>
+        </ul>
+
+        <p>
+            移除模型属相props中指定的元素
+        </p>
+        <h3 class="ex-title">实例：</h3>
+<pre><code>
+    var model = SYST.Model({ $mid: 1 });
+    model.set('name', '张三');
+    model.add('skill', ['java', 'c++', 'python']);
+    console.log(model.get('name'));
+    model.remove('name');
+    //=> 张三
+    console.log(model.get('name'));
+    //=> undefined
+</code></pre>
+    </article>
+
+    <article class="method" id="SYST.M.removeProps">
+        <h3>removeProps <code>Function([keys])</code></h3>
+        <ul>
+            <li><code>key: </code> 标识（字符串 || 数组）</li>
+        </ul>
+
+        <p>
+            移除模型属性props中指定的单个或多个元素或清空props
+        </p>
+        <h3 class="ex-title">实例：</h3>
+<pre><code>
+    var model = SYST.Model();
+    model.set({'name': '张三', age: 23, skill: ['java', 'python', 'javascript']});
+    model.removeProps(['name', 'age']);
+    console.log(model.props);
+    //=> Object {name: "张三", age: 23, skill: Array[3]}
+    model.removeProps('skill');
+    console.log(model.get('skill'));
+    //=> undefined
+</code></pre>
+    </article>
+
+    <article class="method" id="SYST.M.removePropsAll">
+        <h3>removePropsAll <code>Function()</code></h3>
+
+        <p>
+            清空模型属性props
+        </p>
+        <h3 class="ex-title">实例：</h3>
+<pre><code>
+    var model = SYST.Model();
+    model.set({'name': '张三', age: 23, skill: ['java', 'python', 'javascript']});
+    model.removeProps();
+    console.log(model.get('name'));
+    //=> undefined
+</code></pre>
+    </article>
+
+    <article class="method" id="SYST.M.getItem">
+        <h3>getItem <code>Function(key, [flag])</code></h3>
+        <ul>
+            <li><code>key: </code> 标识</li>
+            <li>
+                <code>flag: </code> <code>false: </code>从 <code>localStorage</code>中取值，
+                <code>true: </code>从 <code>sessionStorage</code>中取值,
+                默认 false。
+            </li>
+        </ul>
+
+        <p>
+            设置模型元素，有则覆盖
+        </p>
+        <h3 class="ex-title">实例：</h3>
+<pre><code>
+    var model = SYST.Model({ $mid: 1 });
+    model.setItem('name', '张三');
+    console.log(model.getItem('name'));
+    //=> 张三
+</code></pre>
+    </article>
+
+    <article class="method" id="SYST.M.setItem">
+        <h3>setItem <code>Function(key, val, [flag])</code></h3>
+        <ul>
+            <li><code>key: </code> 标识</li>
+            <li><code>val: </code> 数据</li>
+            <li>
+                <code>flag: </code> <code>false: </code>从 <code>localStorage</code>中取值，
+                <code>true: </code>从 <code>sessionStorage</code>中取值,
+                默认 false。
+            </li>
+        </ul>
+
+        <p>
+            设置模型元素，有则覆盖
+        </p>
+    </article>
+
+    <article class="method" id="SYST.M.hasItem">
+        <h3>hasItem <code>Function(key, [flag]) => Boolean</code></h3>
+        <ul>
+            <li><code>key: </code> 标识</li>
+            <li>
+                <code>flag: </code> <code>false: </code>从 <code>localStorage</code>中取值，
+                <code>true: </code>从 <code>sessionStorage</code>中取值,
+                默认 false。
+            </li>
+        </ul>
+
+        <p>
+            判断某个属性是否存在
+        </p>
+        <h3 class="ex-title">实例：</h3>
+<pre><code>
+    var model = SYST.Model({ $mid: 1 });
+    model.setItem('name', '张三');
+    console.log(model.hasItem('name'));
+    //=> true
+    localStorage.setItem('age', 23);
+    console.log(model.hasItem('age'));
+    //=> true
+</code></pre>
+    </article>
+
+    <article class="method" id="SYST.M.removeItem">
+        <h3>removeItem <code>Function([keys, flag])</code></h3>
+        <ul>
+            <li><code>key: </code> 标识（字符串）</li>
+            <li>
+                <code>flag: </code> <code>false: </code>从 <code>localStorage</code>中取值，
+                <code>true: </code>从 <code>sessionStorage</code>中取值,
+                默认 false。
+            </li>
+        </ul>
+
+        <p>
+            移除指定的单个
+        </p>
+    </article>
+
+    <article class="method" id="SYST.M.removeItems">
+        <h3>removeItems <code>Function([keys, flag])</code></h3>
+        <ul>
+            <li><code>key: </code> 标识（字符串 || 数组）</li>
+            <li>
+                <code>flag: </code> <code>false: </code>从 <code>localStorage</code>中取值，
+                <code>true: </code>从 <code>sessionStorage</code>中取值,
+                默认 false。
+            </li>
+        </ul>
+
+        <p>
+            移除指定的单个或多个元素或清空
+        </p>
+        <h3 class="ex-title">实例：</h3>
+<pre><code>
+    var model = SYST.Model();
+    model.setItem({'name': '张三', age: 23, skill: ['java', 'python', 'javascript']});
+    model.removeItems(['name', 'skill']);
+    console.log(model.getItem('name'));
+    //=> null
+    model.removeItems('age');
+    console.log(model.getItem('age'));
+    //=> null
+
+</code></pre>
+    </article>
+
+    <article class="method" id="SYST.M.watcher">
+        <h3>watcher <code>Watcher Class</code></h3>
+
+        <p>
+            模型数据绑定对象，参考 <a href="#SYST.Watcher"> <code>SYST.Watcher</code> </a>
+        </p>
+        <h3 class="ex-title">实例：</h3>
+<pre><code>
+    var model = SYST.Model();
+    model.setItem({'name': '张三', age: 23, skill: ['java', 'python', 'javascript']});
+    model.removeItems(['name', 'skill']);
+    console.log(model.getItem('name'));
+    //=> null
+    model.removeItems('age');
+    console.log(model.getItem('age'));
+    //=> null
+
+</code></pre>
+    </article>

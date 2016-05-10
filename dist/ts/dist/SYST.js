@@ -6,7 +6,7 @@ var ST = (function () {
     function ST() {
         //variables static
         this.author = 'Rodey';
-        this.version = '1.0.4';
+        this.version = '@version';
         this.name = 'SYST JS MVC mini Framework (JS MVC框架)';
         this.root = window;
         this.$ = $;
@@ -132,7 +132,7 @@ var ST = (function () {
     //template
     ST.tplConfig = { open: '<%', close: '%>' };
     return ST;
-})();
+}());
 /**
  * Created by Rodey on 2015/10/23.
  */
@@ -241,7 +241,7 @@ var YT;
             return !!(value && (value.nodeName || (value.prop && value.attr && value.find)));
         };
         return Validate;
-    })();
+    }());
     YT.Validate = Validate;
 })(YT || (YT = {}));
 /**
@@ -533,7 +533,7 @@ var YT;
             return template.Render(content, data, helper, target);
         };
         return Tools;
-    })();
+    }());
     YT.Tools = Tools;
 })(YT || (YT = {}));
 /**
@@ -652,7 +652,7 @@ var YT;
             return this;
         };
         return Promise;
-    })();
+    }());
     YT.Promise = Promise;
 })(YT || (YT = {}));
 /**
@@ -828,7 +828,7 @@ var YT;
             this.macs = new RegExp(this._fromatRegx(this.regxs), 'g');
         };
         return Template;
-    })();
+    }());
     YT.Template = Template;
 })(YT || (YT = {}));
 /**
@@ -905,7 +905,7 @@ var YT;
         };
         Event.evts = 'abort reset click dblclick tap touchstart touchmove touchend change mouseover mouseout mouseup mousedown mousemove mousewheel drag dragend dragenter dragleave dragover dragstart drop resize scroll submit select keydown keyup keypress touchstart touchend load unload blur focus contextmenu formchange forminput input invalid afterprint beforeprint beforeonload haschange message offline online pagehide pageshow popstate redo storage undo canplay canplaythrough durationchange emptied ended loadeddata loadedmetadata loadstart pause play playing progress ratechange readystatechange seeked seeking stalled suspend timeupdate volumechange waiting cut copy paste'.split(/\s+/gi);
         return Event;
-    })();
+    }());
     YT.Event = Event;
 })(YT || (YT = {}));
 /**
@@ -998,7 +998,7 @@ var YT;
             this.xhr.send(body);
         };
         return Ajax;
-    })();
+    }());
     YT.Ajax = Ajax;
 })(YT || (YT = {}));
 /**
@@ -1224,7 +1224,7 @@ var YT;
             });
         };
         return Model;
-    })();
+    }());
     YT.Model = Model;
 })(YT || (YT = {}));
 /**
@@ -1271,7 +1271,7 @@ var YT;
             return shareModels[key];
         };
         return ShareModel;
-    })();
+    }());
     YT.ShareModel = ShareModel;
 })(YT || (YT = {}));
 /**
@@ -1431,7 +1431,7 @@ var YT;
         };
         View.hoadEvent = ST.hoadEvent;
         return View;
-    })();
+    }());
     YT.View = View;
 })(YT || (YT = {}));
 /**
@@ -1463,7 +1463,7 @@ var YT;
             this.model = m;
         };
         return Controller;
-    })();
+    }());
     YT.Controller = Controller;
 })(YT || (YT = {}));
 /**
@@ -1580,7 +1580,7 @@ var YT;
             }
         };
         return Router;
-    })();
+    }());
     YT.Router = Router;
 })(YT || (YT = {}));
 /**
@@ -1592,7 +1592,7 @@ var YT;
         function Native() {
         }
         return Native;
-    })();
+    }());
     YT.Native = Native;
 })(YT || (YT = {}));
 /**

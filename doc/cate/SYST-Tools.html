@@ -1,0 +1,554 @@
+    <hr>
+    <h2 id="SYST.Tools">SYST.Tools(常用方法)</h2>
+    <article class="method" id="SYST.T.parseDom">
+        <h3>parseDom <code>Function (htmlStr, [tagPanel])</code></h3>
+        <ul>
+            <li><code>htmlStr: </code> 元素字符串 <code>String</code></li>
+            <li><code>tagPanel: </code> 包装的标签名称 </li>
+        </ul>
+
+        <p>
+            将元素转成对象并返回
+        </p>
+        <h3 class="ex-title">实例：</h3>
+<pre><code>
+    var elm = SYST.View().parseDom('&lt;p id="intro" &gt;8899&lt;/p&gt;');
+    console.log(elm); //=> HTMLElement
+    console.log(elm.id) //=> intro
+
+</code></pre>
+        <button id="t-parseDom">运行实例</button>
+        <script>
+
+            var htmlStr = '<p id="intro"></p> ';
+            $('#t-parseDom').on('click', function(){
+                var p = SYST.T.parseDom(htmlStr);
+                alert(p);
+            });
+        </script>
+    </article>
+
+    <article class="method" id="SYST.T.trigger">
+        <h3>trigger <code>Function (element, event, data, callback)</code></h3>
+        <ul>
+            <li><code>element: </code> HTMLElment对象 </li>
+            <li><code>event: </code> 事件名称 </li>
+            <li><code>data: </code> 待传输的数据 </li>
+            <li><code>callback: </code> 待处理的事件函数 </li>
+        </ul>
+
+        <p>
+            侦听事件并传递数据
+        </p>
+        <h3 class="ex-title">实例：</h3>
+<pre><code>
+    SYST.T.trigger(document.body, 'onclick', { name: 'body' }, function(evt, data){
+        console.log(this); //=>:  &lt;body&gt;...&lt;/body&gt;
+        console.log(evt); //=>:  MouseEvent
+        console.log(data); //=>   { name: 'body' }
+    });
+
+</code></pre>
+    </article>
+
+    <article class="method" id="SYST.T.trim">
+        <h3>trim <code>Function (str)</code></h3>
+        <ul>
+            <li><code>str: </code> 字符串 </li>
+        </ul>
+
+        <p>
+
+        </p>
+        <h3 class="ex-title">实例：</h3>
+<pre><code>
+    var name = SYST.T.trim(' I name is Jack ');
+    console.log(name); //=> I name is Jack
+
+</code></pre>
+    </article>
+
+    <article class="method" id="SYST.T.rtrim">
+        <h3>rtrim <code>Function (str, commer)</code></h3>
+        <ul>
+            <li><code>str: </code> 字符串 </li>
+            <li><code>commer: </code> 待清楚的字符 </li>
+        </ul>
+
+        <p>
+            清楚制定字符
+        </p>
+        <h3 class="ex-title">实例：</h3>
+<pre><code>
+    var name = SYST.T.rtrim('# I name is Jack #', '#');
+    console.log(name); //=> I name is Jack
+
+</code></pre>
+    </article>
+
+    <article class="method" id="SYST.T.indexOf">
+        <h3>indexOf <code>Function (array, value)</code></h3>
+        <ul>
+            <li><code>array: </code> 目标数组对象 </li>
+            <li><code>value: </code> 制定的元素 </li>
+        </ul>
+
+        <p>
+            检查制定元素在目标数组中的索引
+        </p>
+        <h3 class="ex-title">实例：</h3>
+<pre><code>
+    var index = SYST.T.indexOf(['b', 'a', 1], 'a');
+    console.log(index); //=> 1
+
+</code></pre>
+    </article>
+
+    <article class="method" id="SYST.T.arrRemove">
+        <h3>arrRemove <code>Function (array, value) </code></h3>
+        <ul>
+            <li><code>array: </code> 目标数组对象 </li>
+            <li><code>value: </code> 制定待删除的元素 </li>
+        </ul>
+
+        <p>
+            从数组中删除指定的元素, 返回被指定的元素（ 执行后原数值array将移除指定的元素 ）,
+            返回删除后的数组。
+        </p>
+        <h3 class="ex-title">实例：</h3>
+<pre><code>
+    var value = SYST.T.arrRemove(['b', 'a', 1], 'a');
+    console.log(value); //=> ['b', 1]
+
+</code></pre>
+    </article>
+
+    <article class="method" id="SYST.T.F2C">
+        <h3>F2C <code>Function (str) </code></h3>
+        <ul>
+            <li><code>str: </code> 字符串 </li>
+        </ul>
+
+        <p>
+            全角字符转为半角,并去除所有空格。
+        </p>
+        <h3 class="ex-title">实例：</h3>
+<pre><code>
+    var value = SYST.T.F2C(' 中国人民共和　国 ');
+    console.log(value); //=> 中国人民共和国
+
+</code></pre>
+    </article>
+
+    <article class="method" id="SYST.T.escapeHtml">
+        <h3>escapeHtml <code>Function (htmlStr) </code></h3>
+        <ul>
+            <li><code>str: </code> 字符串 </li>
+        </ul>
+
+        <p>
+            html字符转义。
+        </p>
+        <h3 class="ex-title">实例：</h3>
+<pre><code>
+    var value = SYST.T.escapeHtml('&lt;div id=&quot;main&quot;&gt;&lt;/div&gt;');
+    console.log(value); //=> &amp;lt;div id=&amp;quot;main&amp;quot;&amp;gt;&amp;lt;/div&amp;gt;
+
+</code></pre>
+    </article>
+
+    <article class="method" id="SYST.T.dateFm">
+        <h3>dateFm <code>Function (n) </code></h3>
+        <ul>
+            <li><code>n: </code> 数字 </li>
+        </ul>
+
+        <p>
+            补0。
+        </p>
+        <h3 class="ex-title">实例：</h3>
+<pre><code>
+    var value = SYST.T.dateFm(6);
+    console.log(value); //=> 06;
+
+</code></pre>
+    </article>
+
+    <article class="method" id="SYST.T.setDateFormat">
+        <h3>setDateFormat <code>Function (timestamp, [format], [prefix]) </code></h3>
+        <ul>
+            <li><code>timestamp: </code> 时间戳 </li>
+            <li><code>format: </code> 显示格式 <code>如：'Y-m-d h:i:s'</code> </li>
+            <li><code>prefix: </code> 是否补0 </li>
+        </ul>
+
+        <p>
+            格式化时间戳
+        </p>
+        <h3 class="ex-title">实例：</h3>
+<pre><code>
+    var date = SYST.T.setDateFormat(Date.now(), 'Y-m-d h:i:s');
+    console.log(date); //=> 2016-4-21 14:3:1
+
+    //======>
+    var date = SYST.T.setDateFormat(Date.now(), 'Y-m-d');
+    console.log(date); //=> 2016-4-21
+
+    //=====>
+    var date = SYST.T.setDateFormat(Date.now(), 'm-d h:i:s');
+    console.log(date); //=> 4-21 14:4:3
+
+    //=====>
+    var date = SYST.T.setDateFormat(Date.now(), 'Y-m-d h:i:s', true);
+    console.log(date); //=> 2016-04-21 14:04:49
+
+</code></pre>
+    </article>
+
+    <article class="method" id="SYST.T.setDateFormatCN">
+        <h3>setDateFormatCN <code>Function (timestamp, [format], [prefix]) </code></h3>
+        <ul>
+            <li><code>timestamp: </code> 时间戳 </li>
+            <li><code>format: </code> 显示格式 <code>如：'Y-m-d h:i:s'</code> </li>
+            <li><code>prefix: </code> 是否补0 </li>
+        </ul>
+
+        <p>
+            格式化时间戳，转为中文时间格式，如："2016年5月4日 10时03分20秒"
+        </p>
+        <h3 class="ex-title">实例：</h3>
+<pre><code>
+    var date = SYST.T.setDateFormatCN('2016/5/4 10:03:20');
+    console.log(date); //=> 2016年5月4日 10时03分20秒
+
+    var date = SYST.T.setDateFormatCN(Date.now(), 'YY-mm-dd h:i:s');
+    console.log(date); //=> 16年5月4日 10时11分5秒
+
+</code></pre>
+    </article>
+
+    <article class="method" id="SYST.T.daysBetween">
+        <h3>daysBetween <code>Function (dateOne, dateTwo, [callback]) </code></h3>
+        <ul>
+            <li><code>DateOne: </code> 开始时间 </li>
+            <li><code>DateTwo: </code> 结束时间 </li>
+            <li><code>callback: </code> 回调处理 </li>
+        </ul>
+
+        <p>
+            比较两个时间差 格式：YYYY-mm-dd
+        </p>
+        <h3 class="ex-title">实例：</h3>
+<pre><code>
+    var dateDiff = SYST.T.daysBetween('2016-8-20', '2016-4-21');
+    console.log(dateDiff); //=> 121
+
+    //======>
+    SYST.T.daysBetween('2016-8-20', '2016-4-21', function(){
+        console.log(dateDiff); //=> 121
+    });
+
+</code></pre>
+    </article>
+
+    <article class="method" id="SYST.T.randomChar">
+        <h3>randomChar <code>Function (size, [flag]) </code></h3>
+        <ul>
+            <li><code>size: </code> 生成的随机字符长度 </li>
+            <li><code>flag: </code> 是否去除干扰，默认为 <code>true; 去除扰乱视线 I L l o O</code> </li>
+        </ul>
+
+        <p>
+            获取随机字符（包括数字和字母）
+        </p>
+        <h3 class="ex-title">实例：</h3>
+<pre><code>
+    var chars = SYST.T.randomChar(15);
+    console.log(chars); //=> RrZgBLyE0m0wAB8
+
+</code></pre>
+    </article>
+
+    <article class="method" id="SYST.T.params">
+        <h3>params <code>Function ([name, url]) </code></h3>
+        <ul>
+            <li><code>name: </code> 指定参数名 </li>
+            <li><code>url: </code> 指定需要的目标url </li>
+        </ul>
+
+        <p>
+            获取指定参数或者所有参数列表
+        </p>
+        <h3 class="ex-title">实例：</h3>
+<pre><code>
+    /*如当前url为：http://localhost/cmbx/mall/build/insure.html#!step1/:10000?id=10&name=javascript&mvc=react*/
+    var params = SYST.T.params();
+    console.log(params); //=> Object {id: "10", name: "javascript", mvc: "react"}
+
+    name = SYST.T.params('name');
+    console.log(name); //=> javascript
+
+</code></pre>
+    </article>
+
+    <article class="method" id="SYST.T.getParams">
+        <h3>getParams <code>Function (name, [url]) //=> String</code></h3>
+        <ul>
+            <li><code>name: </code> 指定参数名 </li>
+            <li><code>url: </code> 指定需要的目标url </li>
+        </ul>
+
+        <p>
+            获取get模式下url中的指定参数值
+        </p>
+        <h3 class="ex-title">实例：</h3>
+<pre><code>
+    /*如当前url为：http://localhost/cmbx/mall/build/insure.html#!step1/:10000?id=10&name=javascript&mvc=react*/
+    var name = SYST.T.getParams('name');
+    console.log(name); //=> javascript
+
+</code></pre>
+    </article>
+
+    <article class="method" id="SYST.T.paramData">
+        <h3>paramData <code>Function (data, [flag]) //=> String</code></h3>
+        <ul>
+            <li><code>data: Object</code> 参数列表 </li>
+            <li><code>flag: </code> 指定是否在生成后的字符串前面添加 <code>?</code> </li>
+        </ul>
+
+        <p>
+            格式化参数 flag: 表示前面是否加上‘?’返回，<code>true:</code> 加上；<code>false:</code> 不加(默认)
+        </p>
+        <h3 class="ex-title">实例：</h3>
+<pre><code>
+    var data = { id: 10, name: 'javascript', mvc: 'react' };
+    console.log(SYST.T.paramData(data, true)); //=> ?id=10&name=javascript&mvc=react
+
+</code></pre>
+    </article>
+
+    <article class="method" id="SYST.T.jumpTo">
+        <h3>jumpTo <code>Function (url, [params]) </code></h3>
+        <ul>
+            <li><code>url: </code> 需要跳转的 <code>url</code> 地址 </li>
+            <li><code>params: </code> 跳转时<code>url</code>上面需要附加的参数 </li>
+        </ul>
+
+        <p>
+            跳转，可以指定参数
+        </p>
+        <h3 class="ex-title">实例：</h3>
+<pre><code>
+    SYST.T.jumpTo('https://www.baidu.com/s', { wd: 'javascript' });
+
+</code></pre>
+    </article>
+
+    <article class="method" id="SYST.T.displace">
+        <h3>displace <code>Function (str, [...args]) </code></h3>
+        <ul>
+            <li><code>str: </code> 组装的初始字符串 </li>
+            <li><code>args: </code> 替换列表 </li>
+        </ul>
+
+        <p>
+            组装字符串
+        </p>
+        <h3 class="ex-title">实例：</h3>
+<pre><code>
+    var url = SYST.T.displace('https://%s/s', 'www.baidu.com');
+    console.log(url); //=> https://www.baidu.com/s
+
+    var intro = SYST.T.displace('我的名字叫%s, 我今年%d岁。', '张三', 23);
+    console.log(intro); //=> 我的名字叫张三, 我今年23岁。
+
+</code></pre>
+    </article>
+
+    <article class="method" id="SYST.T.Cookie">
+        <h3>Cookie <code>Function (key, value, [options]) </code></h3>
+        <ul>
+            <li><code>key: </code> cookie键值 </li>
+            <li><code>value: </code> 需要保存的值 </li>
+            <li><code>options: </code> 其他可选项 </li>
+            <li>
+                <ul class="su-ul">
+                    <li><code>expires: </code> 设置cookie过期时间，<code>Number</code>，单位以天计算</li>
+                    <li><code>domain: </code> 设置可访问的主域</li>
+                </ul>
+            </li>
+        </ul>
+
+        <p>
+            浏览器 cookie操作
+        </p>
+        <h3 class="ex-title">实例：</h3>
+<pre><code>
+    //设置 cookie
+    SYST.T.Cookie('name', '张三');
+    //获取 cookie
+    var name = SYST.T.Cookie('name');
+    console.log(name); //=> 张三
+    //过期时间, 保留20天
+    SYST.T.Cookie('username', 'zhangsan', { expires: 20 });
+    //指定可访问域
+    SYST.T.Cookie('username', 'zhangsan', { domain: 'www.senuu.com' });
+
+</code></pre>
+    </article>
+
+    <article class="method" id="SYST.T.each">
+        <h3>each <code>Function (object, callback) </code></h3>
+        <ul>
+            <li><code>object: </code> <code>Array</code>数组或者<code>Object</code>对象 </li>
+            <li><code>callback: </code> 遍历回调函数 </li>
+        </ul>
+
+        <p>
+            遍历对象
+        </p>
+        <h3 class="ex-title">实例：</h3>
+<pre><code>
+    var array = [1, 'a', { name: 'b' }, ['张三', '李四']];
+    SYST.T.each(array, function(item, index){
+        console.log(item, index);
+        //=> 1 0
+        //=> a 1
+        //=> Object {name: "b"} 2
+        //=> ["张三", "李四"] 3
+    });
+
+    var object = { name: 'b', age: 23, profession: 'Web前端开发工程师' };
+    SYST.T.each(object, function(item, index, key){
+        console.log(key + ': ' + item, 'index: ' + index);
+        //=> name: b index: 0
+        //=> age: 23 index: 1
+        //=> profession: Web前端开发工程师 index: 2
+    });
+
+</code></pre>
+    </article>
+
+    <article class="method" id="SYST.T.render">
+        <h3>render <code>Function (tpl, data, [helper])</code></h3>
+        <ul>
+            <li><code>tpl: </code> 模板字符串或包含模板元素的id</li>
+            <li><code>data: </code> 数据对象</li>
+            <li><code>helper: </code> 自定义辅助函数</li>
+        </ul>
+        <p>
+            <code>SYST.tplConfig</code> 设置 模板开关标签, 默认为: <code>{ open: '<%', close: '%>' }</code>
+        </p>
+
+        <p>
+            模板渲染
+        </p>
+        <h3 class="ex-title">实例：</h3>
+        <span class="ex-line">one: </span>
+<pre><code>
+    var html = SYST.T.render('&lt;h1&gt;<%= title %>&lt;/h1&gt;', { title: 'View Template' });
+    console.log(html); //=> &lt;h1&gt;View Template&lt;/h1&gt;
+
+</code></pre>
+        <span class="ex-line">two: </span>
+        <span class="ex-lang">html: </span>
+<pre><code>
+    &lt;template id="view-tpl"&gt;
+        &lt;h3&gt;&lt;%= title %&gt;&lt;/h3&gt;
+        &lt;ul&gt;
+            &lt;% if(users){
+            for(var i = 0, len = users.length; i &lt; len; ++i){
+                var user = users[i];
+            %&gt;
+            &lt;li&gt;Name：&lt;%= user.name %&gt; &nbsp;&nbsp;&nbsp;&nbsp; Age：&lt;%= user.age %&gt;&lt;/li&gt;
+            &lt;li&gt;&lt;%= user.age %&gt;&lt;/li&gt;
+            &lt;% } } %&gt;
+        &lt;/ul&gt;
+    &lt;/template&gt;
+
+</code></pre>
+        <span class="ex-lang">javascript: </span>
+<pre><code>
+    var data = {
+        title: '用户列表',
+        users: [{ name: 'Rick', age: 20 }, { name: 'Tom', age: 30 }]
+    };
+    //设置 模板开关标签
+    SYST.tplConfig = {
+        open: '<%',
+        close: '%>'
+    };
+    var html = SYST.T.render('view-tpl', data);
+    console.log(html);
+
+</code></pre>
+        <button id="t-render">运行实例</button>
+        <div id="t-render-result" class="result">
+            <div class="content"></div>
+            <i class="close-result-btn">X</i>
+        </div>
+        <script type="text/html" id="t-demo-tpl" style="display: none;">
+            <h3>{{= title }}</h3>
+            <ul>
+                {{ if(users){
+                    for(var i = 0, len = users.length; i < len; ++i){
+                        var user = users[i];
+                }}
+                <li>Name：{{= user.name }} &nbsp;&nbsp;&nbsp;&nbsp; Age: {{= user.age }}</li>
+                {{ } } }}
+            </ul>
+        </script>
+        <script>
+            var data1 = {
+                title: '用户列表',
+                users: [{ name: 'Rick', age: 20 }, { name: 'Tom', age: 30 }]
+            };
+            /*SYST.tplConfig = {
+                open: '{{',
+                close: '}}'
+            };*/
+            var tRenderRs = $('#t-render-result');
+            $('#t-render').on('click', function(){
+                var html = SYST.T.render('t-demo-tpl', data1, null, { open: '{{', close: '}}' });
+                tRenderRs.find('.content').html(html);
+                tRenderRs.fadeIn(200);
+            });
+        </script>
+
+        <span class="ex-line">three: </span>
+        <span class="ex-lang">html: </span>
+<pre><code>
+    &lt;template id="include-tpl"&gt;
+        &lt;div id="include-test" &gt;&lt;/div&gt;
+        {{ include(cate/test.html, include-test) }}
+    &lt;/template&gt;
+
+</code></pre>
+        <span class="ex-lang">javascript: </span>
+<pre><code>
+    var data = { title: '用户列表' };
+    var html = SYST.T.render('include-tpl', data, null, { open: '{{', close: '}}' });
+    console.log(html);
+
+</code></pre>
+        <button id="t-include">运行实例</button>
+        <div id="t-include-result" class="result">
+            <div class="content"></div>
+            <i class="close-result-btn">X</i>
+        </div>
+        <script type="text/html" id="t-include-tpl" style="display: none;">
+            <h3>{{= title }}</h3>
+            <div id="include-test"></div>
+            {{ include(cate/test.html, #include-test); }}
+        </script>
+        <script>
+            var data2 = { title: 'Template Include Example' };
+            var tIncludeRs = $('#t-include-result');
+            $('#t-include').on('click', function(){
+                var html = SYST.T.render('t-include-tpl', data2, null, { open: '{{', close: '}}' });
+                tIncludeRs.find('.content').html(html);
+                tIncludeRs.fadeIn(200);
+            });
+        </script>
+    </article>

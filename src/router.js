@@ -7,22 +7,6 @@
 
     'use strict';
 
-    //Router info
-    /**
-     * @type {Function}
-     */
-    var Router = SYST.Router = function(child){
-        this.__Name__ = 'Router';
-        if(child){
-            child.__SuperName__ = 'SYST Router';
-            child = SYST.extend(SYST.Router.prototype, child);
-            //this._initialize();
-            return child;
-        }else{
-            return new SYST.Router({});
-        }
-    };
-
     var uri = window.location,
         host = uri.host,
         port = uri.port,
@@ -32,43 +16,62 @@
         supportPushState = 'pushState' in history,
         isReplaceState = 'replaceState' in history;
 
-    var optionalParam = /\((.*?)\)/g;
-    var namedParam    = /(\(\?)?:\w+/g;
-    var splatParam    = /\*\w+/g;
-    var escapeRegExp  = /[\-{}\[\]+?.,\\\^$|#\s]/g;
+    var optionalParam = /\((.*?)\)/g,
+        namedParam    = /(\(\?)?:\w+/g,
+        splatParam    = /\*\w+/g,
+        escapeRegExp  = /[\-{}\[\]+?.,\\\^$|#\s]/g,
+        emptyFunc     = function(){};
 
     var _getRouteKey = function(hash){
         return hash.replace(/[#!]/gi, '').split('?')[0];
     };
 
-    SYST.R = SYST.Router.prototype = {
+    //Router info
+    /**
+     * @type {Function}
+     */
+    var Router = function(){
+        this.__SuperName__ = 'SYST Router';
+        this.__Name__ = 'SYST Router';
+    };
+    SYST.Router = function(){
+        var router = SYST.extendClass(arguments, Router);
+        router._initialize();
+        return router;
+    };
+
+    SYST.R = Router.prototype = {
         _cache: {},
         _stateCache: [],
+        routes: null,
+        container: 'body',
+        router: null,
+        params: null,
+        isRender: false,
 
         //一个路由对象，包涵当前所有的路由列表
         //exp:
-        // routers: {
+        // routes: {
         //      'user/': 'listController',
         //      'user/add': 'addController'
         // }
-        routers: {},
 
         /**
          * $private 初始化
          * @private
          */
         _initialize: function(){
-            if(this.routers && this.routers != {}){
+            if(SYST.V.isObject(this.routes) && this.routes != {}){
 
-                var routers = this.routers;
-                for(var k in routers){
-                    this._initRouters(k, routers[k]);
+                var routes = this.routes;
+                for(var k in routes){
+                    this._initRouters(k, routes[k]);
                 }
 
                 this.start();
 
             }
-            this.init && SYST.V.isFunction(this.init) && this.init.apply(this);
+            //this.init && SYST.V.isFunction(this.init) && this.init.apply(this);
         },
 
         /**
@@ -79,6 +82,9 @@
          */
         _initRouters: function(route, object){
 
+            if(SYST.V.isString(object) && this[object]){
+                object = this[object];
+            }
             this._cache[route] = object;
 
         },
@@ -89,10 +95,16 @@
          */
         start: function(){
             //如果初始化带有hash
+            var redirectTo = this['redirectTo'];
             if(hash && '' !== hash){
                 var currentRoute = _getRouteKey(hash);
                 this.switch(currentRoute);
+            }else{
+                if(redirectTo){
+                    this._updateHash(redirectTo);
+                }
             }
+
             this._changeStart();
             return this;
         },
@@ -110,7 +122,7 @@
             if(SYST.V.isObject(object)){
                 this._cache[route] = object;
             }else if(SYST.V.isFunction(object)){
-                this._cache[route] = object.call(this);
+                this._cache[route] = object.apply(this);
             }
 
             return this;
@@ -119,24 +131,38 @@
         /**
          * $public 路由更新时执行对应操作
          * @param route
+         * @param router
          * @returns {SYST.Router}
          */
-        switch: function(route){
+        switch: function(route, router){
             if(!this._cache || {} === this._cache)  return;
+            var routeOption = this._getRouter(route),
+                router = routeOption.router;
+            if(!router){
+
+            }
             //获取url参数列表
             this.params = SYST.T.params(null, window.location.href);
             //执行
             this._exec(route);
             return this;
         },
+        //渲染前 或 加载模板前
+        renderBefore: emptyFunc,
+        rendering: emptyFunc,
+        rendered: emptyFunc,
 
+        //$public
+        getRouter: function(route){
+            return this._getRouter(route);
+        },
         //$private 根据路由获取当前路由配置对象
         _getRouter: function(route){
 
             if(!this._cache || this._cache === {})  return;
-            var router, routeKey;
-            for(var k in this._cache){
-                var rt = this._routeToRegExp(k);
+            var router, routeKey, k, rt;
+            for(k in this._cache){
+                rt = this._routeToRegExp(k);
                 if(rt.test(route)){
                     routeKey = k;
                     router = this._cache[k];
@@ -144,6 +170,7 @@
                 }
             }
 
+            router = SYST.V.isObject(router) ? router : SYST.V.isFunction(router) ? router.apply(this) : null;
             return {routeKey: routeKey, router: router};
 
         },
@@ -204,8 +231,8 @@
                 router = routeOption.router,
                 routeKey = routeOption.routeKey;
             //保存当前路由控制对象
-            this.currentRouter = router;
-            this.currentRouter['route'] = routeKey;
+            this.router = router;
+            this.router['route'] = routeKey;
 
             if(!SYST.V.isRegExp(routeKey))
                 route = this._routeToRegExp(routeKey);
@@ -216,44 +243,39 @@
 
             //合并参数列表
             this.params = SYST.extend(this.params, paramsObject);
+            this.router['params'] = this.params;
 
             //路由开始状态事件
             this._onReady();
-            this._execRouter(router);
+            this._execRouter();
 
         },
-        _execRouter: function(router){
+        _execRouter: function(){
             var self = this;
 
+            var router = this.router;
             if(!router) return;
-            if(router.template){
-                this._template(router.template, router.container, function(htmlStr){
+            var container = router['container'] || this.container || 'body';
+            if(router['template']){
+                this._template(router.template, container, function(htmlStr){
 
-                    self._execMAction(router, htmlStr);
+                    self._execMAction(htmlStr);
                     //路由模板渲染完成状态事件
                     self._onRender();
                 });
             }else{
-                self._execMAction(router);
+                self._execMAction();
             }
 
         },
-        _execMAction: function(router, tpl){
+        _execMAction: function(tpl){
             //保存当前模板字符串
             this.tpl = tpl;
-            var vadding = { model: router.model, tpl: tpl, params: this.params, router: this},
-                cadding = { model: router.model, tpl: tpl, params: this.params, router: this, view: router.view };
-            //转换成SYST.Model
-            router.model && (function(){
-                return SYST.Model(router.model);
-            })();
-            router.view && (function(){
-                return SYST.View(SYST.extend(router.view, vadding));
-            })();
-            router.controller && (function(){
-                return SYST.Controller(SYST.extend(router.controller, cadding));
-            })();
-            router.action && SYST.V.isFunction(router.action) && router.action.call(this, router.model, tpl);
+            this.router['tpl'] = tpl;
+            var router  = this.router,
+                view    = router['view'],
+                action  = router['action'];
+            action && SYST.V.isFunction(action) && action.call(this, view, this.params, tpl);
 
         },
 
@@ -272,16 +294,20 @@
         _changeHandler: function(evt){
 
             var self = this,
-                currentRouter = this.currentRouter;
+                preventRouter = this.router,
+                currentRouter;
 
             //前后路由数据保存
             this.oldURL = '#' + evt.oldURL.split('#')[1];
             this.newURL = '#' + evt.newURL.split('#')[1];
             //获取当前路由字符串
             var currentURL = _getRouteKey(this.newURL);
+            if(currentURL)
+                currentRouter = this._getRouter(currentURL);
             //消费当前路由，加载下一个路由
-            if(currentRouter){
+            if(currentRouter && currentRouter.router){
                 this._onDestroy(function(){
+                    self.router = currentRouter;
                     //开始路由
                     self.switch(currentURL);
                 });
@@ -297,68 +323,106 @@
          */
         _template: function(html, cid, callback){
             var self = this;
-            this.container = $('#' + cid.replace(/#/gi, ''));
+            this.container = SYST.$(cid);
+            this.container.css('visibility', 'hidden');
 
-            //模板是html字符串
-            if(/<|>/g.test(html)){
-                callback && SYST.V.isFunction(callback) && callback.call(self, html);
-            }
-            //模板是文件
-            else{
+            //渲染前执行 renderBefore
+            SYST.V.isFunction(self.renderBefore) && self.renderBefore.apply(self);
+            //模板是文件 字符串前面加上 load[@|!|#|>]
+            var reg = /^(load[\@|\!|\#|\>])+?/gi;
+            if(reg.test(html)){
+                html = html.replace(reg, '');
                 this.container.load(html, function(res){
-                    callback && SYST.V.isFunction(callback) && callback.call(self, res);
+                    execHtml(res);
                 }, function(err){
                     throw new Error('load template is failed!');
                 });
+
+            //模板是html字符串
+            }else{
+                execHtml(html);
             }
+
+            function execHtml(str){
+                callback && SYST.V.isFunction(callback) && callback.call(self, str);
+                //渲染完成执行 rendered
+                SYST.V.isFunction(self.rendered) && self.rendered.apply(self);
+            }
+
         },
         //路由状态相关事件
         //$private 路由开始状态
         _onReady: function(){
 
-            var router = this.currentRouter;
-            if(router && router.onReady){
+            var router = this.router, view;
+            if(router && SYST.V.isFunction(router['onReady'])){
                 router.onReady.call(this);
+            }
+            view = router['view'];
+            if(view){
+                view['router'] = router;
+                view.init && view.init(router);
+                view.offEvent().onEvent();
             }
 
         },
         //$private 路由模板渲染完成状态
         _onRender: function(cb){
 
-            var router = this.currentRouter;
+            var router  = this.router,
+                html    = this.tpl;
             //this._onAnimate('on', cb);
             cb && SYST.V.isFunction(cb) && cb();
 
             //模板渲染
-            var html = SYST.Render(this.tpl, router.data);
+            if(router.data || (router.isRender || this.isRender)){
+                html = SYST.T.render(html, router.data);
+            }
             this.container.html(html);
+            this.container.css('visibility', 'visible');
             this.tpl = html;
+            this.router['tpl'] = html;
 
-            if(router && router.onRender){
+            if(router && SYST.V.isFunction(router['onRender'])){
                 router.onRender.call(this, html);
             }
 
         },
         //$private 路由销毁状态
         _onDestroy: function(cb){
-            var currentRouter = this.currentRouter,
-                onDestroy = currentRouter.onDestroy,
-                route = currentRouter.route,
-                destroyState = currentRouter['_destroyState'];
+            var currentRouter = this.router,
+                view, onDestroy, route, destroyState;
+
             //this._onAnimate('off', cb);
-            if(currentRouter && onDestroy){
-                //根据前端返回的值，决定执行行为
-                var ds = onDestroy.apply(this);
-                if(ds !== false){
-                    currentRouter['_destroyState'] = true;
-                    cb && SYST.V.isFunction(cb) && cb();
-                }else{
-                    currentRouter['_destroyState'] = false;
-                    this._updateHash(route);
-                    //this.switch(route);
+            if(SYST.V.isObject(currentRouter)){
+                onDestroy = currentRouter['onDestroy'];
+                route = currentRouter['route'];
+                destroyState = currentRouter['_destroyState'];
+                view = currentRouter['view'];
+
+                if(view){
+                    currentRouter['view'] = null;
+                    delete currentRouter['view'];
+                    view.offEvent();
                 }
+
+                if(SYST.V.isFunction(onDestroy)){
+                    //根据前端返回的值，决定执行行为
+                    var ds = onDestroy.apply(this);
+                    if(ds !== false){
+                        currentRouter['_destroyState'] = true;
+                        SYST.V.isFunction(cb) && cb();
+                    }else{
+                        currentRouter['_destroyState'] = false;
+                        this._updateHash(route);
+                        //this.switch(route);
+                    }
+                }else{
+                    SYST.V.isFunction(cb) && cb();
+                }
+
             }else{
-                cb && SYST.V.isFunction(cb) && cb();
+                SYST.V.isFunction(cb) && cb();
             }
 
         },
@@ -368,12 +432,12 @@
         },
         //$private 路由之间切换动画
         _onAnimate: function(type, cb){
-            var router = this.currentRouter;
+            var router = this.router;
             if(!router)
                 return;
 
-            var animate = router.animate,
-                duration = router.animateDuration || 300,
+            var animate = router['animate'],
+                duration = router['animateDuration'] || 300,
                 container = this.container,
                 type = type || 'on';
 

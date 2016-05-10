@@ -35,7 +35,7 @@
                     (type == 'on')
                         ? $(trigger || 'body').undelegate(obj.selector, evt, SYST.hoadEvent(pobj, func))
                         .delegate(obj.selector, evt, SYST.hoadEvent(pobj, func))
-                        : $(trigger || 'body').undelegate(obj.selector, evt, SYST.hoadEvent(pobj, func));
+                        : $(trigger || 'body').undelegate(obj.selector, evt);
                 }
             }
         }

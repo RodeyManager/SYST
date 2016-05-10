@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>数据绑定</title>
+    <meta charset="UTF-8"/>
+    <meta content="descriptions" charset="">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-status-bar-style" content="black-translucent">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+    <meta name="format-detection" content="telephone=no" />
+    <style>
+        .box{
+            width: 30px;
+            height: 30px;
+            position: fixed;
+            right: 30px;
+            top: 50px;
+            z-index: 100;
+            background-color: palegoldenrod;
+            border-radius: 50% 50%;
+        }
+        *[st-model]{
+            visibility: hidden;
+        }
+    </style>
+</head>
+<body>
+
+    <div st-model="loginModel">
+        <p>
+            <label for="name"><input type="text" st-prop="name" id="name" autocomplete="off" placeholder="请输入您的姓名"/></label>
+            <h3>您的姓名：<span st-prop="name | addLastName"></span></h3>
+        </p>
+        <div st-template="user-info-tpl"></div>
+        <button id="server-btn">获取最新用户信息</button>
+    </div>
+    <script type="text/html" id="user-info-tpl">
+        <ul>
+            <li>{{= userName }}</li>
+            <li>{{= email }}</li>
+            <li>{{= qq }}</li>
+            <li>{{= github }}</li>
+        </ul>
+    </script>
+    <div st-model="loginModel">
+        <p>
+            当前职位：{{ user.tech }}
+        </p>
+    </div>
+    <hr/>
+    <div st-model="userModel">
+        <h3 id="t-d" style="color:red">Name: {{ name }}  --  Age: {{ age }}</h3>
+        <h4 style="color: darkgreen">Object observe support: {{ index }}</h4>
+        <h5 style="color: #00d6b2" id="iden">动态绑定 (iden)：{{ iden }}</h5>
+        <h5 style="color: darkgray">当前时间: {{ dateTime }}</h5>
+    </div>
+    <hr/>
+
+    <div st-model="colorModel">
+        <select name="color" id="color" st-prop="color">
+            <option value="" selected>请选择颜色</option>
+            <option value="red">红色</option>
+            <option value="blue">蓝色</option>
+            <option value="green">绿色</option>
+        </select>
+        <span id="color-show" st-style="color:{{ color }};font-weight:bold;">显示您的选择</span>
+        <br/>
+        <!--<label><input type="checkbox" name="display" st-prop="display"/>显示/隐藏</label>
+        <br/>
+        <img src="../assets/images/docker.jpg" st-style="display:{{display|isDisplay}}" alt=""/>-->
+    </div>
+
+    <script src="../../bower_components/jquery/dist/jquery.min.js"></script>
+    <script src="../../dist/SYST.js"></script>
+    <script>
+
+        document.addEventListener('DOMContentLoaded', function(){
+            var stProps = document.querySelectorAll('[st-model]');
+            for(var i = 0, len = stProps.length; i < len; ++i)
+                stProps[i].style.visibility = 'visible';
+        }, false);
+
+        var userModel, loginModel, colorModel;
+        $(function(){
+
+            colorModel = SYST.Model({
+                $mid: 'colorModel',
+                props: { color: 'red', display: 'none', isDisplay: false },
+                isDisplay: function(display){
+                    return display ? 'block' : 'none';
+                }
+            });
+
+            userModel = SYST.Model({
+                $mid: 'userModel',
+                props: { name: 'Jack', age: 12, index: '0' },
+                init: function(){
+
+                    this.set('dateTime', SYST.T.setDateFormat(Date.now(), 'YYYY-mm-dd h:i:s', true));
+
+                    this.autoTry();
+
+                },
+
+                autoTry: function(){
+                    var self = this;
+                    this.stimp = new SYST.Promise();
+                    setTimeout(function(){
+                        this.stimp.resolve({name: '招商信诺人寿保险公司', age: 5});
+                    }.bind(this), 5000);
+
+                    this.stimp.then(function(name){
+                        this.set(name);
+                    }.bind(this));
+
+                    this.stin = setInterval(function(){
+                        if(this.props.index < 100)
+                            this.props.index++;
+                        this.set('dateTime', SYST.T.setDateFormat(Date.now(), 'YYYY-mm-dd h:i:s', true));
+                    }.bind(this), 1000);
+
+                    setTimeout(function(){
+                        $('#iden').html('动态绑定 (iden)：{{ iden }}');
+                        this.props.iden = '362422********000100';
+                    }.bind(this), 5000);
+                }
+
+            });
+
+            loginModel = SYST.Model({
+                $mid: 'loginModel',
+                props: {
+                    userName: 'Rodey',
+                    email: '111@qq.com',
+                    qq: '12121212',
+                    github: 'https://github.com/RodeyManager'
+                },
+                init: function(){
+                    this.set('name', 'Rodey');
+                    this.set('user', { name: { first: 'Rodey', last: 'Luo' }, tech: 'Web前端工程师' });
+                },
+                addLastName: function(firstName){
+                    return firstName + ' Luo';
+                },
+                addDate: function(str){
+                    return str + '\r当前日期：' + SYST.T.setDateFormat(Date.now(), 'YYYY-mm-dd', true);
+                },
+                login: function(su){
+                    this.$http.get('../test.json', {}, function(res){
+                        this.set(res.data);
+                        //this.watcher.updateRenderTemplate('#user-info-tpl', res.data);
+                        SYST.V.isFunction(su) && su.call(this, res);
+                    }.bind(this));
+                }
+            });
+
+            var view = SYST.View({
+                model: loginModel,
+                events: {
+                    //'keyup #name'           : 'inputHandler',
+                    'click #server-btn'     : 'serverHandler'
+                },
+                inputHandler: function(evt){
+                    evt.preventDefault();
+                    this.model.set('name', evt.currentTarget.value);
+                },
+                serverHandler: function(evt){
+                    loginModel.login(function(res){
+                        console.log(res);
+                        //$('#user-info').show();
+                    }.bind(this));
+                }
+
+            });
+
+        });
+
+    </script>
+
+</body>
+</html>

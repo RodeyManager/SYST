@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>SYST JS 手册</title>
+    <meta name="description" content="SYST JS 手册">
+    <meta name="key" content="SYST JS 手册">
+    <link rel="stylesheet" href="./assets/css/style.css">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="white">
+    <meta name="format-detection" content="telephone=no">
+
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.3.0/styles/monokai-sublime.min.css">
+    <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.3.0/highlight.min.js"></script>
+
+</head>
+<body>
+
+<aside id="sidebar" class="interface">
+
+    <a class="toc_title" href="#">
+        SYST.js <span class="version">(1.0.7RC)</span>
+    </a>
+    <ul class="toc_section">
+        <li><a href="#download">下载</a></li>
+        <li><a href="#changelog">版本日志</a></li>
+    </ul>
+
+    <hr>
+
+    <a class="toc_title" href="#SYST.Config">SYST全局配置</a>
+    <ul class="toc_section">
+        <li><a href="#SYST.tplConfig">SYST.tplConfig</a></li>
+        <li><a href="#SYST.httpConfig">SYST.httpConfig</a></li>
+
+    </ul>
+
+    <a class="toc_title" href="#SYST.Model">SYST.Model</a>
+    <ul class="toc_section">
+        <li><a href="#SYST.M.$http">.$http</a></li>
+        <li><a href="#SYST.M.generateApi">.generateApi</a></li>
+        <li><a href="#SYST.M.props">.props</a></li>
+        <li><a href="#SYST.M.add">.add</a></li>
+        <li><a href="#SYST.M.set">.set</a></li>
+        <li><a href="#SYST.M.get">.get</a></li>
+        <li><a href="#SYST.M.has">.has</a></li>
+        <li><a href="#SYST.M.remove">.remove</a></li>
+        <li><a href="#SYST.M.removeProps">.removeProps</a></li>
+        <li><a href="#SYST.M.removePropsAll">.removePropsAll</a></li>
+        <li><a href="#SYST.M.getItem">.getItem</a></li>
+        <li><a href="#SYST.M.setItem">.setItem</a></li>
+        <li><a href="#SYST.M.hasItem">.hasItem</a></li>
+        <li><a href="#SYST.M.removeItem">.removeItem</a></li>
+        <li><a href="#SYST.M.removeItems">.removeItems</a></li>
+        <li><a href="#SYST.M.watcher">.watcher</a></li>
+
+    </ul>
+
+    <a class="toc_title" href="#SYST.shareModel">SYST.shareModel</a>
+    <ul class="toc_section">
+        <li><a href="#SYST.sm.models">.models</a></li>
+        <li><a href="#SYST.sm.add">.add</a></li>
+        <li><a href="#SYST.sm.get">.get</a></li>
+        <li><a href="#SYST.sm.remove">.remove</a></li>
+        <li><a href="#SYST.sm.has">.has</a></li>
+    </ul>
+
+    <a class="toc_title" href="#SYST.View">SYST.View</a>
+    <ul class="toc_section">
+        <li><a href="#SYST.View.container">.container</a></li>
+        <li><a href="#SYST.View.destroy">.destroy</a></li>
+        <li><a href="#SYST.View.hoadEvent">.hoadEvent</a></li>
+        <li><a href="#SYST.View.onEvent">.onEvent</a></li>
+        <li><a href="#SYST.View.offEvent">.offEvent</a></li>
+        <li><a href="#SYST.View.template">.template</a></li>
+        <li><a href="#SYST.View.parseDom">.parseDom</a></li>
+        <li><a href="#SYST.View.model">.model</a></li>
+    </ul>
+
+    <a class="toc_title" href="#SYST.Controller">SYST.Controller</a>
+    <ul class="toc_section">
+        <li><a href="#SYST.C.shareModel">.shareModel</a></li>
+        <li><a href="#SYST.C.getModel">.getModel</a></li>
+        <li><a href="#SYST.C.setModel">.setModel</a></li>
+    </ul>
+
+    <a class="toc_title" href="#SYST.Router">SYST.Router</a>
+    <ul class="toc_section">
+        <li><a href="#SYST.R.routes">.routes</a></li>
+        <li><a href="#SYST.R.container">.container</a></li>
+        <li><a href="#SYST.R.params">.params</a></li>
+        <li><a href="#SYST.R.router">.router</a></li>
+        <li><a href="#SYST.R.isRender">.isRender</a></li>
+        <li><a href="#SYST.R.start">.start</a></li>
+        <li><a href="#SYST.R.stop">.stop</a></li>
+        <li><a href="#SYST.R.when">.when</a></li>
+        <li><a href="#SYST.R.switch">.switch</a></li>
+        <li><a href="#SYST.R.getRouter">.getRouter</a></li>
+        <li><a href="#SYST.R.renderBefore">.renderBefore</a></li>
+        <li><a href="#SYST.R.rendered">.rendered</a></li>
+        <li><a href="#SYST.R.RouterObject" style="font-weight: bold;">RouterObject（路由处理对象）</a></li>
+
+    </ul>
+
+    <a class="toc_title" href="#SYST.Tools">SYST.Tools</a>
+    <ul class="toc_section">
+        <li><a href="#SYST.T.parseDom">.parseDom</a></li>
+        <li><a href="#SYST.T.trigger">.trigger</a></li>
+        <li><a href="#SYST.T.trim">.trim</a></li>
+        <li><a href="#SYST.T.rtrim">.rtrim</a></li>
+        <li><a href="#SYST.T.indexOf">.indexOf</a></li>
+        <li><a href="#SYST.T.arrRemove">.arrRemove</a></li>
+        <li><a href="#SYST.T.F2C">.F2C</a></li>
+        <li><a href="#SYST.T.escapeHtml">.escapeHtml</a></li>
+        <li><a href="#SYST.T.dateFm">.dateFm</a></li>
+        <li><a href="#SYST.T.setDateFormat">.setDateFormat</a></li>
+        <li><a href="#SYST.T.setDateFormatCN">.setDateFormatCN</a></li>
+        <li><a href="#SYST.T.daysBetween">.daysBetween</a></li>
+        <li><a href="#SYST.T.randomChar">.randomChar</a></li>
+        <li><a href="#SYST.T.params">.params</a></li>
+        <li><a href="#SYST.T.getParams">.getParams</a></li>
+        <li><a href="#SYST.T.paramData">.paramData</a></li>
+        <li><a href="#SYST.T.jumpTo">.jumpTo</a></li>
+        <li><a href="#SYST.T.displace">.displace</a></li>
+        <li><a href="#SYST.T.Cookie">.Cookie</a></li>
+        <li><a href="#SYST.T.each">.each</a></li>
+        <li><a href="#SYST.T.render">.render</a></li>
+    </ul>
+
+    <a class="toc_title" href="#SYST.Validate">SYST.Validate</a>
+    <ul class="toc_section">
+
+        <li><a href="#SYST.V.isEmpty">.isEmpty</a></li>
+        <li><a href="#SYST.V.isCN">.isCN</a></li>
+        <li><a href="#SYST.V.isEmail">.isEmail</a></li>
+        <li><a href="#SYST.V.isURL">.isURL</a></li>
+        <li><a href="#SYST.V.isTel">.isTel</a></li>
+        <li><a href="#SYST.V.isMobile">.isMobile</a></li>
+        <li><a href="#SYST.V.isZip">.isZip</a></li>
+        <li><a href="#SYST.V.isDateLocal">.isDateLocal</a></li>
+        <li><a href="#SYST.V.isDateTime">.isDateTime</a></li>
+        <li><a href="#SYST.V.isTime">.isTime</a></li>
+        <li><a href="#SYST.V.isNull">.isNull</a></li>
+        <li><a href="#SYST.V.isString">.isString</a></li>
+        <li><a href="#SYST.V.isNumber">.isNumber</a></li>
+        <li><a href="#SYST.V.isArray">.isArray</a></li>
+        <li><a href="#SYST.V.isDate">.isDate</a></li>
+        <li><a href="#SYST.V.isObject">.isObject</a></li>
+        <li><a href="#SYST.V.isFunction">.isFunction</a></li>
+        <li><a href="#SYST.V.isFile">.isFile</a></li>
+        <li><a href="#SYST.V.isBlob">.isBlob</a></li>
+        <li><a href="#SYST.V.isBoolean">.isBoolean</a></li>
+        <li><a href="#SYST.V.isdefined">.isdefined</a></li>
+        <li><a href="#SYST.V.isRegExp">.isRegExp</a></li>
+        <li><a href="#SYST.V.isWindow">.isWindow</a></li>
+        <li><a href="#SYST.V.isElement">.isElement</a></li>
+
+    </ul>
+
+    <a class="toc_title" href="#SYST.Http">SYST.Http</a>
+    <ul class="toc_section">
+        <li><a href="#SYST.Http.load">.load</a></li>
+        <li><a href="#SYST.Http.ajax">.ajax</a></li>
+        <li><a href="#SYST.Http.get">.get</a></li>
+        <li><a href="#SYST.Http.getJSON">.getJSON</a></li>
+        <li><a href="#SYST.Http.getScript">.getScript</a></li>
+        <li><a href="#SYST.Http.post">.post</a></li>
+        <li><a href="#SYST.Http.doRequest">.doRequest</a></li>
+        <li><a href="#SYST.Http.doAjax">.doAjax</a></li>
+        <li><a href="#SYST.Http.ajaxType">.ajaxType</a></li>
+    </ul>
+
+    <a class="toc_title" href="#SYST.Watcher">SYST.Watcher</a>
+    <ul class="toc_section">
+        <li><a href="#SYST.W.addListener">.addListener</a></li>
+        <li><a href="#SYST.W.removeListener">.removeListener</a></li>
+        <li><a href="#SYST.W.removeListenerAll">.removeListenerAll</a></li>
+        <li><a href="#SYST.W.update">.update</a></li>
+        <li><a href="#SYST.W.updateRenderTemplate">.updateRenderTemplate</a></li>
+        <li><a href="#SYST.W.reset">.reset</a></li>
+
+    </ul>
+
+</aside>
+
+<div class="container">
+
+    <section id="header"></section>
+
+    <section id="documentation">
+
+        <!--SYST.Config start-->
+        <div id="st-config"></div>
+        <!--SYST.Config end-->
+
+        <!--SYST.Model start-->
+        <div id="st-model"></div>
+        <!--SYST.Model end-->
+
+        <!--SYST.shareModel start-->
+        <div id="st-shareModel"></div>
+        <!--SYST.shareModel end-->
+
+        <!--SYST.View start-->
+        <div id="st-view"></div>
+        <!--SYST.View end-->
+
+        <!--SYST.Controller start-->
+        <div id="st-controller"></div>
+        <!--SYST.Controller end-->
+
+        <!--SYST.Router start-->
+        <div id="st-router"></div>
+        <!--SYST.Router end-->
+
+        <!--SYST.Tools start-->
+        <div id="st-tools"></div>
+        <!--SYST.Tools end-->
+
+        <!--SYST.Router start-->
+        <div id="st-validate"></div>
+        <!--SYST.Router end-->
+
+        <!--SYST.Http start-->
+        <div id="st-http"></div>
+        <!--SYST.Http end-->
+
+        <!--SYST.Watcher start-->
+        <div id="st-watcher"></div>
+        <!--SYST.Watcher end-->
+
+
+    </section>
+
+</div>
+
+<script src="../bower_components/jquery/dist/jquery.min.js"></script>
+<script src="../dist/SYST.js"></script>
+<script src="assets/js/main.js"></script>
+
+</body>
+</html>

@@ -69,15 +69,17 @@
 
         var router = SYST.Router({
 
-            routers: {
+            routes: {
                 'user/': 'listAction',
                 'user/add': 'addAction',
                 'user/edit': 'editAction',
                 'user/delete': 'deleteAction'
             },
 
-            listAction: function(){
-                console.log('...list Action...');
+            listAction: {
+                action: function(){
+                    console.log(this);
+                }
             },
 
             addAction: function(){

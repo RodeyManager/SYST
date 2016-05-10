@@ -1,0 +1,32 @@
+
+
+    <hr>
+    <h2 id="SYST.Validate">SYST.Validate(校验函数)</h2>
+    <article class="method" id="SYST.V.isEmpty">
+        <h3>isEmpty <code>Functon (variable)=> <code>Boolean</code> </code></h3>
+
+        <p>
+            判断变量是否为空。<br/>
+            <code> !variable、variable.length = 0、''、null、undefined => <span class="cm">true</span> </code>
+        </p>
+    </article>
+
+    <article class="method" id="SYST.V.isCN">
+        <h3>isCN <code>Functon (val, [flag])=> <code>Boolean</code> </code></h3>
+        <ul>
+            <li><code>val: </code>待判定的值</li>
+            <li><code>flag: </code>默认 <code>false</code>, <code>true</code>为完全匹配</li>
+        </ul>
+
+        <p>
+            判断当前值是否含有中文字符。<br/>
+        </p>
+        <h3 class="ex-title">实例：</h3>
+<pre><code>
+    SYST.V.isCN('0as中df');
+    //=> true
+    SYST.V.isCN('0as国df', true);
+    //=> false
+
+</code></pre>
+    </article>

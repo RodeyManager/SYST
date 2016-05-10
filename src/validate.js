@@ -10,27 +10,16 @@
     'use strict';
 
 
-    var Validate = SYST.Validate = function(child){
+    var Validate = function(){
+        this.__SuperName__ = 'SYST Validate';
         this.__Name__ = 'Validate';
-        if(child){
-            child.__SuperName__ = 'SYST Validate';
-            child = SYST.extend(SYST.Validate.prototype, child);
-            return child;
-        }else{
-            return new SYST.Validate({});
-        }
     };
-    SYST.V = SYST.Validate.prototype = {
+    SYST.Validate = function(){
+        return SYST.extendClass(arguments, Validate);
+    };
+    SYST.V = Validate.prototype = {
         //为空时
-        isEmpty     : function(val){        return (!val || val.length === 0 || val === '' || val == null) ? true : false; },
-        //是否已设置(初始化值)
-        isSet       : function(val){        return (typeof val !== 'undefined') ? true : false; },
-        //取两个数值之间 (默认不包括两者, flag=>true 包括)
-        between     : function(val, min, max, flag){
-            flag = flag || false;
-            if(flag)                        return (val.length >= min && val.length <= max) ? true : false;
-            else                            return (val.length > min && val.length < max) ? true : false;
-        },
+        isEmpty     : function(val){        return (!val || val.length === 0 || val === '' || val == null || Object.keys(val).length === 0) ? true : false; },
         //是否含有中文 （flag存在则完全匹配中文，默认不完全匹配）
         isCN        : function(str, flag){
             if(flag)                        return (/^[\u4e00-\u9fa5]+$/.test(str));
@@ -44,6 +33,7 @@
         isTel       : function(tel){        return /^(\(\d{3,4}\)|\d{3,4}-)?\d{7,8}$/gi.test(tel); },
         //验证手机号码
         isMobile    : function(mobile){     return /^1[3|4|5|7|8]{1}\d{9}$/.test(mobile); },
+        //邮编
         isZip       : function(zipCode){    return /^\d{6}$/.test(zipCode); },
         //验证日期, 日期时间, 时间
         isDateLocal : function(date){       return /^(\d{4})-(\d{1,2})-(\d{1,2})$/.test(date); },

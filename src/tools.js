@@ -20,26 +20,22 @@
      * Module web通用公共函数对象
      * @type {Function}
      */
-    var Tools = SYST.Tools = function(child){
+    var Tools = function(){
+        this.__SuperName__ = 'SYST Tools';
         this.__Name__ = 'Tools';
-        if(child){
-            child.__SuperName__ = 'SYST Tools';
-            child = SYST.extend(SYST.Tools.prototype, child);
-            return child;
-        }else{
-            return new SYST.Tools({});
-        }
     };
-    SYST.T = SYST.Tools.prototype = {
+    SYST.Tools = function(){
+        return SYST.extendClass(arguments, Tools);
+    };
+    SYST.T = Tools.prototype = {
         parseDom: function(htmlStr, tagPanel){
             var element = document.createElement(tagPanel || 'div');
             //jQuery || zepto
             if(SYST.$){
-                SYST.$(element).html(htmlStr);
-                return SYST.$(element)[0];
+                return SYST.$(htmlStr)[0];
             }
             element.innerHTML = htmlStr;
-            return element.childNodes;
+            return element.childNodes[0];
         },
         /**
          * Function 触发事件
@@ -50,16 +46,20 @@
          * @return {[type]}            [undefined]
          * use:
          * $(document.body).bind('click', function(){});
-         * SYST.T.trigger($(document.body)[0], 'onclick', 'hello', function(data){
+         * SYST.T.trigger($(document.body)[0], 'onclick', 'hello', function(evt, data){
          *     console.log(this); //output:     <body>...</body。
          *     console.log(data); //output；    'hello'
          * });
          */
         trigger: function(element, event, data, callback){
+            var handler;
             if(element && event && '' !== event){
+                event = event.search(/^(on)/i) !== -1 ? event : 'on' + event;
+                handler = function(evt){
+                    SYST.V.isFunction(callback) && callback.call(element, evt, data);
+                };
                 try{
-                    element[method].call(element, data, arguments);
-                    if(typeof callback === 'function') callback.call(element, data);
+                    element[event] = handler;
                 }catch(e){
                     throw new Error(element + '不存在' + event + '方法 <::>');
                 }
@@ -115,7 +115,7 @@
             var index = this.indexOf(array, val);
             if (index >=0)
                 array.splice(index, 1);
-            return val;
+            return array;
         },
         /**
          * Function 全角字符转为半角,并去除所有空格
@@ -168,7 +168,15 @@
             if(!format)
                 return date.getFullYear() +'-'+ this.dateFm(date.getMonth() + 1) +'-'+ this.dateFm(date.getDate()) + ' ' + this.dateFm(date.getHours()) + ':' + this.dateFm(date.getMinutes()) + ':' + this.dateFm(date.getSeconds());
             var cs = format.match(/[^\w\d\s]+?/i), c1 = cs[0] || '-', c2 = cs[1] || ':';
-            if(/y+?/i.test(format))     push(date.getFullYear(), ds);
+
+            var year = format.split(c1)[0];
+            if(year.length <= 2){
+                year = ('' + date.getFullYear()).substr(2);
+            }else{
+                year = date.getFullYear();
+            }
+            push(year, ds);
+
             if(/m+?/i.test(format))     push(date.getMonth() + 1, ds);
             if(/d+?/i.test(format))     push(date.getDate(), ds);
             if(/h+?/i.test(format))     push(date.getHours(), ts);
@@ -179,21 +187,52 @@
             }
             return SYST.T.trim(ds.join(c1) + (ts.length > 0 ? ' ' + ts.join(c2) : ''));
         },
+
+        /**
+         * 将时间转为中文格式时间
+         * @param timestamp 时间戳 或 时间字符串，如：1462327561371 或 '2016/5/4 10:03:20'
+         * @param format 格式 YY-m-d
+         * @param prefix 是否补0
+         * @returns {string}
+         */
+        setDateFormatCN: function(timestamp, format, prefix){
+            var cdate   = /[-:\/\|_\.]/gi.test(timestamp)
+                            ? timestamp : this.setDateFormat(timestamp, format, prefix),
+                cds     = cdate.split(' '),
+                date    = cds[0],
+                time    = cds[1],
+                cnDates = ['年', '月', '日', '时', '分', '秒'],
+                index   = 0;
+
+            date = replaceDate(date, /[-\/\|_\.]/gi) + cnDates[2];
+            index++;
+            time = replaceDate(time, /:/gi) + cnDates[5];
+
+            function replaceDate(str, reg){
+                return str.replace(reg, function(){
+                    return cnDates[index++];
+                });
+            }
+
+            return date + ' ' + time;
+
+        },
+
         /**
          * Function 比较两个时间差 格式：YYYY-mm-dd
          * @param DateOne
          * @param DateTwo
          * @return {Number}
          */
-        daysBetween: function(DateOne, DateTwo, callback){
+        daysBetween: function(dateOne, dateTwo, callback){
             //获取第一个时间
-            var OneMonth    = DateOne.substring(5, DateOne.lastIndexOf('-'));
-            var OneDay      = DateOne.substring(DateOne.length, DateOne.lastIndexOf('-') + 1);
-            var OneYear     = DateOne.substring(0, DateOne.indexOf('-'));
+            var OneMonth    = dateOne.substring(5, dateOne.lastIndexOf('-'));
+            var OneDay      = dateOne.substring(dateOne.length, dateOne.lastIndexOf('-') + 1);
+            var OneYear     = dateOne.substring(0, dateOne.indexOf('-'));
             //获取第二个时间
-            var TwoMonth    = DateTwo.substring(5,DateTwo.lastIndexOf('-'));
-            var TwoDay      = DateTwo.substring(DateTwo.length, DateTwo.lastIndexOf('-') + 1);
-            var TwoYear     = DateTwo.substring(0, DateTwo.indexOf('-'));
+            var TwoMonth    = dateTwo.substring(5,dateTwo.lastIndexOf('-'));
+            var TwoDay      = dateTwo.substring(dateTwo.length, DateTwo.lastIndexOf('-') + 1);
+            var TwoYear     = dateTwo.substring(0, dateTwo.indexOf('-'));
 
             var CDays = ((Date.parse(OneMonth +'/'+ OneDay +'/'+ OneYear) - Date.parse(TwoMonth +'/'+ TwoDay +'/'+ TwoYear)) / 86400000);
 
@@ -215,16 +254,17 @@
             var start = 48,     end = 122,
                 i = 0,          len = size,
                 random,         rs = '',
+                flag = true,
                 //特殊字符
                 filter = [58, 59, 60, 61, 62, 63, 64, 91, 92, 93, 94, 95, 96],
                 //去除扰乱视线 I L l o O
                 f2 = [48, 49, 73, 76, 79, 108, 111];
 
             for( ; i < len; ++i ){
-                random = Math.floor(Math.random() * s + Math.random() * e);
-                if(random >= start && random <= end && filter.indexOf(r) === -1){
-                    if(flag === true)   (f2.indexOf(r) === -1) ? rs += String.fromCharCode(10, random) : len++;
-                    else                rs += String.fromCharCode(10, r);
+                random = Math.floor(Math.random() * start + Math.random() * end);
+                if(random >= start && random <= end && filter.indexOf(random) === -1){
+                    if(flag === true)   (f2.indexOf(random) === -1) ? rs += String.fromCharCode(10, random) : len++;
+                    else                rs += String.fromCharCode(10, random);
                 }else{
                     len++;
                 }
@@ -237,14 +277,15 @@
          * @returns {*}
          */
         params: function(name, url){
+            var grap = '?';
             if(this._pars && this._pars[name])
                 return this._pars[name];
             //var search = (url ? url.split('?')[1] : location.search || location.href.split('?')[1]).replace(/^\?/, '');
             var search = '';
             if(!SYST.V.isEmpty(url)){
-                search = url.split('?')[1] || '';
+                search = url.split(grap)[1] || '';
             }else{
-                search = window.location.search.substr(1);
+                search = location.href.split(grap)[1];
             }
             if(SYST.V.isEmpty(search)) return {};
             var mas = search.replace(/^\?/, '').split('&');
@@ -369,7 +410,9 @@
             if(SYST.V.isObject(object)){
                 var index = 0;
                 for(var k in object){
-                    callback.call(object, object[k], index++, k);
+                    if(object.hasOwnProperty(k)){
+                        callback.call(object, object[k], index++, k);
+                    }
                 }
             }
             else if(SYST.V.isArray(object)){

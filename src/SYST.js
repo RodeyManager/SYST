@@ -14,31 +14,32 @@
                     }
  */
 
-;(function(SYST){
+;(function(root){
 
     'use strict';
 
-    var root = this;
     var SYST = {};
-    (typeof exports !== 'undefined') ? (SYST = exports) : (SYST = root.SYST = {});
 
     //框架属性
-    SYST.version = '1.0.3';
+    SYST.version = '{{@version}}';
     SYST.author = 'Rodey Luo';
-    SYST.name = 'SYST JS MVC mini Framework (JS MVC框架)';
 
-    //解决命名冲突
-    SYST.noConflict = function() {
-        root.SYST = SYST;
-        return this;
-    };
-    //外置插件 (加载时一定要考虑依赖性)
     //判断是否有jquery，zepto插件
     try{
         SYST.$ = root.jQuery || root.Zepto || undefined;
     }catch(e){
         throw new Error('$不存在，请先引入jQuery|Zepto插件，依赖其中一个。' + e);
     }
+
+    var _clone = function(targetObject){
+        var target = targetObject, out = {}, proto;
+        for(proto in target){
+            if(target.hasOwnProperty(proto)){
+                out[proto] = target[proto];
+            }
+        }
+        return out;
+    };
 
     /**
      * 继承函数
@@ -50,26 +51,14 @@
     var _extend = function(parent, child){
         if(!parent) return child;
         if(!child) return parent;
-        if(!child.prototype){
-            var proto;
-            for(proto in child){
-                if(child.hasOwnProperty(proto)){
-                    parent[proto] = child[proto];
-                }
+        var clone = _clone(parent);
+        for(var prop in child){
+            if(child.hasOwnProperty(prop)){
+                clone[prop] = child[prop];
             }
-            child.__super__ = parent;
         }
-        return parent;
-    };
 
-    var _clone = function(targetObject){
-        var target = targetObject, out = {}, proto;
-        for(proto in target){
-            if(target.hasOwnProperty(proto)){
-                out[proto] = target[proto];
-            }
-        }
-        return out;
+        return clone; //SYST.$.extend(true, child, parent);
     };
 
     var _hoadEvent = function(obj, func){
@@ -92,21 +81,57 @@
         }
     };
 
+    /**
+     * 生成或者是继承类对象
+     * @param args
+     * @param className
+     * @returns {*}
+     * @private
+     */
+    var _extendClass = function(args, className){
+        var args = Array.prototype.slice.call(args),
+            firstArgument = args[0], i = 0, mg = {}, len;
+        if(SYST.V.isObject(firstArgument)){
+            //if firstArgument is SYST Http Object
+            if('__instance_SYST__' in firstArgument){
+                args.shift();
+                for(len = args.length; i < len; ++i){
+                    mg = SYST.extend(mg, args[i]);
+                }
+                mg.__proto__ = firstArgument;
+                return mg;
+            }else{
+                for(len = args.length; i < len; ++i){
+                    mg = SYST.extend(mg, args[i]);
+                }
+                mg.__proto__ = new className();
+                return mg;
+            }
+        }else{
+            return mg.__proto__ = new className();
+        }
+    };
+
     SYST.extend = _extend;
+    SYST.extendClass = _extendClass;
     SYST.clone = _clone;
     SYST.hoadEvent = _hoadEvent;
 
-    // RequireJS && SeaJS -----------------------------
-    if(typeof define === 'function'){
-        define(function() {
-            return SYST;
-        });
-        // NodeJS
-    }else if(typeof exports !== 'undefined'){
+    //Object.keys
+    !('keys' in Object) && (Object.keys = function(o){
+        if(o !== Object(o))
+            throw new TypeError('Object.keys called on a non-object');
+        var k = [], p;
+        for(p in o) if(Object.prototype.hasOwnProperty.call(o, p)) k.push(p);
+        return k;
+    });
+
+    if( typeof module === 'object' && typeof module.exports === 'object' ){
         module.exports = SYST;
+    }else{
+        root.SYST = SYST;
     }
 
-    root.SYST = SYST;
+    return SYST;
 
-
-}).call(this);
+}).call(this, window);

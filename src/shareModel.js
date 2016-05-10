@@ -10,31 +10,31 @@
      * Module 共享数据模型
      * @type {Object}
      */
-    SYST._shareModels = {};
     var ShareModel = SYST.shareModel = {
+        models: {},
         add: function(key, model){
-            SYST._shareModels[key] = model;
+            if(SYST.V.isEmpty(key)){
+                key = (new Date()).getTime() + Math.random();
+            }
+            this.models[key] = model;
         },
         get: function(key){
-            var shareModels = SYST._shareModels;
-            if(null == key){
-                return shareModels;
-            }
+            var shareModels = this.models;
             if(shareModels[key])
-                    return shareModels[key];
+                return shareModels[key];
             return null;
         },
         remove: function(key){
-            var shareModels = SYST._shareModels,
+            var shareModels = this.models,
                 model = shareModels[key];
             if(model){
-                SYST._shareModels[key] = null;
-                delete SYST._shareModels[key];
+                shareModels[key] = null;
+                delete shareModels[key];
             }
             return model;
         },
         has: function(key){
-            return SYST._shareModels[key];
+            return this.models[key] ? true : false;
         }
     };
 

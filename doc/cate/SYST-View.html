@@ -1,0 +1,172 @@
+
+    <hr>
+    <h2 id="SYST.View">SYST.View(视图)</h2>
+    <article class="method" id="SYST.View.container">
+        <h3>container <code>String</code></h3>
+
+        <p>
+            视图容器，支持jquery选择器
+        </p>
+        <h3 class="ex-title">实例：</h3>
+        <span class="ex-lang">html: </span>
+<pre><code>
+    &lt;body&gt;
+        &lt;div id="header"&gt;&lt;/div&gt;
+        &lt;div id="main"&gt;
+            &lt;div id="aside"&gt;aside&lt;/div&gt;
+        &lt;/div&gt;
+        &lt;div id="footer"&gt;&lt;/div&gt;
+    &lt;/body&gt;
+
+</code></pre>
+
+        <span class="ex-lang">javascript: </span>
+<pre><code>
+    SYST.View({
+        container: '#main',
+        events: {
+            'click #aside'    : 'clickAside'
+        },
+        clickHandler: function(evt){
+            console.log(evt.currentTarget, evt.target);
+        }
+    });
+
+</code></pre>
+    </article>
+
+    <article class="method" id="SYST.View.destroy">
+        <h3>destroy <code>Function</code></h3>
+
+        <p>
+            移除视图容器中的所有节点（将视图容器置为空）
+        </p>
+    </article>
+
+    <article class="method" id="SYST.View.hoadEvent">
+        <h3>hoadEvent <code>Function (target, func)</code></h3>
+        <ul>
+            <li><code>target: </code> 目标对象</li>
+            <li><code>func: </code> 处理函数</li>
+        </ul>
+
+        <p>
+            改变对象属性作用域 (常用在元素触发事件侦听函数中)
+        </p>
+        <h3 class="ex-title">实例：</h3>
+<pre><code>
+    var obj = { name: 'a'};
+    document.body.addEventListener('click', SYST.View().hoadEvent(obj, function(evt){
+        console.log(evt.target);
+        console.log(this) //=> obj
+    }), false);
+
+</code></pre>
+    </article>
+
+    <article class="method" id="SYST.View.onEvent">
+        <h3>onEvent <code>Function (selector, event, func)</code></h3>
+        <ul>
+            <li><code>selector: </code> 元素选取器</li>
+            <li><code>event: </code> 事件名称 <code>String</code>，如：'click'、'mouseover'等</li>
+            <li><code>func: </code> 事件处理函数</li>
+        </ul>
+
+        <p>
+            元素触发事件侦听
+        </p>
+        <h3 class="ex-title">实例：</h3>
+        <span class="ex-line">one: </span>
+<pre><code>
+    var view = SYST.View();
+    function clickHandler(evt){
+        console.log(evt);
+    }
+    view.onEvent('body', 'click', clickHandler);
+</code></pre>
+    <span class="ex-line">two: </span>
+<pre><code>
+    var view = SYST.View({
+        init: function(){
+            this.onEvent('body', 'click', this.clickHandler);
+        },
+        //事件处理
+        clickHandler: function(evt){
+            console.log(evt.currentTarget || evt.target);
+            console.log(this);
+        }
+    });
+
+</code></pre>
+    </article>
+
+    <article class="method" id="SYST.View.offEvent">
+        <h3>offEvent <code>Function (selector, event, func)</code></h3>
+        <ul>
+            <li><code>selector: </code> 元素选取器</li>
+            <li><code>event: </code> 事件名称 <code>String</code>，如：'click'、'mouseover'等</li>
+            <li><code>func: </code> 事件处理函数</li>
+        </ul>
+
+        <p>
+            元素移除事件侦听函数
+        </p>
+        <h3 class="ex-title">实例：</h3>
+<pre><code>
+    var view = SYST.View();
+    function clickHandler(evt){
+        console.log(evt);
+    }
+    view.offEvent('body', 'click', clickHandler);
+
+</code></pre>
+    </article>
+
+    <article class="method" id="SYST.View.template">
+        <h3>template <code>Function (tpl, data, [helper])</code></h3>
+        <ul>
+            <li><code>tpl: </code> 模板字符串或包含模板元素的id</li>
+            <li><code>data: </code> 数据对象</li>
+            <li><code>helper: </code> 自定义辅助函数</li>
+        </ul>
+
+        <p>
+            模板渲染 请参考<code><a href="#SYST.T.render"> SYST.T.render </a></code>
+        </p>
+    </article>
+
+    <article class="method" id="SYST.View.parseDom">
+        <h3>parseDom <code>Function (htmlStr, [tagPanel])</code></h3>
+
+        <p>
+            参考 <code><a href="#SYST.T.parseDom">SYST.T.parseDom</a></code>
+        </p>
+        <h3 class="ex-title">实例：</h3>
+<pre><code>
+    var elm = SYST.View().parseDom('&lt;p&gt;8899&lt;/p&gt;');
+    console.log(elm); //=> HTMLElement
+
+</code></pre>
+
+    </article>
+
+    <article class="method" id="SYST.View.model">
+        <h3>model <code>SYST.View</code></h3>
+
+        <p>
+            默认View将关联一个SYST Model对象，你可以在构建View对象时进行覆盖
+        </p>
+        <h3 class="ex-title">实例：</h3>
+<pre><code>
+    var view = SYST.View();
+    console.log(view.model); //=> SYST.Model
+
+    //===========>
+    var model = SYST.Model({ name: 'view->model' });
+    var view = SYST.View({
+        model: model
+    });
+    console.log(view.model.name); //=> view-model
+
+</code></pre>
+    </article>

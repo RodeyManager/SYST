@@ -1,0 +1,66 @@
+
+    <hr>
+    <h2 id="SYST.Config">SYST全局配置</h2>
+
+    <article class="method" id="SYST.tplConfig">
+        <h3>SYST.tplConfig <code>Object</code></h3>
+
+        <p>
+            模板解析引擎配置
+        </p>
+<pre><code>
+    SYST.tplConfig = {
+        open: '{{',
+        close: '}}'
+    };
+
+</code></pre>
+    </article>
+
+    <article class="method" id="SYST.httpConfig">
+        <h3>SYST.httpConfig <code>Object</code></h3>
+        <ul>
+            <li><code>ajaxType</code> 请求方式：get|post</li>
+            <li><code>ajaxDataType</code> 返回的数据格式：xml, html, script, json, text, _default</li>
+            <li><code>commonData</code> 所有请求中都需要传递的数据</li>
+            <li><code>ajaxBefore</code> 发起请求之前执行</li>
+            <li><code>ajaxEnd</code> 请求结束 success error 之前执行</li>
+            <li><code>ajaxComplete</code> 请求完成 success error主题执行之后</li>
+            <li><code>ajaxSuccess</code> 请求成功</li>
+            <li><code>ajaxError</code> 请求失败</li>
+        </ul>
+
+        <p>
+            http 请求配置
+        </p>
+<pre><code>
+
+    var loadingGif;
+    if(!$('#loading-gif')[0]){
+        loadingGif = $('&lt;img id="loading-gif" src="assets/images/loading.gif" style="display:none;" /&gt;');
+        $('body').append(loadingGif);
+    }
+
+    SYST.httpConfig = {
+        //-------------ajax请求过程的每一个回调回调（注意每一个请求都会调用）----------------------------------
+        ajaxBefore: function(){
+            //发起请求之前执行
+            loadingGif.show();
+        },
+        ajaxEnd: function(res){
+            //console.log('请求结束 success error 之前执行', res);
+            loadingGif.hide();
+        },
+        ajaxComplete: function(res){
+            //console.log('请求完成 success error主题执行之后', res);
+        },
+        ajaxSuccess: function(res){
+            //console.log('请求成功', res);
+        },
+        ajaxError: function(err, xhr){
+            //console.log('请求失败', this);
+        }
+    };
+
+</code></pre>
+    </article>
