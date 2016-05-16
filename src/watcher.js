@@ -11,14 +11,42 @@
         regState = /\s+[\w\d_-]+=\"[\s\S]*?\{\{\s*={1,2}\s*([^\{]*?)\s*\}\}[\s\S]*?\"/gi,
         slice = Array.prototype.slice,
         isObserve = 'observe' in Object,
+        notValReg = /^[^\w]*/gi,
+        strProp = {
+            toUpperCase: function(str){ return str.toUpperCase(); },
+            toLowerCase: function(str){ return str.toLowerCase(); }
+        };
         trimAttrValue = function(str){
             return SYST.T.rtrim(str.replace(/[\s\{\}]*/gi, ''), '|');
         };
+
+    var st_model = 'st-model',
+        st_prop = 'st-prop',
+        st_template = 'st-template',
+        st_style = 'st-style',
+        st_repeat = 'st-repeat',
+        st_item = 'st-item',
+        st_vid = 'st-vid',
+        bindStPropName = 'bindStPropName',
+        rawHtml = 'rawHtml',
+        innerHTML = 'innerHTML';
+
+    //st-repeat regs
+    var startRS = '\\{\\{\\s*',
+        endRS = '\\s*\\}\\}',
+        mRS = 'gi',
+        repeatReg = new RegExp(startRS + '($value)' + endRS, mRS),
+        indexReg = new RegExp(startRS + '(\\$index)?' + endRS, mRS),
+        firstReg = new RegExp(startRS + '(\\$first)?' + endRS, mRS),
+        lastReg = new RegExp(startRS + '(\\$last)?' + endRS, mRS),
+        objKeyReg = new RegExp(startRS + '(\\$key[^\\}]*?)?' + endRS, mRS),
+        objValReg = new RegExp(startRS + '(\\$valu?e?[^\\}]*?)?' + endRS, mRS);
 
     var Watcher = function(model){
 
         if(!model)
             throw new ReferenceError('args 1 can ben SYST.Model');
+        this.model = model;
         this._reset(model);
 
     };
@@ -34,11 +62,11 @@
          * @param propName
          */
         addListener: function(propName){
-            var bindModelTags = SYST.$('[st-model]'),
+            var bindModelTags = SYST.$('['+ st_model +']'),
                 model, $bindTag;
             for(var i = 0, len = bindModelTags.length; i < len; ++i){
 
-                model = bindModelTags[i].getAttribute('st-model');
+                model = bindModelTags[i].getAttribute(st_model);
                 if(model === this.model.$mid){
                     $bindTag = SYST.$(bindModelTags[i]);
                     if(SYST.T.indexOf(this.bindTags, $bindTag) === -1){
@@ -49,9 +77,11 @@
                     this._getBindTemplates($bindTag, propName);
                     //获取绑定的样式 【st-style】
                     this._getBindStyles($bindTag);
+                    //获取绑定样式 【st-repeat】
+                    this._getBindRepeats($bindTag);
                 }
             }
-            this._setProps();
+            this._setProps(this.bindElements[propName]);
         },
 
         /**
@@ -60,25 +90,25 @@
          */
         removeListener: function(propName){
             if(!propName){
-                this.elements = [];
-                this.bindElements = {};
+                this._reset();
                 return this;
             }
-            this.bindElements[propName] = null;
-            delete this.bindElements[propName];
+            //删除指定的属性绑定的数据
+            this._deleteBinds(propName);
+
             var element;
             for(var i = 0, len = this.elements.length; i < len; ++i){
                 element = this.elements[i];
-                if(element['bindStPropName'] === propName){
+                if(element[bindStPropName] === propName){
                     SYST.T.arrRemove(this.elements, element);
                     return this;
-                    //console.log(this.elements);
                 }
             }
+
             return this;
         },
         removeListenerAll: function(){
-            this.removeListener();
+            return this.removeListener();
         },
 
         /**
@@ -96,6 +126,7 @@
                 elements = this.bindElements[propName] || elements;
                 //同步更新绑定样式
                 this.updateBindStyles(propName);
+                this.updateBindRepeats(propName);
             }
             this._setProps(elements);
             //更新样式
@@ -150,6 +181,15 @@
             this._makeStyle(propName, elements);
         },
 
+        /**
+         * 循环输出绑定
+         * @param propName
+         * @param elements
+         */
+        updateBindRepeats: function(propName, elements){
+            this._makeRepeats(propName, elements);
+        },
+
         //------------------------Private----------------------
         _init: function(){
             if(!this.model.props || {} == this.model.props)
@@ -202,7 +242,7 @@
 
         },
         _reset: function(model){
-            this.model = model;
+            this.model = model || this.model;
             this.elements = [];
             this.bindTags = [];
             //prop is key, elements is value
@@ -213,17 +253,28 @@
             this.bindStates = [];
             //bind styles as st-style tag
             this.bindStyles = {};
+            //bind repeat data as st-repeat tag
+            this.bindRepeats = {};
+        },
+        _deleteBinds: function(propName){
+            var binds = [this.bindElements, this.bindTemplates, this.bindRepeats, this.bindStyles];
+            (function _delete(binds){
+                SYST.T.each(binds, function(bind){
+                    bind[propName] = null;
+                    delete bind[propName];
+                });
+            })(binds);
         },
         /**
          * 获取数据被绑定的UI as st-model
          * @param propName: 新增加的属性
          */
         _getBindModelTags: function(propName){
-            var bindModelTags = SYST.$('[st-model]'),
+            var bindModelTags = SYST.$('['+ st_model +']'),
                 model, $bindTag;
             for(var i = 0, len = bindModelTags.length; i < len; ++i){
 
-                model = bindModelTags[i].getAttribute('st-model');
+                model = bindModelTags[i].getAttribute(st_model);
                 if(model === this.model.$mid){
                     $bindTag = SYST.$(bindModelTags[i]);
                     if(SYST.T.indexOf(this.bindTags, $bindTag) === -1){
@@ -235,6 +286,8 @@
                     this._getBindTemplates($bindTag, propName);
                     //获取绑定的样式 【st-style】
                     this._getBindStyles($bindTag);
+                    //获取绑定列表 【st-repeat】
+                    this._getBindRepeats($bindTag);
                 }
             }
 
@@ -254,17 +307,21 @@
             this._getBindElementForContent(bindTag);
 
         },
-
+        /**
+         * 根据标签属性上带有 st-prop
+         * @param bindTag
+         * @private
+         */
         _getBindElementForAttriburte: function(bindTag){
             var self = this, stProps, $bindTag, name;
             $bindTag = bindTag;
 
-            stProps = slice.call($bindTag.find('[st-prop]'));
+            stProps = slice.call($bindTag.find('['+ st_prop +']'));
             stProps.map(function(stProp){
 
                 //console.log(stProp.getAttribute('st-prop'));
-                name = self._getRootPropName(stProp.getAttribute('st-prop'));
-                stProp['bindStPropName'] = name;
+                name = self._getRootPropName(stProp.getAttribute(st_prop));
+                stProp[bindStPropName] = name;
                 self._toBindElements(name, stProp);
                 return stProp;
 
@@ -275,23 +332,35 @@
             //之后的数据变化将采用 this.bindElements[propName]取值后进行遍历
             this.elements = this.elements.concat(stProps);
         },
+        /**
+         * 根据标签内容中含有被绑定属性，并以模板形式呈现的，如：{{ prop }}
+         * @param bindTag
+         * @private
+         */
         _getBindElementForContent: function(bindTag){
             var self = this, $bindTag, temp, el, name;
             $bindTag = bindTag, elements = [];
             //获取绑定的元素集合
             while((temp = reg.exec($bindTag.html())) != null){
 
-                el = $bindTag.find(':contains('+ temp[0] +')')[0];
+                el = slice.call($bindTag.find(':contains('+ temp[0] +')')).reverse();
                 //console.log(temp[0]);
                 name = self._getRootPropName(temp[0]);
-                if(!el) continue;
-                el['rawHtml'] = el.innerHTML;
-                el['bindStPropName'] = name;
-                if(SYST.T.indexOf(self.elements, el) === -1){
-                    el && self.elements.push(el);
-                }
-                self._toBindElements(name, el);
+                if(!el || el.length === 0) continue;
+
+                SYST.T.each(el, function(element){
+                    self._isInBindElements(element, name);
+                });
             }
+
+        },
+        _isInBindElements: function(element, propName){
+            element[rawHtml] = element[innerHTML];
+            element[bindStPropName] = propName;
+            if(SYST.T.indexOf(this.elements, element) === -1){
+                this.elements.push(element);
+            }
+            this._toBindElements(propName, element);
         },
 
         /**
@@ -313,9 +382,9 @@
 
         },
         //更新UI
-        _setProps: function(elms){
+        _setProps: function(elements){
             var self = this,
-                elements = elms || this.elements,
+                elements = elements || this.bindElements,
                 i = 0, len = elements.length;
             if(elements && elements.length !== 0){
                 for(; i < len; ++i){
@@ -323,11 +392,12 @@
                     self._setProp(elements[i]);
                 }
             }
+
         },
         //监听 props属性变化
         _setProp: function(element){
             var self = this, attr;
-            attr = element.getAttribute('st-prop');
+            attr = element.getAttribute(st_prop);
             //------------------------
              //valueType = /TEXTAREA|INPUT|SELECT/.test(elm.nodeName) ? 'value' : 'innerHTML';
              if(/TEXTAREA|INPUT/.test(element.nodeName)){
@@ -350,17 +420,27 @@
                  element.value = self._getProp(element);
                  element['onchange'] = function(evt){
                      //self.model.props[attr] = this.value;
-                     self.model.set(attr, this.value);
+                     var value = this.value,
+                         filters = element.getAttribute('st-filter');
+                     if(filters){
+                         filters = filters.split('|');
+                     }
+                     if(filters && filters.length !== 0){
+                         value = self._makeFilters(value, filters);
+                         //console.log(value);
+                     }
+                     self.model.set(attr, value);
                      element.value = self._getProp(element);
                  };
              }
              else{
-                 attr = element.getAttribute('st-prop');
-                 if(attr || !element.rawHtml){
-                     element.innerHTML = self._getProp(element);
+                 if(element.getAttribute(st_repeat)) return;
+                 attr = element.getAttribute(st_prop);
+                 if(attr || !element[rawHtml]){
+                     element[innerHTML] = self._getProp(element);
                  }else{
                      //获取此 element
-                     element.innerHTML = element.rawHtml.replace(reg, function(match, $1){
+                     element[innerHTML] = element[rawHtml].replace(reg, function(match, $1){
                          //console.log(match, props[$1]);
                          return self._getProp(element, $1);
                      });
@@ -371,8 +451,9 @@
         //获取 当前属性的最新值
         _getProp: function(element, prop){
             var attr = prop || (function(){
-                    if(element.getAttribute('st-prop')){
-                        return element.getAttribute('st-prop').replace(/^[^\w_]*/gi, '')
+                        var stProp = element.getAttribute(st_prop);
+                    if(stProp){
+                        return stProp.replace(notValReg, '')
                     }else{
                         return null;
                     }
@@ -387,10 +468,10 @@
             if(/\./gi.test(attr)){
                 prop = this._getFinalPropValue(attr);
             }else{
-                prop = this.model.props[attr] || '';
+                prop = this.model.props[attr];
             }
 
-            if(!prop) return '';
+            if(prop == null) return '';
             if(SYST.V.isFunction(prop)){
                 prop = prop.apply(this);
             }
@@ -405,7 +486,7 @@
         _getFinalPropValue: function(attrStr){
             var attr = attrStr.split('.');
             //console.log(attr);
-            var index = 0, temp, tts = this.model.props[attr[0]] || ''; //
+            var index = 0, temp, tts = this.model.props[attr[0].replace(notValReg, '')] || ''; //
             while(SYST.V.isObject(tts) && (temp = tts[attr[++index]]) != null){
                 tts = tts[attr[index]];
             }
@@ -421,9 +502,14 @@
             var prop = arg,
                 method;
             for(var i = 0, len = filters.length; i < len; ++i){
-                method = this.model[filters[i]];
+                method = this.model[SYST.T.trim(filters[i])];
                 if(SYST.V.isFunction(method)){
-                    prop = method.apply(this, [prop]);
+                    prop = method.apply(this.model, [prop]);
+                }else{
+                    method = strProp[filters[i]] || SYST.T[filters[i]];
+                    if(SYST.V.isFunction(method)){
+                        prop = method(prop);
+                    }
                 }
             }
             return prop;
@@ -437,16 +523,16 @@
             return trimAttrValue(attrStr).split('|')[0];
         },
 
-        //========================== st-template ==========================================
+        //======================== st-template ========================================
         _getBindTemplates: function(bindTag){
             var $bindTag = bindTag,
-                templates = $bindTag.find('[st-template]'),
+                templates = $bindTag.find('['+ st_template +']'),
                 i = 0, len = templates.length,
                 templateId, container;
             if(templates.length > 0){
                 for(; i < len; ++i){
                     container = templates[i];
-                    templateId = '#' + container.getAttribute('st-template');
+                    templateId = '#' + container.getAttribute(st_template);
                     //console.log(templateId);
                     //添加到缓存
                     this._toBindTemplates(templateId, container);
@@ -480,17 +566,17 @@
         _getBindStyles: function(bindTag){
             var self        = this, element, styleString, temp,
                 $bindTag    = bindTag,
-                styles      = $bindTag.find('[st-style]'),
+                styles      = $bindTag.find('['+ st_style +']'),
                 i           = 0,
                 len         = styles.length;
             if(styles.length > 0){
                 for(; i < len; ++i){
                     element     = styles[i];
-                    styleString = element.getAttribute('st-style');
+                    styleString = element.getAttribute(st_style);
                     //获取绑定的元素集合
                     while((temp = reg.exec(styleString)) != null){
-                        element['st-style'] = styleString;
-                        element.removeAttribute('st-style');
+                        element[st_style] = styleString;
+                        element.removeAttribute(st_style);
                         var propName = self._getPropName(temp[1]);
                         self._toBindStyles(propName, element);
                         //self._toBindElements(propName, element);
@@ -521,14 +607,14 @@
             SYST.V.isArray(elements)
             &&
             SYST.T.each(elements, function(element){
-                styleString = element['st-style'];
+                styleString = element[st_style];
                 styleString = styleString.replace(reg, function(match, $1){
                     //console.log(match, $1);
                     if(/\|/gi.test($1)){
                         var propName = self._getPropName($1),
                             prop = self.model.props[propName];
-                        self.model.props[propName] = self._makeFilters(prop, self._getFilters($1));
-                        return self.model.props[propName];
+                        //self.model.props[propName] = self._makeFilters(prop, self._getFilters($1));
+                        return self._makeFilters(prop, self._getFilters($1));
                     }
                     return self.model.props[$1];
                 });
@@ -542,6 +628,150 @@
                 });
             });
 
+        },
+        //========================= st-repeat ==========================================
+        _getBindRepeats: function(bindTag){
+            var self        = this, element, propName, outerHTML,
+                $bindTag    = bindTag,
+                repeats     = slice.call($bindTag.find('['+ st_repeat +']')),
+                i           = 0,
+                len         = repeats.length;
+            if(repeats.length > 0){
+                for(; i < len; ++i){
+                    element     = repeats[i];
+                    propName = element.getAttribute(st_repeat);
+                    //获取绑定的元素集合
+                    outerHTML = element.outerHTML;
+                    element['rawOuterHTML'] = outerHTML;
+                    element['parent'] = element.parentNode;
+                    this._toBindRepeats(propName, element);
+                }
+                //解析
+                this._makeRepeats();
+            }
+        },
+        _toBindRepeats: function(propName, element){
+            var bindRepeatElements = this.bindRepeats[propName];
+            if(!bindRepeatElements){
+                this.bindRepeats[propName] = [];
+                bindRepeatElements = this.bindRepeats[propName];
+            }
+            if(SYST.T.indexOf(bindRepeatElements, element) === -1){
+                bindRepeatElements.push(element);
+            }
+        },
+        _makeRepeats: function(propName){
+            var self = this, bindRepeatElements = {};
+            if(propName){
+                bindRepeatElements[propName] = this.bindRepeats[propName];
+            }else{
+                bindRepeatElements = this.bindRepeats;
+            }
+            SYST.T.each(bindRepeatElements, function(elements, index, prop){
+                self._makeRepeat(elements, prop);
+            });
+        },
+        _makeRepeat: function(elements, propName){
+            if(!elements || elements.length === 0)  return;
+            var self = this, i = 0, len = elements.length;
+            var outerHTML, element, temp = '', item;
+            //if(!self.model.has(propName)) return;
+            var prop = self.model.get(propName);
+
+            for(; i < len; ++i){
+                element = elements[i];
+                if(!element)    continue;
+                outerHTML = this._removeBindAttr(element);
+                item = element.getAttribute(st_item);
+                if(!SYST.V.isEmpty(item)){
+                    repeatReg = new RegExp(startRS + '(\\$?'+ item +'[^\\{]*?)' + endRS, mRS);
+                }
+                if(SYST.V.isArray(prop)){
+                    for(var j = 0, l = prop.length; j < l; ++j){
+                        //替换其他属性，如 索引
+                        temp += this._replaceBindsArray(outerHTML, prop[j], j, l - 1, item);
+                    }
+                }
+                else if(SYST.V.isObject(prop)){
+                    SYST.T.each(prop, function(val, index, key){
+                        //替换其他属性，如 索引
+                        temp += self._replaceBindObject(outerHTML, key, val, index);
+                    });
+                }
+
+                //element.parent.innerHTML = temp;
+                var newChilds = slice.call($(element.parent).find('['+ st_vid +']'));
+                if(newChilds[0]){
+                    element['newFirstChild'] = newChilds[0];
+                    newChilds.shift();
+                    SYST.T.each(newChilds, function(child){
+                        $(child).remove();
+                    });
+                    $(element['newFirstChild']).replaceWith(temp);
+                }else{
+                    $(element).replaceWith(temp);
+                }
+                //console.log(temp);
+            }
+
+        },
+        _removeBindAttr: function(element){
+            var outerHTML = $(element['rawOuterHTML']);
+            outerHTML.removeAttr(st_repeat).removeAttr(st_item).attr(st_vid, Date.now());
+            outerHTML = outerHTML[0].outerHTML;
+            return outerHTML;
+        },
+        _replaceBindsArray: function(str, value, index, len, itemName){
+            var self = this,
+                vmodel = {},
+                rp = { open: '{{', close: '}}' },
+                filters, val;
+            str.replace(repeatReg, function(match, $1){
+                filters = self._getFilters($1);
+                val = self._makeFilters(value, filters);
+            });
+
+            if(SYST.V.isObject(val)){
+                str = str.replace(/\{\{/gi, '{{=');
+                vmodel = {
+                    '$index': '' + index,
+                    '$first': index === 0 ? 'true' : 'false',
+                    '$last': index === len ? 'true' : 'false'
+                };
+                vmodel[itemName] = value;
+                str = SYST.T.render(str, vmodel, null, rp);
+            }else{
+                str = str.replace(repeatReg, function(){
+                    //显示当前值
+                    return val;
+                }).replace(indexReg, function(){
+                    //显示索引
+                    return index;
+                }).replace(firstReg, function(){
+                    //是否为开头
+                    return index === 0 ? true : false;
+                }).replace(lastReg, function(){
+                    //是否是末尾
+                    return index === len ? true : false;
+                });
+            }
+            return str;
+
+        },
+        _replaceBindObject: function(str, key, value, index){
+            var self = this;
+            str = str.replace(objKeyReg, function(match, $1){
+                return _filter(key, $1);
+            }).replace(objValReg, function(match, $1){
+                return _filter(value, $1);
+            }).replace(indexReg, function(){
+                return '' + index;
+            });
+            function _filter(v, $str){
+                var filters = self._getFilters($str);
+                return self._makeFilters(v, filters);
+            }
+            return str;
         }
 
     };

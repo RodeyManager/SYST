@@ -324,7 +324,6 @@
         _template: function(html, cid, callback){
             var self = this;
             this.container = SYST.$(cid);
-            this.container.css('visibility', 'hidden');
 
             //渲染前执行 renderBefore
             SYST.V.isFunction(self.renderBefore) && self.renderBefore.apply(self);
@@ -344,9 +343,9 @@
             }
 
             function execHtml(str){
-                callback && SYST.V.isFunction(callback) && callback.call(self, str);
                 //渲染完成执行 rendered
                 SYST.V.isFunction(self.rendered) && self.rendered.apply(self);
+                callback && SYST.V.isFunction(callback) && callback.call(self, str);
             }
 
         },
@@ -367,25 +366,20 @@
 
         },
         //$private 路由模板渲染完成状态
-        _onRender: function(cb){
+        _onRender: function(){
 
             var router  = this.router,
                 html    = this.tpl;
-            //this._onAnimate('on', cb);
-            cb && SYST.V.isFunction(cb) && cb();
 
             //模板渲染
             if(router.data || (router.isRender || this.isRender)){
                 html = SYST.T.render(html, router.data);
             }
             this.container.html(html);
-            this.container.css('visibility', 'visible');
             this.tpl = html;
             this.router['tpl'] = html;
 
-            if(router && SYST.V.isFunction(router['onRender'])){
-                router.onRender.call(this, html);
-            }
+            SYST.V.isFunction(router['onRender']) && router.onRender.call(this, html);
 
         },
         //$private 路由销毁状态
@@ -393,7 +387,6 @@
             var currentRouter = this.router,
                 view, onDestroy, route, destroyState;
 
-            //this._onAnimate('off', cb);
             if(SYST.V.isObject(currentRouter)){
                 onDestroy = currentRouter['onDestroy'];
                 route = currentRouter['route'];
@@ -411,18 +404,17 @@
                     var ds = onDestroy.apply(this);
                     if(ds !== false){
                         currentRouter['_destroyState'] = true;
-                        SYST.V.isFunction(cb) && cb();
+                        SYST.V.isFunction(cb) && cb.apply(this);
                     }else{
                         currentRouter['_destroyState'] = false;
                         this._updateHash(route);
-                        //this.switch(route);
                     }
                 }else{
-                    SYST.V.isFunction(cb) && cb();
+                    SYST.V.isFunction(cb) && cb.apply(this);
                 }
 
             }else{
-                SYST.V.isFunction(cb) && cb();
+                SYST.V.isFunction(cb) && cb.apply(this);
             }
 
         },

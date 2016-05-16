@@ -92,7 +92,7 @@ a:active, a:hover {
 img[src^=logo] { max-width: 100% }
 h2 {
   font-size: 20px;
-  padding-bottom: .5em;
+  padding: .5em 0;
 }
 h4 { padding-top: .5em }
 #sidebar hr {
@@ -119,35 +119,13 @@ li li { margin-top: 0 }
 code, pre, tt {
   font: normal 12px/18px Monaco, Consolas, "Lucida Console", monospace; 
 }
-/*pre {
-background: #f8f8ff;
-border: 2px solid #eee;
-padding: 10px;
--webkit-border-radius: 5px;
--moz-border-radius: 5px;
-border-radius: 5px;
-overflow: auto;
+code{
+  /*background-color: #F1F1F1;*/
+  padding: 2px 3px;
+  /*border: solid 1px rgba(221, 221, 221, 0.32);*/
+  border-radius: 2px;
+  color: #858586;
 }
-pre.signature {
-  border: 0;
-  padding: 0;
-  border-radius: 0;
-  background: 0;
-  overflow: visible;
-  white-space: pre-wrap;
-}
-pre.signature code {
-  background-color: transparent !important;
-}
-pre.signature .return { color: gray }
-code {
-background-color: #f8f8ff;
-padding: 1px 3px;
--webkit-border-radius: 2px;
--moz-border-radius: 2px;
-border-radius: 2px;
-}
-pre code { padding: 0 }*/
 p > code, li > code {
   border: 1px solid #eee;
 }

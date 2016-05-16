@@ -22,6 +22,13 @@
         *[st-model]{
             visibility: hidden;
         }
+        .c-r{ color: red }
+        .c-g{ color: green }
+        .c-b{ color: blue }
+        .c-c{ color: cyan }
+        .c-m{ color: magenta }
+        .c-y{ color: yellow }
+        .c-k{ color: black }
     </style>
 </head>
 <body>
@@ -29,7 +36,19 @@
     <div st-model="loginModel">
         <p>
             <label for="name"><input type="text" st-prop="name" id="name" autocomplete="off" placeholder="请输入您的姓名"/></label>
-            <h3>您的姓名：<span st-prop="name | addLastName"></span></h3>
+            <h3>您的姓名：<span st-prop="name | filter"></span></h3>
+            <div>
+                <span>{{ name }}</span>
+                <span>{{ name }}</span>
+                <span>{{ name }}</span>
+                <span>{{ name }}</span>
+                <span>{{ name }}</span>
+                <span>{{ name }}</span>
+                <span>{{ name }}</span>
+                <span>{{ name }}</span>
+                <span>{{ name }}</span>
+                <span>{{ name }}</span>
+            </div>
         </p>
         <div st-template="user-info-tpl"></div>
         <button id="server-btn">获取最新用户信息</button>
@@ -57,7 +76,8 @@
     <hr/>
 
     <div st-model="colorModel">
-        <select name="color" id="color" st-prop="color">
+        <h5>select bind</h5>
+        <select name="color" st-prop="color">
             <option value="" selected>请选择颜色</option>
             <option value="red">红色</option>
             <option value="blue">蓝色</option>
@@ -65,9 +85,30 @@
         </select>
         <span id="color-show" st-style="color:{{ color }};font-weight:bold;">显示您的选择</span>
         <br/>
-        <!--<label><input type="checkbox" name="display" st-prop="display"/>显示/隐藏</label>
+        是否显示图片：<select st-prop="isShow">
+            <option value="1">显示</option>
+            <option value="0" selected>隐藏</option>
+        </select>
         <br/>
-        <img src="../assets/images/docker.jpg" st-style="display:{{display|isDisplay}}" alt=""/>-->
+        <img src="../assets/images/docker.jpg" st-style="display:{{ isShow | isDisplay}}" width="100" alt=""/>
+    </div>
+
+    <div>
+        <h5>repeat array</h5>
+        <ul id="repeat-dom" st-model="repeatModel">
+            <li st-repeat="array" st-item="arr">{{ arr | toUpperCase | addeat }} - {{ $index }} - {{ $first }} - {{ $last }}</li>
+        </ul>
+        <div st-model="repeatModel">
+            <p st-repeat="users" st-item="user">{{ $index }}   Name: {{ user.name }} ;   Age: {{ user.age }} - {{ $first }} - {{ $last }}</p>
+        </div>
+        <h5>repeat object</h5>
+        <div st-model="repeatModel" style="padding: 10px;background-color: #B7B7B7;">
+            <select id="select-color" st-prop="colorType" st-filter="getColor">
+                <option value="rgb" selected>RGB</option>
+                <option value="cmyk">CMYK</option>
+            </select> <br/>
+            <span st-repeat="colors" class="c-{{ $key }}" data-key="{{ $key | toFirstUpperCase }}" data-index="{{ $index }}"> {{ $key }} - {{ $val | format | toFirstUpperCase }} <br/></span>
+        </div>
     </div>
 
     <script src="../../bower_components/jquery/dist/jquery.min.js"></script>
@@ -80,14 +121,60 @@
                 stProps[i].style.visibility = 'visible';
         }, false);
 
-        var userModel, loginModel, colorModel;
+        var userModel, loginModel, colorModel, repeatModel;
         $(function(){
+
+            repeatModel = SYST.Model({
+                $mid: 'repeatModel',
+                init: function(){
+                    var array = ['a', 'b', 'c', 'd', 'e', 'f'];
+                    this.set('array', array);
+                    var users = [
+                        { name: 'jack', age: 23 },
+                        { name: 'tom', age: 24}
+                    ];
+                    this.set('users', users);
+                    this.set('colorType', 'rgb');
+                    this.getColor(this.get('colorType'));
+                },
+                addeat: function(str){ return '@' + str; },
+                getColor: function(colorType){
+                    if(colorType === 'rgb'){
+                        this.set('colors', { r: 'red', g: 'green', b: 'blue'});
+                    }else if(colorType === 'cmyk'){
+                        this.set('colors', { c: 'cyan', m: 'magenta', y: 'yellow', k: 'black' });
+                    }
+                    return colorType;
+                },
+                format: function(color){
+                    return color + '   (' + this.toRGB(color) + ')';
+                },
+                toRGB: function(color){
+                    switch (color){
+                        case 'red':
+                            color = '#FF0000'; break;
+                        case 'green':
+                            color = '#00FF00'; break;
+                        case 'blue':
+                            color = '#0000FF'; break;
+                        case 'cyan':
+                            color = '#00FFFF'; break;
+                        case 'magenta':
+                            color = '#FF00FF'; break;
+                        case 'yellow':
+                            color = '#FFFF00'; break;
+                        case 'black':
+                            color = '#000000'; break;
+                    }
+                    return color;
+                }
+            });
 
             colorModel = SYST.Model({
                 $mid: 'colorModel',
-                props: { color: 'red', display: 'none', isDisplay: false },
-                isDisplay: function(display){
-                    return display ? 'block' : 'none';
+                props: { color: 'red', isShow: 0 },
+                isDisplay: function(isShow){
+                    return Number(isShow) ? 'block' : 'none';
                 }
             });
 
@@ -95,13 +182,9 @@
                 $mid: 'userModel',
                 props: { name: 'Jack', age: 12, index: '0' },
                 init: function(){
-
                     this.set('dateTime', SYST.T.setDateFormat(Date.now(), 'YYYY-mm-dd h:i:s', true));
-
                     this.autoTry();
-
                 },
-
                 autoTry: function(){
                     var self = this;
                     this.stimp = new SYST.Promise();
@@ -121,7 +204,8 @@
 
                     setTimeout(function(){
                         $('#iden').html('动态绑定 (iden)：{{ iden }}');
-                        this.props.iden = '362422********000100';
+                        //this.props.iden = '362422********000100';
+                        this.set('iden', '362422********000100');
                     }.bind(this), 5000);
                 }
 
@@ -139,8 +223,8 @@
                     this.set('name', 'Rodey');
                     this.set('user', { name: { first: 'Rodey', last: 'Luo' }, tech: 'Web前端工程师' });
                 },
-                addLastName: function(firstName){
-                    return firstName + ' Luo';
+                filter: function(firstName){
+                    return '{ ' + firstName + ' }';
                 },
                 addDate: function(str){
                     return str + '\r当前日期：' + SYST.T.setDateFormat(Date.now(), 'YYYY-mm-dd', true);

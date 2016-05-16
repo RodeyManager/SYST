@@ -181,6 +181,70 @@
         </script>
     </article>
 
+    <article class="method" id="SYST.W.updateBindRepeats">
+        <h3>updateBindRepeats <code>Function([propName, elements])</code></h3>
+        <ul>
+            <li><code>propName: </code> 指定更新绑定的属性</li>
+        </ul>
+
+        <p>
+            更新监听器，重新渲染页面以 <code>st-repeat</code> 绑定的内容
+        </p>
+        <h3 class="ex-title">实例：</h3>
+        <style>.c-r{ color: red }.c-g{ color: green }  .c-b{ color: blue }  .c-c{ color: cyan }  .c-m{ color: magenta }  .c-y{ color: yellow }  .c-k{ color: black }</style>
+        <div st-model="repeatModel" style="padding: 10px;background-color: #B7B7B7;">
+            <select id="select-color" st-prop="colorType" st-filter="getColor">
+                <option value="rgb" selected>RGB</option>
+                <option value="cmyk">CMYK</option>
+            </select> <br/>
+            <span st-repeat="colors" class="c-{{ $key }}" data-key="{{ $key | toFirstUpperCase }}" data-index="{{ $index }}"> {{ $key }} - {{ $val | format | toFirstUpperCase }} <br/></span>
+        </div>
+        <script>
+
+            $(function(){
+                repeatModel = SYST.Model({
+                    $mid: 'repeatModel',
+                    init: function(){
+                        this.set('colorType', 'rgb');
+                        this.getColor(this.get('colorType'));
+                    },
+                    addeat: function(str){ return '@' + str; },
+                    getColor: function(colorType){
+                        if(colorType === 'rgb'){
+                            this.set('colors', { r: 'red', g: 'green', b: 'blue'});
+                        }else if(colorType === 'cmyk'){
+                            this.set('colors', { c: 'cyan', m: 'magenta', y: 'yellow', k: 'black' });
+                        }
+                        return colorType;
+                    },
+                    format: function(color){
+                        return color + '   (' + this.toRGB(color) + ')';
+                    },
+                    toRGB: function(color){
+                        switch (color){
+                            case 'red':
+                                color = '#FF0000'; break;
+                            case 'green':
+                                color = '#00FF00'; break;
+                            case 'blue':
+                                color = '#0000FF'; break;
+                            case 'cyan':
+                                color = '#00FFFF'; break;
+                            case 'magenta':
+                                color = '#FF00FF'; break;
+                            case 'yellow':
+                                color = '#FFFF00'; break;
+                            case 'black':
+                                color = '#000000'; break;
+                        }
+                        return color;
+                    }
+                });
+            });
+
+        </script>
+    </article>
+
     <article class="method" id="SYST.W.reset">
         <h3>reset <code>Function([model])</code></h3>
         <ul>

@@ -71,7 +71,7 @@
          * @return {*|void}
          */
         trim: function(val){
-            return val.replace(/^\s*|\s*$/gi, '');
+            return SYST.V.isString(val) ? val.replace(/^\s*|\s*$/gi, '') : '';
         },
         /**
          * Function 去除字符串首尾指定的字符
@@ -81,6 +81,7 @@
          * @return          : 返回替换后的字符串
          */
         rtrim:function(val, commer, flag){
+            if(!SYST.V.isString(val)) return '';
             if(commer){
                 var re;
                 if(!flag)
@@ -116,6 +117,9 @@
             if (index >=0)
                 array.splice(index, 1);
             return array;
+        },
+        toFirstUpperCase: function(str){
+            return str.replace(/^(\w)?/i, function(match, $1){ return $1.toUpperCase(); });
         },
         /**
          * Function 全角字符转为半角,并去除所有空格
@@ -162,7 +166,7 @@
          * @return {String}
          */
         setDateFormat: function(timestamp, format, prefix){
-            if(SYST.V.isEmpty(timestamp)) return '';
+            if(!timestamp) return '';
             var self = this;
             var date = new Date(parseInt(timestamp, 10)), ds = [], ts = [];
             if(!format)

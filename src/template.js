@@ -150,11 +150,11 @@
             //转移处理
             if(source.search(/^\s*={2}/) !== -1){
                 source = source.replace(empty, "");
-                source = 'if('+ source +'){ _s+=(SYST.T.escapeHtml('+ source +')); }else{ _s+=""; }';
+                source = 'if(!!'+ source +'){ _s+=(SYST.T.escapeHtml('+ source +')); }else{ _s+=""; }';
             }
             else if(/^=[^=]+?/i.test(source)){
                 source = source.replace(empty, "");
-                source = 'if('+ source +'){ _s+=('+ source +');}else{_s+="";}';
+                source = 'if(!!'+ source +'){ _s+=('+ source +');}else{_s+="";}';
             }
             //include file
             else if(_includeReg.test(source)){

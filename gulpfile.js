@@ -90,49 +90,13 @@ gulp.task('build.zip', function(){
         .pipe(gulp.dest('dist'));
 });
 
-//编译 TypeScript 文件
-gulp.task('build.ts', function(){
-
-    var tses = [
-        'ST',
-        'validate',
-        'tools',
-        'promise',
-        'template',
-        'event',
-        'ajax',
-        'model',
-        'shareModel',
-        'view',
-        'controller',
-        'router',
-        'native',
-        'Global'
-    ].map(function(src){
-            return 'src/ts/' + src + '.ts';
-        });
-    gulp.src(tses)
-        .pipe(replaceVar(/\{\{@version\}\}/i, version))
-        .pipe(ts({
-            declaration: true,
-            out: 'dist/SYST.js'
-        }))
-        .pipe(gulp.dest('dist/ts'))
-
-        .pipe(rename({suffix: '.min'}))             //rename压缩后的文件名
-        .pipe(uglify({ preserveComments: '!' }))    //压缩
-        .pipe(gulp.dest('dist/ts'));
-});
-
 //监听文件变化
 gulp.task('watch', function(){
     //livereload.listen();
     gulp.watch(srcs.concat(['./package.json']), ['build.syst']);
-    gulp.watch('src/ts/*', ['build.ts']);
 });
 
 //执行任务
 gulp.task('default', ['dist.clean'], function(){
-    //gulp.start('build.syst', 'build.ts', 'watch');
     gulp.start('build.syst', 'watch');
 });
