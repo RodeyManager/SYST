@@ -103,12 +103,7 @@
         },
         //判断某个属性是否存在
         has: function(key){
-            //return Boolean(this.props[key]);
-            for(var k in this.props)
-                if(this.props.hasOwnProperty(k) && k === key)
-                    return true;
-                else
-                    return false;
+            return Boolean(this.props[key]);
         },
         removeProps: function(keys){
             var self = this;

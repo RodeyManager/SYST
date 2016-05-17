@@ -18,11 +18,11 @@
 
     'use strict';
 
-    var SYST = {};
+    var SYST = {}; //function(){};
 
     //框架属性
-    SYST.version = '{{@version}}';
-    SYST.author = 'Rodey Luo';
+    SYST.VERSION = '{{@version}}';
+    SYST.AUTHOR = 'Rodey Luo';
 
     //判断是否有jquery，zepto插件
     try{
@@ -33,11 +33,9 @@
 
     var _clone = function(targetObject){
         var target = targetObject, out = {}, proto;
-        for(proto in target){
-            if(target.hasOwnProperty(proto)){
+        for(proto in target)
+            if(target.hasOwnProperty(proto))
                 out[proto] = target[proto];
-            }
-        }
         return out;
     };
 
@@ -52,33 +50,10 @@
         if(!parent) return child;
         if(!child) return parent;
         var clone = _clone(parent);
-        for(var prop in child){
-            if(child.hasOwnProperty(prop)){
+        for(var prop in child)
+            if(child.hasOwnProperty(prop))
                 clone[prop] = child[prop];
-            }
-        }
-
-        return clone; //SYST.$.extend(true, child, parent);
-    };
-
-    var _hoadEvent = function(obj, func){
-        var args = [], self = this;
-        obj = obj || window;
-        for(var i = 2; i < arguments.length; i++) args.push(arguments[i]);
-        return function(e){
-            if(e && typeof e === 'object'){
-                e.preventDefault();
-                e.stopPropagation();
-            }
-            args.push(e);
-            //obj[func].apply(obj, args);
-            //保证传递 Event对象过去
-            //obj[func].call(obj, e, args);
-            if(obj[func])
-                obj[func].call(obj, e, args);
-            else
-                throw new Error(func + ' 函数未定义！');
-        }
+        return clone;
     };
 
     /**
@@ -92,7 +67,7 @@
         var args = Array.prototype.slice.call(args),
             firstArgument = args[0], i = 0, mg = {}, len;
         if(SYST.V.isObject(firstArgument)){
-            //if firstArgument is SYST Http Object
+            //if firstArgument is SYST's Object
             if('__instance_SYST__' in firstArgument){
                 args.shift();
                 for(len = args.length; i < len; ++i){
@@ -115,7 +90,6 @@
     SYST.extend = _extend;
     SYST.extendClass = _extendClass;
     SYST.clone = _clone;
-    SYST.hoadEvent = _hoadEvent;
 
     //Object.keys
     !('keys' in Object) && (Object.keys = function(o){

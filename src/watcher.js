@@ -35,7 +35,7 @@
     var startRS = '\\{\\{\\s*',
         endRS = '\\s*\\}\\}',
         mRS = 'gi',
-        repeatReg = new RegExp(startRS + '($value)' + endRS, mRS),
+        repeatReg = new RegExp(startRS + '(\\$value)?' + endRS, mRS),
         indexReg = new RegExp(startRS + '(\\$index)?' + endRS, mRS),
         firstReg = new RegExp(startRS + '(\\$first)?' + endRS, mRS),
         lastReg = new RegExp(startRS + '(\\$last)?' + endRS, mRS),
@@ -721,6 +721,17 @@
             outerHTML = outerHTML[0].outerHTML;
             return outerHTML;
         },
+
+        /**
+         * 处理数组的情况
+         * @param str       源字符串
+         * @param value     元素值
+         * @param index     索引
+         * @param len       长度
+         * @param itemName  st-item的值
+         * @returns {*}
+         * @private
+         */
         _replaceBindsArray: function(str, value, index, len, itemName){
             var self = this,
                 vmodel = {},
@@ -753,11 +764,27 @@
                 }).replace(lastReg, function(){
                     //是否是末尾
                     return index === len ? true : false;
+                }).replace(reg, function(match, $1){
+                    if(self.model.has($1)){
+                        return self.model.get($1);
+                    }else{
+                        return match;
+                    }
                 });
             }
             return str;
 
         },
+
+        /**
+         * 处理Object对象的情况
+         * @param str       源字符串
+         * @param key       键名
+         * @param value     值
+         * @param index     索引
+         * @returns {string}
+         * @private
+         */
         _replaceBindObject: function(str, key, value, index){
             var self = this;
             str = str.replace(objKeyReg, function(match, $1){

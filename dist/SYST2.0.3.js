@@ -18,11 +18,11 @@
 
     'use strict';
 
-    var SYST = {};
+    var SYST = {}; //function(){};
 
     //框架属性
-    SYST.version = '2.0.3';
-    SYST.author = 'Rodey Luo';
+    SYST.VERSION = '2.0.3';
+    SYST.AUTHOR = 'Rodey Luo';
 
     //判断是否有jquery，zepto插件
     try{
@@ -33,11 +33,9 @@
 
     var _clone = function(targetObject){
         var target = targetObject, out = {}, proto;
-        for(proto in target){
-            if(target.hasOwnProperty(proto)){
+        for(proto in target)
+            if(target.hasOwnProperty(proto))
                 out[proto] = target[proto];
-            }
-        }
         return out;
     };
 
@@ -52,33 +50,10 @@
         if(!parent) return child;
         if(!child) return parent;
         var clone = _clone(parent);
-        for(var prop in child){
-            if(child.hasOwnProperty(prop)){
+        for(var prop in child)
+            if(child.hasOwnProperty(prop))
                 clone[prop] = child[prop];
-            }
-        }
-
-        return clone; //SYST.$.extend(true, child, parent);
-    };
-
-    var _hoadEvent = function(obj, func){
-        var args = [], self = this;
-        obj = obj || window;
-        for(var i = 2; i < arguments.length; i++) args.push(arguments[i]);
-        return function(e){
-            if(e && typeof e === 'object'){
-                e.preventDefault();
-                e.stopPropagation();
-            }
-            args.push(e);
-            //obj[func].apply(obj, args);
-            //保证传递 Event对象过去
-            //obj[func].call(obj, e, args);
-            if(obj[func])
-                obj[func].call(obj, e, args);
-            else
-                throw new Error(func + ' 函数未定义！');
-        }
+        return clone;
     };
 
     /**
@@ -92,7 +67,7 @@
         var args = Array.prototype.slice.call(args),
             firstArgument = args[0], i = 0, mg = {}, len;
         if(SYST.V.isObject(firstArgument)){
-            //if firstArgument is SYST Http Object
+            //if firstArgument is SYST's Object
             if('__instance_SYST__' in firstArgument){
                 args.shift();
                 for(len = args.length; i < len; ++i){
@@ -115,7 +90,6 @@
     SYST.extend = _extend;
     SYST.extendClass = _extendClass;
     SYST.clone = _clone;
-    SYST.hoadEvent = _hoadEvent;
 
     //Object.keys
     !('keys' in Object) && (Object.keys = function(o){
@@ -148,7 +122,7 @@
 
 
     var Validate = function(){
-        this.__SuperName__ = 'SYST Validate';
+        this.__instance_SYST__ = 'SYST Validate';
         this.__Name__ = 'Validate';
     };
     SYST.Validate = function(){
@@ -219,22 +193,13 @@
      * @type {Function}
      */
     var Tools = function(){
-        this.__SuperName__ = 'SYST Tools';
+        this.__instance_SYST__ = 'SYST Tools';
         this.__Name__ = 'Tools';
     };
     SYST.Tools = function(){
         return SYST.extendClass(arguments, Tools);
     };
     SYST.T = Tools.prototype = {
-        parseDom: function(htmlStr, tagPanel){
-            var element = document.createElement(tagPanel || 'div');
-            //jQuery || zepto
-            if(SYST.$){
-                return SYST.$(htmlStr)[0];
-            }
-            element.innerHTML = htmlStr;
-            return element.childNodes[0];
-        },
         /**
          * Function 触发事件
          * @param  {[type]}   element  [触发对象]
@@ -261,6 +226,29 @@
                 }catch(e){
                     throw new Error(element + '不存在' + event + '方法 <::>');
                 }
+            }
+        },
+        /**
+         * 事件侦听传递处理回调
+         * @param obj       作用域目标对象
+         * @param func      obj对象中的属性
+         * @returns {Function}
+         */
+        hoadEvent: function(obj, func){
+            var args = [];
+            obj = obj || window;
+            for(var i = 2; i < arguments.length; i++) args.push(arguments[i]);
+            return function(e){
+                if(e && typeof e === 'object'){
+                    e.preventDefault();
+                    e.stopPropagation();
+                }
+                args.push(e);
+                //保证传递 Event对象过去
+                if(obj[func])
+                    obj[func].call(obj, e, args);
+                else
+                    throw new Error(func + ' 函数未定义！');
             }
         },
         /**
@@ -476,7 +464,7 @@
         /**
          * Function 获取指定参数或者所有参数列表
          * @param name
-         * @returns {*}
+         * @returns {Object|String}
          */
         params: function(name, url){
             var grap = '?';
@@ -497,7 +485,7 @@
                 //a=b | a=
                 var ma = mas[i].split('=');
                 if(!ma[0] || '' === ma[0])  continue;
-                Object.defineProperty(ps, ma[0], { value: decodeURI(ma[1]) || null, writable: true, enumerable: true, configurable: true });
+                ps[ma[0]] = decodeURI(ma[1]) || null;
             }
             this._pars = ps;
             return (!name ? ps : decodeURI(ps[name]));
@@ -602,6 +590,8 @@
             }
             return null;
         },
+        getCookie: function(key){ return this.Cookie(key); },
+        setCookie: function(key, value, options){ this.Cookie(key, value, options) },
 
         /**
          * 遍历对象
@@ -806,20 +796,6 @@
     }
 
     SYST.httpConfig = {};
-    /*var Http = SYST.Http = function(child){
-        var newHttp;
-        if(SYST.V.isObject(child)){
-            child.__SuperName__ = 'SYST Http';
-            //newHttp = new SYST.Http();
-            //newHttp = SYST.extend(newHttp, child);
-            child.__proto__ = new SYST.Http();
-            return child;
-        }else{
-            var o = {};
-            return {}.__proto__ = SYST.Http.prototype;
-        }
-    };*/
-
     var Http = function(){
         this.__instance_SYST__ = 'SYST Http';
         this.__name__ = 'SYST Http';
@@ -1201,6 +1177,8 @@
 
     var evts = "abort reset click dblclick tap touchstart touchmove touchend change mouseover mouseout mouseup mousedown mousemove mousewheel drag dragend dragenter dragleave dragover dragstart drop resize scroll submit select keydown keyup keypress touchstart touchend load unload blur focus contextmenu formchange forminput input invalid afterprint beforeprint beforeonload haschange message offline online pagehide pageshow popstate redo storage undo canplay canplaythrough durationchange emptied ended loadeddata loadedmetadata loadstart pause play playing progress ratechange readystatechange seeked seeking stalled suspend timeupdate volumechange waiting cut copy paste".split(/\s+/gi);
 
+    var _hoadEvent = SYST.T.hoadEvent;
+
     function _listener(obj, pobj, evt, func, type, trigger){
         var type = type || 'on';
         if(!obj) obj = window;
@@ -1210,16 +1188,16 @@
             if(evts[i] === evt){
                 if(obj.selector == window || obj.selector == 'window'){
                     (type == 'on')
-                        ? $(window).off().on(evt, SYST.hoadEvent(pobj, func))
+                        ? $(window).off().on(evt, _hoadEvent(pobj, func))
                         : $(window).off(evt, SYST.hoadEvent(pobj, func));
                 }else if(obj.selector == document || obj.selector == 'document' || obj.selector == 'html' || obj.selector == 'body'){
                     (type == 'on')
-                        ? $(obj.selector).off().on(evt, SYST.hoadEvent(pobj, func))
-                        : $(obj.selector).off(evt, SYST.hoadEvent(pobj, func));
+                        ? $(obj.selector).off().on(evt, _hoadEvent(pobj, func))
+                        : $(obj.selector).off(evt, _hoadEvent(pobj, func));
                 }else{
                     (type == 'on')
-                        ? $(trigger || 'body').undelegate(obj.selector, evt, SYST.hoadEvent(pobj, func))
-                        .delegate(obj.selector, evt, SYST.hoadEvent(pobj, func))
+                        ? $(trigger || 'body').undelegate(obj.selector, evt, _hoadEvent(pobj, func))
+                        .delegate(obj.selector, evt, _hoadEvent(pobj, func))
                         : $(trigger || 'body').undelegate(obj.selector, evt);
                 }
             }
@@ -1293,7 +1271,7 @@
     var startRS = '\\{\\{\\s*',
         endRS = '\\s*\\}\\}',
         mRS = 'gi',
-        repeatReg = new RegExp(startRS + '($value)' + endRS, mRS),
+        repeatReg = new RegExp(startRS + '(\\$value)?' + endRS, mRS),
         indexReg = new RegExp(startRS + '(\\$index)?' + endRS, mRS),
         firstReg = new RegExp(startRS + '(\\$first)?' + endRS, mRS),
         lastReg = new RegExp(startRS + '(\\$last)?' + endRS, mRS),
@@ -1979,6 +1957,17 @@
             outerHTML = outerHTML[0].outerHTML;
             return outerHTML;
         },
+
+        /**
+         * 处理数组的情况
+         * @param str       源字符串
+         * @param value     元素值
+         * @param index     索引
+         * @param len       长度
+         * @param itemName  st-item的值
+         * @returns {*}
+         * @private
+         */
         _replaceBindsArray: function(str, value, index, len, itemName){
             var self = this,
                 vmodel = {},
@@ -2011,11 +2000,27 @@
                 }).replace(lastReg, function(){
                     //是否是末尾
                     return index === len ? true : false;
+                }).replace(reg, function(match, $1){
+                    if(self.model.has($1)){
+                        return self.model.get($1);
+                    }else{
+                        return match;
+                    }
                 });
             }
             return str;
 
         },
+
+        /**
+         * 处理Object对象的情况
+         * @param str       源字符串
+         * @param key       键名
+         * @param value     值
+         * @param index     索引
+         * @returns {string}
+         * @private
+         */
         _replaceBindObject: function(str, key, value, index){
             var self = this;
             str = str.replace(objKeyReg, function(match, $1){
@@ -2143,12 +2148,7 @@
         },
         //判断某个属性是否存在
         has: function(key){
-            //return Boolean(this.props[key]);
-            for(var k in this.props)
-                if(this.props.hasOwnProperty(k) && k === key)
-                    return true;
-                else
-                    return false;
+            return Boolean(this.props[key]);
         },
         removeProps: function(keys){
             var self = this;
@@ -2296,8 +2296,10 @@
     'use strict';
 
     var View = function(){
-        this.__SuperName__ = 'SYST View';
+        this.__instance_SYST__ = 'SYST View';
         this.__Name__ = 'SYST View';
+        this.container = 'body';
+        this.template = null;
     };
     SYST.View = function(){
         var view = SYST.extendClass(arguments, View);
@@ -2306,26 +2308,18 @@
     };
 
     View.prototype = {
-        container: 'body',
-        tagPanel: 'selection',
         _initialize: function(){
             this.container = SYST.$(this.container);
             this.containerSelector = this.container.selector;
-            this.model = this.model ? this.model : (this.controller ? this.controller.getModel() : undefined);
 
             //自定义init初始化
-            !this.unInit && this.init && this.init.apply(this, arguments);
-            if(this.render && SYST.V.isFunction(this.render)){
-                this.$el = SYST.$('<' + this.tagPanel + '/>');
-                this.render.apply(this, arguments);
-            }
+            !this.unInit && this.init && this.init.apply(this);
 
             //自动解析 events对象，处理view中的事件绑定
             this.events && this.events != {} && SYST.V.isObject(this.events) &&  this.onEvent();
         },
 
         destroy: function(){
-            this.$el.remove();
             this.container.html('');
             return this;
         },
@@ -2345,7 +2339,7 @@
             }
         },
         //处理事件绑定，以改变对象作用域
-        hoadEvent: SYST.hoadEvent,
+        hoadEvent: SYST.T.hoadEvent,
         /**
          * 格式化 events对象
          * @param events对象
@@ -2445,18 +2439,6 @@
             }
             return this;
         },
-
-        //Function 模板渲染
-        template: SYST.T.render,
-        //将元素转成对象并返回
-        parseDom: SYST.T.parseDom,
-        getController: function(){
-            return this.controller;
-        },
-        getModel: function(){
-            this.model = this.model || this.getController().getModel() || new SYST.Model();
-            return this.model;
-        },
         model: new SYST.Model(),
         shareModel: SYST.shareModels
     };
@@ -2477,7 +2459,7 @@
      */
 
     var Controller = function(){
-        this.__SuperName__ = 'SYST Controller';
+        this.__instance_SYST__ = 'SYST Controller';
         this.__Name__ = 'SYST Controller';
     };
     SYST.Controller = function(){
@@ -2540,7 +2522,7 @@
      * @type {Function}
      */
     var Router = function(){
-        this.__SuperName__ = 'SYST Router';
+        this.__instance_SYST__ = 'SYST Router';
         this.__Name__ = 'SYST Router';
     };
     SYST.Router = function(){
@@ -2987,7 +2969,7 @@
         IS_MOBILE = (IS_PHONE || IS_PAD) ? true : false;
 
     var Native = function(){
-        this.__SuperName__ = 'SYST Native';
+        this.__instance_SYST__ = 'SYST Native';
         this.__Name__ = 'SYST Native';
     };
     SYST.Native = function(){

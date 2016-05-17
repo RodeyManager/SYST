@@ -8,6 +8,8 @@
 
     var evts = "abort reset click dblclick tap touchstart touchmove touchend change mouseover mouseout mouseup mousedown mousemove mousewheel drag dragend dragenter dragleave dragover dragstart drop resize scroll submit select keydown keyup keypress touchstart touchend load unload blur focus contextmenu formchange forminput input invalid afterprint beforeprint beforeonload haschange message offline online pagehide pageshow popstate redo storage undo canplay canplaythrough durationchange emptied ended loadeddata loadedmetadata loadstart pause play playing progress ratechange readystatechange seeked seeking stalled suspend timeupdate volumechange waiting cut copy paste".split(/\s+/gi);
 
+    var _hoadEvent = SYST.T.hoadEvent;
+
     function _listener(obj, pobj, evt, func, type, trigger){
         var type = type || 'on';
         if(!obj) obj = window;
@@ -17,16 +19,16 @@
             if(evts[i] === evt){
                 if(obj.selector == window || obj.selector == 'window'){
                     (type == 'on')
-                        ? $(window).off().on(evt, SYST.hoadEvent(pobj, func))
+                        ? $(window).off().on(evt, _hoadEvent(pobj, func))
                         : $(window).off(evt, SYST.hoadEvent(pobj, func));
                 }else if(obj.selector == document || obj.selector == 'document' || obj.selector == 'html' || obj.selector == 'body'){
                     (type == 'on')
-                        ? $(obj.selector).off().on(evt, SYST.hoadEvent(pobj, func))
-                        : $(obj.selector).off(evt, SYST.hoadEvent(pobj, func));
+                        ? $(obj.selector).off().on(evt, _hoadEvent(pobj, func))
+                        : $(obj.selector).off(evt, _hoadEvent(pobj, func));
                 }else{
                     (type == 'on')
-                        ? $(trigger || 'body').undelegate(obj.selector, evt, SYST.hoadEvent(pobj, func))
-                        .delegate(obj.selector, evt, SYST.hoadEvent(pobj, func))
+                        ? $(trigger || 'body').undelegate(obj.selector, evt, _hoadEvent(pobj, func))
+                        .delegate(obj.selector, evt, _hoadEvent(pobj, func))
                         : $(trigger || 'body').undelegate(obj.selector, evt);
                 }
             }

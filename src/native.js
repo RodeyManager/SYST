@@ -23,7 +23,7 @@
         IS_MOBILE = (IS_PHONE || IS_PAD) ? true : false;
 
     var Native = function(){
-        this.__SuperName__ = 'SYST Native';
+        this.__instance_SYST__ = 'SYST Native';
         this.__Name__ = 'SYST Native';
     };
     SYST.Native = function(){

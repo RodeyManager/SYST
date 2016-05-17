@@ -11,7 +11,7 @@
 
 
     var Validate = function(){
-        this.__SuperName__ = 'SYST Validate';
+        this.__instance_SYST__ = 'SYST Validate';
         this.__Name__ = 'Validate';
     };
     SYST.Validate = function(){

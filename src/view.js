@@ -10,8 +10,10 @@
     'use strict';
 
     var View = function(){
-        this.__SuperName__ = 'SYST View';
+        this.__instance_SYST__ = 'SYST View';
         this.__Name__ = 'SYST View';
+        this.container = 'body';
+        this.template = null;
     };
     SYST.View = function(){
         var view = SYST.extendClass(arguments, View);
@@ -20,26 +22,18 @@
     };
 
     View.prototype = {
-        container: 'body',
-        tagPanel: 'selection',
         _initialize: function(){
             this.container = SYST.$(this.container);
             this.containerSelector = this.container.selector;
-            this.model = this.model ? this.model : (this.controller ? this.controller.getModel() : undefined);
 
             //自定义init初始化
-            !this.unInit && this.init && this.init.apply(this, arguments);
-            if(this.render && SYST.V.isFunction(this.render)){
-                this.$el = SYST.$('<' + this.tagPanel + '/>');
-                this.render.apply(this, arguments);
-            }
+            !this.unInit && this.init && this.init.apply(this);
 
             //自动解析 events对象，处理view中的事件绑定
             this.events && this.events != {} && SYST.V.isObject(this.events) &&  this.onEvent();
         },
 
         destroy: function(){
-            this.$el.remove();
             this.container.html('');
             return this;
         },
@@ -59,7 +53,7 @@
             }
         },
         //处理事件绑定，以改变对象作用域
-        hoadEvent: SYST.hoadEvent,
+        hoadEvent: SYST.T.hoadEvent,
         /**
          * 格式化 events对象
          * @param events对象
@@ -158,18 +152,6 @@
                 SYST.Events.initEvent(SYST.V.isString(selector) ? $(selector) : selector, this, event, func, 'off', this.containerSelector);
             }
             return this;
-        },
-
-        //Function 模板渲染
-        template: SYST.T.render,
-        //将元素转成对象并返回
-        parseDom: SYST.T.parseDom,
-        getController: function(){
-            return this.controller;
-        },
-        getModel: function(){
-            this.model = this.model || this.getController().getModel() || new SYST.Model();
-            return this.model;
         },
         model: new SYST.Model(),
         shareModel: SYST.shareModels

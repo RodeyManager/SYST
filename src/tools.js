@@ -21,22 +21,13 @@
      * @type {Function}
      */
     var Tools = function(){
-        this.__SuperName__ = 'SYST Tools';
+        this.__instance_SYST__ = 'SYST Tools';
         this.__Name__ = 'Tools';
     };
     SYST.Tools = function(){
         return SYST.extendClass(arguments, Tools);
     };
     SYST.T = Tools.prototype = {
-        parseDom: function(htmlStr, tagPanel){
-            var element = document.createElement(tagPanel || 'div');
-            //jQuery || zepto
-            if(SYST.$){
-                return SYST.$(htmlStr)[0];
-            }
-            element.innerHTML = htmlStr;
-            return element.childNodes[0];
-        },
         /**
          * Function 触发事件
          * @param  {[type]}   element  [触发对象]
@@ -63,6 +54,29 @@
                 }catch(e){
                     throw new Error(element + '不存在' + event + '方法 <::>');
                 }
+            }
+        },
+        /**
+         * 事件侦听传递处理回调
+         * @param obj       作用域目标对象
+         * @param func      obj对象中的属性
+         * @returns {Function}
+         */
+        hoadEvent: function(obj, func){
+            var args = [];
+            obj = obj || window;
+            for(var i = 2; i < arguments.length; i++) args.push(arguments[i]);
+            return function(e){
+                if(e && typeof e === 'object'){
+                    e.preventDefault();
+                    e.stopPropagation();
+                }
+                args.push(e);
+                //保证传递 Event对象过去
+                if(obj[func])
+                    obj[func].call(obj, e, args);
+                else
+                    throw new Error(func + ' 函数未定义！');
             }
         },
         /**
@@ -278,7 +292,7 @@
         /**
          * Function 获取指定参数或者所有参数列表
          * @param name
-         * @returns {*}
+         * @returns {Object|String}
          */
         params: function(name, url){
             var grap = '?';
@@ -299,7 +313,7 @@
                 //a=b | a=
                 var ma = mas[i].split('=');
                 if(!ma[0] || '' === ma[0])  continue;
-                Object.defineProperty(ps, ma[0], { value: decodeURI(ma[1]) || null, writable: true, enumerable: true, configurable: true });
+                ps[ma[0]] = decodeURI(ma[1]) || null;
             }
             this._pars = ps;
             return (!name ? ps : decodeURI(ps[name]));
@@ -404,6 +418,8 @@
             }
             return null;
         },
+        getCookie: function(key){ return this.Cookie(key); },
+        setCookie: function(key, value, options){ this.Cookie(key, value, options) },
 
         /**
          * 遍历对象

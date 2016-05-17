@@ -31,7 +31,7 @@
      * @type {Function}
      */
     var Router = function(){
-        this.__SuperName__ = 'SYST Router';
+        this.__instance_SYST__ = 'SYST Router';
         this.__Name__ = 'SYST Router';
     };
     SYST.Router = function(){

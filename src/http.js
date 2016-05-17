@@ -14,20 +14,6 @@
     }
 
     SYST.httpConfig = {};
-    /*var Http = SYST.Http = function(child){
-        var newHttp;
-        if(SYST.V.isObject(child)){
-            child.__SuperName__ = 'SYST Http';
-            //newHttp = new SYST.Http();
-            //newHttp = SYST.extend(newHttp, child);
-            child.__proto__ = new SYST.Http();
-            return child;
-        }else{
-            var o = {};
-            return {}.__proto__ = SYST.Http.prototype;
-        }
-    };*/
-
     var Http = function(){
         this.__instance_SYST__ = 'SYST Http';
         this.__name__ = 'SYST Http';

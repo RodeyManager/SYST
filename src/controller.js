@@ -13,7 +13,7 @@
      */
 
     var Controller = function(){
-        this.__SuperName__ = 'SYST Controller';
+        this.__instance_SYST__ = 'SYST Controller';
         this.__Name__ = 'SYST Controller';
     };
     SYST.Controller = function(){
