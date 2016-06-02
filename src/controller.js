@@ -25,7 +25,7 @@
         defaultHost: location.host,
         shareModel: SYST.shareModel,
         _initialize: function(){
-            this.init && this.init.apply(this, arguments);
+            SYST.V.isFunction(this.init) && this.init.apply(this, arguments);
         },
         getModel: function(key){
             if(key)     return this.shareModel.get(key);

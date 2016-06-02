@@ -45,7 +45,7 @@
         isNumber    : function(value){      return typeof value === 'number'; },
         isArray     : function(value){      return toString.call(value) === '[object Array]'; },
         isDate      : function(value){      return toString.call(value) === '[object Date]'; },
-        isObject    : function(value){      return value != null && typeof value === 'object'; },
+        isObject    : function(value){      return toString.call(value) === '[object Object]'; },
         isFunction  : function(value){      return typeof value === 'function'; },
         isFile      : function(value){      return toString.call(value) === '[object File]'; },
         isBlob      : function(value){      return toString.call(value) === '[object Blob]'; },

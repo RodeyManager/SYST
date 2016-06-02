@@ -336,6 +336,34 @@
 </code></pre>
     </article>
 
+    <article class="method" id="SYST.T.serialize">
+        <h3>serialize <code>Function (data, [flag]) //=> String</code></h3>
+        <p>
+            将对象序列化为字符串
+        </p>
+        <h3 class="ex-title">实例：</h3>
+<pre><code>
+    SYST.T.serialize({ name: 'Tom', age: 98 });
+    /* => "name=Tom&age=98" */
+
+</code></pre>
+    </article>
+
+    <article class="method" id="SYST.T.unserialize">
+        <h3>unserialize <code>Function (str) //=> object</code></h3>
+        <p>
+            将字符串反序列化为对象
+        </p>
+        <h3 class="ex-title">实例：</h3>
+<pre><code>
+    SYST.T.unserialize("name=Jack&age=45&d=0");
+    // => Object {name: "Jack", age: "45", d: "0"}
+    SYST.T.unserialize("http://www.baidu.com?name=Jack&age=45&d=0");
+    // => Object {name: "Jack", age: "45", d: "0"}
+
+</code></pre>
+    </article>
+
     <article class="method" id="SYST.T.jumpTo">
         <h3>jumpTo <code>Function (url, [params]) </code></h3>
         <ul>
@@ -351,6 +379,13 @@
     SYST.T.jumpTo('https://www.baidu.com/s', { wd: 'javascript' });
 
 </code></pre>
+    </article>
+
+    <article class="method" id="SYST.T.redirect">
+        <h3>redirect <code>Function (url, [params]) </code></h3>
+        <p>
+            jumpTo别名
+        </p>
     </article>
 
     <article class="method" id="SYST.T.displace">
@@ -402,6 +437,46 @@
     SYST.T.Cookie('username', 'zhangsan', { expires: 20 });
     //指定可访问域
     SYST.T.Cookie('username', 'zhangsan', { domain: 'www.senuu.com' });
+
+</code></pre>
+    </article>
+
+    <article class="method" id="SYST.T.getCookie">
+        <h3>getCookie <code>Function (key) </code></h3>
+        <ul>
+            <li><code>key: </code> cookie键值 <code>String or Array</code> </li>
+        </ul>
+
+        <p>
+            浏览器 cookie操作，获取指定的cookie
+        </p>
+        <h3 class="ex-title">实例：</h3>
+<pre><code>
+    //获取 cookie
+    var name = SYST.T.getCookie('name');
+    console.log(name); //=> 张三
+    //获取多个
+    var cookies = SYST.T.getCookie(['name', 'age']);
+    //=> Object { name: '张三', age: 29 }
+
+</code></pre>
+    </article>
+
+    <article class="method" id="SYST.T.setCookie">
+        <h3>setCookie <code>Function (keys, value, [options]) </code></h3>
+        <ul>
+            <li><code>keys: </code> 数据 <code>String or Object</code> </li>
+            <li><code>value: </code> 数据 <code>String</code> </li>
+            <li><code>options: </code> 其他可选项 </li>
+        </ul>
+
+        <p>
+            浏览器 cookie操作，设置cookie
+        </p>
+        <h3 class="ex-title">实例：</h3>
+<pre><code>
+    SYST.T.setCookie('name', 'Rodey');
+    SYST.T.setCookie({ name: 'Rodey', age: 128 });
 
 </code></pre>
     </article>

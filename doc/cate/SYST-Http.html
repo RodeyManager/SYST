@@ -194,3 +194,67 @@
         </p>
 
     </article>
+
+    <article class="method" id="SYST.Http.fetch">
+        <h3>fetch <code>Function (url, init, [type])</code></h3>
+        <ul>
+            <li><code>url:</code> api URL地址</li>
+            <li><code>init:</code> Object</li>
+            <li><code>type:</code> 返回内容格式，xml, html, script, json, text。</li>
+        </ul>
+        <p>
+            HTML5 fetch API，如果不支持将采用ajax(暂时不支持blob)，返回 SYST.Promise对象。<br/>
+            Fetch API具体参考 <a href="https://developer.mozilla.org/zh-CN/docs/Web/API/Fetch_API">Fetch_API</a><br/>
+            init参数具体参考 <a href="https://developer.mozilla.org/zh-CN/docs/Web/API/Request">Request</a><br/>
+        </p>
+
+        <h3 class="ex-title">实例：</h3>
+<pre><code>
+    var $http = SYST.Http(),
+        url = './test.json';
+    $http.fetch(url, { method: 'GET' }, 'json')
+    .then(function(res){
+        console.log(res);
+    })
+    .catch(function(err){
+        console.log(err);
+    });
+
+</code></pre>
+        <button id="h-fetch">运行实例</button>
+        <script>
+            $(function(){
+                var $http = SYST.Http(),
+                    url = './test.json';
+                $('#h-fetch').click(function(evt){
+                    $http.fetch(url, {
+                        method: 'POST',
+                        headers: {
+                            'Accept': 'application/json',
+                            'Content-Type': 'application/json'
+                        },
+                        body: {
+                            name: 'Hubot',
+                            login: 'hubot'
+                        }
+                    }, 'json')
+                        .then(function(res){
+                            alert(JSON.stringify(res, null, 2));
+                        })
+                        .catch(function(err){
+                            alert(err);
+                        });
+                });
+            });
+        </script>
+    </article>
+
+    <article class="method" id="SYST.Http.socket">
+        <h3>socket <code>Function (url, [options])</code></h3>
+        <ul>
+            <li><code>url:</code> URL地址</li>
+        </ul>
+        <p>
+            WebSocket API具体参考 <a href="https://developer.mozilla.org/zh-CN/docs/WebSockets">WebSockets</a><br/>
+        </p>
+    </article>

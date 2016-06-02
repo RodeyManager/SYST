@@ -45,8 +45,8 @@
         then: function(fulfil, reject){
             //this.STATE = 'pending';
             if(this.STATE === PENDING){
-                fulfil && SYST.V.isFunction(fulfil) && this._fulfils.push(fulfil);
-                reject && SYST.V.isFunction(reject) && this._rejecteds.push(reject);
+                SYST.V.isFunction(fulfil) && this._fulfils.push(fulfil);
+                SYST.V.isFunction(reject) && this._rejecteds.push(reject);
             }
             else if(this.STATE === FULFILLED){
                 this.resolve();

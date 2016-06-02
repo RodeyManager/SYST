@@ -72,7 +72,7 @@ gulp.task('build.version', function(){
 
         //SYST.js
         .pipe(replaceVar(/\{\{@version\}\}/i, version))
-        .pipe(concat('SYST'+ version +'.js'))
+        .pipe(concat('SYST'+ '.'+ version +'.js'))
         .pipe(gulp.dest('dist'))
 
         .pipe(uglify({ preserveComments: '!' }))    //压缩             //输出

@@ -6,7 +6,13 @@
 
     'use strict';
 
-    var evts = "abort reset click dblclick tap touchstart touchmove touchend change mouseover mouseout mouseup mousedown mousemove mousewheel drag dragend dragenter dragleave dragover dragstart drop resize scroll submit select keydown keyup keypress touchstart touchend load unload blur focus contextmenu formchange forminput input invalid afterprint beforeprint beforeonload haschange message offline online pagehide pageshow popstate redo storage undo canplay canplaythrough durationchange emptied ended loadeddata loadedmetadata loadstart pause play playing progress ratechange readystatechange seeked seeking stalled suspend timeupdate volumechange waiting cut copy paste".split(/\s+/gi);
+    var evts = (function(){
+        var events = [],
+            div = document.createElement('div');
+        for(var key in div)
+            (/^on/i.test(key)) && events.push(key.substr(2));
+        return events;
+    })();
 
     var _hoadEvent = SYST.T.hoadEvent;
 
@@ -17,11 +23,11 @@
         //对象事件侦听
         for(var i = 0; i < evts.length; i++){
             if(evts[i] === evt){
-                if(obj.selector == window || obj.selector == 'window'){
+                if(_isWindow(obj.selector)){
                     (type == 'on')
                         ? $(window).off().on(evt, _hoadEvent(pobj, func))
-                        : $(window).off(evt, SYST.hoadEvent(pobj, func));
-                }else if(obj.selector == document || obj.selector == 'document' || obj.selector == 'html' || obj.selector == 'body'){
+                        : $(window).off(evt, _hoadEvent(pobj, func));
+                }else if(_isBuilt(obj.selector)){
                     (type == 'on')
                         ? $(obj.selector).off().on(evt, _hoadEvent(pobj, func))
                         : $(obj.selector).off(evt, _hoadEvent(pobj, func));
@@ -33,7 +39,14 @@
                 }
             }
         }
+    }
 
+    function _isBuilt(selector){
+        return selector == document || selector == 'document' || selector == 'html' || selector == 'body';
+    }
+
+    function _isWindow(selector){
+        return selector == window || selector == 'window';
     }
 
     /**
@@ -52,9 +65,9 @@
         _listener(obj, pobj, evt, func, type, trigger);
     };
     Events.uninitEvent = function(selector, event, func, trigger){
-        if (selector == window || selector == 'window') {
+        if (_isWindow(selector)) {
             $(window).off(event, func);
-        } else if (selector == document || selector == 'document' || selector == 'html' || selector == 'body') {
+        } else if (_isBuilt(selector)) {
             $(selector).off(event, func);
         } else {
             $(trigger).undelegate(selector, event, func);

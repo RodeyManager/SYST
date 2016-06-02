@@ -136,6 +136,58 @@
          */
         doAjax: function(url, postData, su, fail, options){
             this.doRequest(url, postData, su, fail, options);
+        },
+
+        /**
+         * HTML5 fetch api
+         */
+        fetch: (function(){
+            //throw new ReferenceError('fetch api is not support!');
+            return function(url, init, type){
+                init = init || {};
+                var headers = init['headers'] || {},
+                    method = (init['method'] || 'post').toUpperCase(),
+                    body = init['body'];
+                if(!'fetch' in window){
+                    var p = new SYST.Promise();
+                    var setting = $.extend(init, {
+                        url: url,
+                        data: body,
+                        type: method,
+                        dataType: type,
+                        success: function(res){ p.resolve(res); },
+                        error: function(err){   p.reject(err);  }
+                    });
+                    _$.ajax(setting);
+                    return p;
+                }else{
+                    if(method == 'GET' || method == 'HEAD'){
+                        if(SYST.V.isObject(body))
+                            url += SYST.T.paramData(body, true);
+                        else if(SYST.V.isString(body))
+                            url += '?' + body;
+                        init['body'] = null;
+                        delete init['body'];
+                    }else{
+                        SYST.V.isObject(body) && (init['body'] = JSON.stringify(body));
+                    }
+                    return window['fetch'](url, init).then(function(res){
+                        return (SYST.V.isFunction(res[type]) && res[type]());
+                    });
+                }
+            };
+        })(),
+
+        /**
+         * HTML5 WebSockets Object
+         * @param uri
+         * @param options
+         * @returns {WebSocket}
+         */
+        socket: function(uri, options){
+            if(!'WebSocket' in window)
+                throw new ReferenceError('WebSocket api is not support!');
+            return new WebSocket(uri, options);
         }
 
     }
