@@ -72,19 +72,12 @@
      */
     var _template = function(tplContent, data, helper, target){
 
-        var Render,
-            $source = [],
+        var $source = [],
             $text = [],
             $tplString = 'var _s=""; with($d || {}){ ',
             helperStr = '',
             index = 0,
             data = data;
-
-        if(_tplCache[_content]){
-            Render =  _tplCache[_content];
-            //执行渲染方法
-            return Render.call(target || this, data);
-        }
 
         //判断helper是否存在
         if(helper){
@@ -145,6 +138,7 @@
         //生成 Function 主体字符串
         var source, text;
         for(var i = 0, len = $source.length; i < len; ++i){
+            //SYST.T.each($source, function(source, i){
             source = $source[i];
             text = $text[i + 1];
             //转移处理
@@ -173,6 +167,7 @@
                 source = '';
             }
             $tplString += (source || '') + (text || '');
+            //});
         }
 
         //遍历数据
@@ -182,8 +177,7 @@
         Render = new Function('$d', $tplString);
         _tplCache[_content] = Render;
         //执行渲染方法
-        $tplString = Render.call(target || this, data);
-        return $tplString;
+        return Render.call(target || this, data);
     };
 
     /**
@@ -199,12 +193,16 @@
     var Render = function(content, data, helper, options, target){
 
         if(!content){
-            console.warn('\u6ca1\u6709\u627e\u5230\u5bf9\u5e94\u7684\u6a21\u677f\u6587\u4ef6\u6216\u8005\u6a21\u677f\u5b57\u7b26\u4e32');
-            return '';
+            throw new SyntaxError('no found template content');
         }
 
-        var element, tplContent = '', id;
+        var element, tplContent = '', id, render;
         _content = content;
+        if(_tplCache[_content]){
+            render =  _tplCache[_content];
+            //执行渲染方法
+            return render.call(target || this, data);
+        }
         //重置配置
         _reset(options);
 
@@ -226,9 +224,6 @@
             if(element){
                 var tplStr = /^(TEXTEREA|INPUT)$/i.test(element.nodeName) ? element.value : element.innerHTML;
                 tplContent = SYST.T.trim(tplStr);
-            }else{
-                console.warn('\u5143\u7d20\u4e0d\u5b58\u5728');
-                return '';
             }
         }
 

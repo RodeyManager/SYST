@@ -192,7 +192,7 @@
 
         //------------------------Private----------------------
         _init: function(){
-            if(!this.model.props || {} == this.model.props)
+            if(!this.model.props)
                 return this;
             if(isObserve){
                 //IF Objext.observe exist
@@ -272,6 +272,7 @@
         _getBindModelTags: function(propName){
             var bindModelTags = SYST.$('['+ st_model +']'),
                 model, $bindTag;
+
             for(var i = 0, len = bindModelTags.length; i < len; ++i){
 
                 model = bindModelTags[i].getAttribute(st_model);
@@ -300,7 +301,6 @@
          * @private
          */
         _getBindElements: function(bindTag){
-
             //根据标签属性名来查找 绑定元素
             this._getBindElementForAttriburte(bindTag);
             //根据标签元素中内容查找 绑定元素
@@ -525,6 +525,7 @@
 
         //======================== st-template ========================================
         _getBindTemplates: function(bindTag){
+            if(isObserve && this.model.props && Object.keys(this.model.props).length === 0)  return;
             var $bindTag = bindTag,
                 templates = $bindTag.find('['+ st_template +']'),
                 i = 0, len = templates.length,
@@ -554,7 +555,7 @@
             var container = SYST.$(container),
                 data = SYST.V.isObject(data) ? SYST.extend(this.model.props, data) : this.model.props;
             var html = '';
-            if(Object.keys(data).length !== 0){
+            if(SYST.V.isObject(data)){
                 html = SYST.T.render(templateId, data, null, {open: '{{', close: '}}'});
             }
 
@@ -564,6 +565,7 @@
 
         //========================= st-style ===========================================
         _getBindStyles: function(bindTag){
+            if(isObserve && this.model.props && Object.keys(this.model.props).length === 0)  return;
             var self        = this, element, styleString, temp,
                 $bindTag    = bindTag,
                 styles      = $bindTag.find('['+ st_style +']'),
@@ -620,17 +622,19 @@
                 });
                 //console.log(styleString);
                 styleString = styleString.split(';');
-                styleString.forEach(function(style){
+                SYST.T.each(styleString, function(style){
                     style = style.split(':');
                     if(style[1] != null){
                         element.style[style[0]] = style[1];
                     }
                 });
+
             });
 
         },
         //========================= st-repeat ==========================================
         _getBindRepeats: function(bindTag){
+            if(isObserve && this.model.props && Object.keys(this.model.props).length === 0)  return;
             var self        = this, element, propName, outerHTML,
                 $bindTag    = bindTag,
                 repeats     = slice.call($bindTag.find('['+ st_repeat +']')),

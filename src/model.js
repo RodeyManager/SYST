@@ -17,6 +17,7 @@
         this.autoWatcher = true;
             //属性列表，数据绑定在里面
         this.props = {};
+        this.watcher = null;
         this._watchers = {};
         //状态列表
         this.states = {};
@@ -34,10 +35,11 @@
         _initialize: function(){
             SYST.shareModel.add(this.$mid || null, this);
             this.init && this.init.apply(this, arguments);
-            //初始化 Watcher
-            this.watcher = new SYST.Watcher(this);
-            this.autoWatcher !== false && this.watcher.init();
-
+            if(this.$mid || this.autoWatcher !== false){
+                //初始化 Watcher
+                this.watcher = new SYST.Watcher(this);
+                this.watcher.init();
+            }
         },
 
         /**
@@ -46,7 +48,7 @@
          */
         generateApi: function(apis, urls, options){
             var self = this;
-            SYST.V.isArray(apis) && apis.forEach(function(key){
+            SYST.V.isArray(apis) && SYST.T.each(apis, function(key, index){
                 self._generateApi(key, urls[key], options);
             });
 
@@ -61,10 +63,13 @@
             var self = this;
             options = SYST.V.isObject(options) && options || {};
             options['callTarget'] = this;
-            //console.log(key, url);
-            Object.defineProperty(self, key, { value: function(postData, su, fail){
+            function _vfn(postData, su, fail){
                 self.$http.doAjax(url, postData, su, fail, options);
-            } });
+            }
+            ('defineProperty' in Object)
+                ? Object.defineProperty(self, key, { value: _vfn })
+                : (self[key] = _vfn);
+
         },
 
         // 在本模型中存取
@@ -158,7 +163,7 @@
                 return this;
             }
             function _set(_k, _v){
-                if(SYST.V.isObject(_v)){
+                if(SYST.V.isObject(_v) || SYST.V.isArray(_v)){
                     _v = JSON.stringify(_v);
                 }
                 (!flag ? root.localStorage : root.sessionStorage).setItem(_k, _v);

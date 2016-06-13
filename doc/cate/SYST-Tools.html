@@ -235,28 +235,33 @@
 </code></pre>
     </article>
 
-    <article class="method" id="SYST.T.daysBetween">
-        <h3>daysBetween <code>Function (dateOne, dateTwo, [callback]) </code></h3>
+    <article class="method" id="SYST.T.getDateDiff">
+        <h3>getDateDiff <code>Function (dateOne, dateTwo) </code></h3>
         <ul>
             <li><code>DateOne: </code> 开始时间 </li>
             <li><code>DateTwo: </code> 结束时间 </li>
-            <li><code>callback: </code> 回调处理 </li>
         </ul>
 
         <p>
-            比较两个时间差 格式：YYYY-mm-dd
+            比较两个时间差，返回一个对象包含日时分秒
         </p>
         <h3 class="ex-title">实例：</h3>
 <pre><code>
-    var dateDiff = SYST.T.daysBetween('2016-8-20', '2016-4-21');
-    console.log(dateDiff); //=> 121
-
-    //======>
-    SYST.T.daysBetween('2016-8-20', '2016-4-21', function(){
-        console.log(dateDiff); //=> 121
-    });
+    var diff = SYST.T.getDateDiff('2015-06-06 05:20:02', '2015-06-01 10:10:10');
+    console.log(diff); //=> Object {days: 361, hours: 4, minutes: 50, seconds: 8}
 
 </code></pre>
+        <button id="diff-btn">运行实例</button>
+        <script>
+            $(function(){
+                $('#diff-btn').click(function(evt){
+                    var d1 = prompt('请输入您的出生日期：', SYST.T.setDateFormat(Date.now(), 'yyyy-m-d h:i:s', true));
+                    var d2 = new Date();
+                    var diff = SYST.T.getDateDiff(d1, d2);
+                    alert('您离出生到现在已经有'+ diff.days + '天' + diff.hours + '时' + diff.minutes + '分' + diff.seconds + '秒了!');
+                });
+            });
+        </script>
     </article>
 
     <article class="method" id="SYST.T.randomChar">

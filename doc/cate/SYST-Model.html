@@ -184,9 +184,11 @@
 <pre><code>
     var model = SYST.Model();
     model.set({'name': '张三', age: 23, skill: ['java', 'python', 'javascript']});
-    model.removeProps();
+    model.removePropsAll();
     console.log(model.get('name'));
     //=> undefined
+    console.log(model.props);
+    //=> Object {}
 </code></pre>
     </article>
 
@@ -306,16 +308,4 @@
         <p>
             模型数据绑定对象，参考 <a href="#SYST.Watcher"> <code>SYST.Watcher</code> </a>
         </p>
-        <h3 class="ex-title">实例：</h3>
-<pre><code>
-    var model = SYST.Model();
-    model.setItem({'name': '张三', age: 23, skill: ['java', 'python', 'javascript']});
-    model.removeItems(['name', 'skill']);
-    console.log(model.getItem('name'));
-    //=> null
-    model.removeItems('age');
-    console.log(model.getItem('age'));
-    //=> null
-
-</code></pre>
     </article>

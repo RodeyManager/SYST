@@ -19,7 +19,7 @@
     };
     SYST.V = Validate.prototype = {
         //为空时
-        isEmpty     : function(val){        return (!val || val.length === 0 || val === '' || val == null || Object.keys(val).length === 0) ? true : false; },
+        isEmpty     : function(val){        return (!val || val.length === 0 || val == null) ? true : false; },
         //是否含有中文 （flag存在则完全匹配中文，默认不完全匹配）
         isCN        : function(str, flag){
             if(flag)                        return (/^[\u4e00-\u9fa5]+$/.test(str));

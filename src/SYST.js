@@ -19,16 +19,14 @@
     'use strict';
 
     var SYST = {}; //function(){};
-
     //框架属性
     SYST.VERSION = '{{@version}}';
     SYST.AUTHOR = 'Rodey Luo';
-
     //判断是否有jquery，zepto插件
     try{
         SYST.$ = root.jQuery || root.Zepto || undefined;
     }catch(e){
-        throw new Error('$不存在，请先引入jQuery|Zepto插件，依赖其中一个。' + e);
+        throw new Error('$不存在，请先引入jQuery|Zepto插件，依赖其中一个' + e);
     }
 
     var _clone = function(targetObject){
@@ -71,13 +69,13 @@
             if('__instance_SYST__' in firstArgument){
                 args.shift();
                 for(len = args.length; i < len; ++i){
-                    mg = SYST.extend(mg, args[i]);
+                    mg = _extend(mg, args[i]);
                 }
                 mg.__proto__ = firstArgument;
                 return mg;
             }else{
                 for(len = args.length; i < len; ++i){
-                    mg = SYST.extend(mg, args[i]);
+                    mg = _extend(mg, args[i]);
                 }
                 mg.__proto__ = new className();
                 return mg;
@@ -92,7 +90,7 @@
     SYST.clone = _clone;
 
     //Object.keys
-    !('keys' in Object) && (Object.keys = function(o){
+    (!'keys' in Object) && (Object.keys = function(o){
         if(o !== Object(o))
             throw new TypeError('Object.keys called on a non-object');
         var k = [], p;

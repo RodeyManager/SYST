@@ -132,6 +132,7 @@
                 array.splice(index, 1);
             return array;
         },
+        //首字符大写
         toFirstUpperCase: function(str){
             return str.replace(/^(\w)?/i, function(match, $1){ return $1.toUpperCase(); });
         },
@@ -237,29 +238,26 @@
         },
 
         /**
-         * Function 比较两个时间差 格式：YYYY-mm-dd
-         * @param DateOne
-         * @param DateTwo
-         * @return {Number}
+         * 计算时间差，包括 天、时分秒
+         * @param d1    开始时间  yyyy-mm-dd h:i:s | Date
+         * @param d2    结束时间
+         * @returns {{days: (*|Number)}}
          */
-        daysBetween: function(dateOne, dateTwo, callback){
-            //获取第一个时间
-            var OneMonth    = dateOne.substring(5, dateOne.lastIndexOf('-'));
-            var OneDay      = dateOne.substring(dateOne.length, dateOne.lastIndexOf('-') + 1);
-            var OneYear     = dateOne.substring(0, dateOne.indexOf('-'));
-            //获取第二个时间
-            var TwoMonth    = dateTwo.substring(5,dateTwo.lastIndexOf('-'));
-            var TwoDay      = dateTwo.substring(dateTwo.length, DateTwo.lastIndexOf('-') + 1);
-            var TwoYear     = dateTwo.substring(0, dateTwo.indexOf('-'));
-
-            var CDays = ((Date.parse(OneMonth +'/'+ OneDay +'/'+ OneYear) - Date.parse(TwoMonth +'/'+ TwoDay +'/'+ TwoYear)) / 86400000);
-
-            if(callback && typeof callback === 'function'){
-                callback(CDays);
-            }else{
-                //return Math.abs(CDays);
-                return CDays;
-            }
+        getDateDiff: function(d1, d2){
+            var diff = Date.parse(d2) - Date.parse(d1),
+                days = Math.floor(diff / (24 * 3600 * 1000)),
+                le1 = diff % (24 * 3600 * 1000),
+                hours = Math.floor(le1 / (3600 * 1000)),
+                le2 = le1 % (3600 * 1000),
+                minutes = Math.floor(le2 / (60 * 1000)),
+                le3 = le2 % (60 * 1000),
+                seconds = Math.round(le3 / 1000);
+            return {
+                days: days,
+                hours: hours,
+                minutes: minutes,
+                seconds: seconds
+            };
         },
 
         /**
@@ -428,7 +426,7 @@
             var self = this;
             if(!keys) return;
             if(SYST.V.isObject(keys)){
-                Object.keys(keys).forEach(function(key){
+                SYST.T.each(Object.keys(keys), function(key){
                     self.Cookie(key, keys[key], options);
                 });
             }
@@ -457,19 +455,19 @@
          * @param object
          * @param callback
          */
-        each: function(object, callback){
+        each: function(object, callback, target){
             if(SYST.V.isObject(object)){
                 var index = 0;
                 for(var k in object){
                     if(object.hasOwnProperty(k)){
-                        callback.call(object, object[k], index++, k);
+                        callback.call(target || object, object[k], index++, k);
                     }
                 }
             }
             else if(SYST.V.isArray(object)){
                 var i = 0, len = object.length;
                 for(; i < len; ++i){
-                    callback(object[i], i);
+                    callback.call(target || object, object[i], i);
                 }
             }
             else{

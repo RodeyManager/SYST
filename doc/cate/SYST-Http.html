@@ -73,7 +73,7 @@
             $(function(){
                 $('#h-get').click(function(evt){
                     SYST.Http().get("./test.json", function(res){
-                        alert(JSON.stringify(res));
+                        alert(JSON.stringify(res, null, 4));
                     });
                 });
             });
@@ -171,7 +171,7 @@
             $(function(){
                 $('#h-doRequest').click(function(evt){
                     SYST.Http().doRequest("./test.json", { id: 100 }, function(res){
-                        alert(JSON.stringify(res));
+                        alert(JSON.stringify(res, null, 4));
                     }, null, { type: 'GET' });
                 });
             });
@@ -212,7 +212,13 @@
 <pre><code>
     var $http = SYST.Http(),
         url = './test.json';
-    $http.fetch(url, { method: 'GET' }, 'json')
+    $http.fetch(url, {
+        method: 'POST',
+        body: {
+            name: 'Jack',
+            pass: 'admin888'
+        }
+    })
     .then(function(res){
         console.log(res);
     })
@@ -229,17 +235,13 @@
                 $('#h-fetch').click(function(evt){
                     $http.fetch(url, {
                         method: 'POST',
-                        headers: {
-                            'Accept': 'application/json',
-                            'Content-Type': 'application/json'
-                        },
                         body: {
-                            name: 'Hubot',
-                            login: 'hubot'
+                            name: 'Jack',
+                            login: 'admin888'
                         }
                     }, 'json')
                         .then(function(res){
-                            alert(JSON.stringify(res, null, 2));
+                            alert(JSON.stringify(res, null, 4));
                         })
                         .catch(function(err){
                             alert(err);

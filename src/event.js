@@ -6,13 +6,15 @@
 
     'use strict';
 
-    var evts = (function(){
+    /*var evts = (function(){
         var events = [],
             div = document.createElement('div');
         for(var key in div)
             (/^on/i.test(key)) && events.push(key.substr(2));
         return events;
-    })();
+    })();*/
+
+    var evts = "abort reset click dblclick tap touchstart touchmove touchend change mouseover mouseout mouseup mousedown mousemove mousewheel drag dragend dragenter dragleave dragover dragstart drop resize scroll submit select keydown keyup keypress touchstart touchend load unload blur focus contextmenu formchange forminput input invalid afterprint beforeprint beforeonload haschange message offline online pagehide pageshow popstate redo storage undo canplay canplaythrough durationchange emptied ended loadeddata loadedmetadata loadstart pause play playing progress ratechange readystatechange seeked seeking stalled suspend timeupdate volumechange waiting cut copy paste".split(/\s+/gi);
 
     var _hoadEvent = SYST.T.hoadEvent;
 

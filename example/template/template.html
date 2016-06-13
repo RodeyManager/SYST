@@ -18,10 +18,15 @@
 </head>
 <body>
 
-<div class="app member-app" id="app" scroll="no">
+    <div class="app member-app" id="app" scroll="no">
 
 
-</div>
+    </div>
+    <div class="app">
+        <em>渲染10万条数据</em>
+        <button id="test-btn">性能测试</button>
+        <p id="test-rs"></p>
+    </div>
 
 <script type="text/syst" id="tpl">
 
@@ -97,7 +102,7 @@
             },
 
             name: 'SYST JS FROMWORK',
-            version: '0.0.5',
+            version: '2.0.4',
             author: 'Rodey',
             email: 'rodeyluo@gmail.com'
         };
@@ -106,21 +111,24 @@
         //console.log(html);
         document.querySelector('#app').innerHTML = html;
 
-        html = SYST.Render('tpl', data, {filter: filter, toMailLink: toMailLink} );
-        //console.log(html);
-
         //性能测试
-        var list = [];
-        for(var i = 0; i < 1000; ++i){
-            list.push({ name: 'test', age: i+1 });
-        }
+        var testBtn = $('#test-btn'), isTesting = false;
+        if(isTesting) return;
+        testBtn.click(function(){
+            testBtn.html('测试中......');
+            var list = [];
+            for(var i = 0; i < 10000; ++i){
+                list.push({ name: 'test', age: i+1 });
+            }
 
-        var start = Date.now();
-        for(var i = 0; i < 100; ++i){
-            SYST.T.render('test', { list: list });
-        }
-        var time = (Date.now() - start) / 1000;
-        console.log(time);
+            var start = Date.now();
+            for(var j = 0; j < 10; ++j){
+                SYST.T.render('test', { list: list });
+            }
+            var time = (Date.now() - start) / 1000;
+            $('#test-rs').html('总花费 ' + time + ' 秒');
+            testBtn.html('性能测试');
+        });
 
     });
 
