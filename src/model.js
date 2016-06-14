@@ -191,7 +191,7 @@
 
         //监听 st-prop 属性变化
         _watchProrp: function(key, value){
-            if(!isObserve)
+            //if(!isObserve)
                 this.watcher && this.watcher.update(key);
         },
         //监听 st-template
