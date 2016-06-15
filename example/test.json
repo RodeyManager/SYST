@@ -2,7 +2,7 @@
   "code": 200,
   "msg": "登录成功！",
   "data": {
-    "userName": "Rodey",
+    "name": "Rodey Luo",
     "email": "rodeyluo@gmail.com",
     "qq": "453474593",
     "github": "https://github.com/RodeyManager",

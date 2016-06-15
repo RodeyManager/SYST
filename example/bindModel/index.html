@@ -52,15 +52,15 @@
         </p>
         <div st-template="user-info-tpl"></div>
         <button id="server-btn">获取最新用户信息</button>
+        <script type="text/html" id="user-info-tpl">
+            <ul>
+                <li>{{= name }}</li>
+                <li>{{= email }}</li>
+                <li>{{= qq }}</li>
+                <li>{{= github }}</li>
+            </ul>
+        </script>
     </div>
-    <script type="text/html" id="user-info-tpl">
-        <ul>
-            <li>{{= userName }}</li>
-            <li>{{= email }}</li>
-            <li>{{= qq }}</li>
-            <li>{{= github }}</li>
-        </ul>
-    </script>
     <div st-model="loginModel">
         <p>
             当前职位：{{ user.tech }}
@@ -69,14 +69,13 @@
     <hr/>
     <div st-model="userModel">
         <h3 id="t-d" style="color:red">Name: {{ name }}  --  Age: {{ age }}</h3>
-        <h4 style="color: darkgreen">Object observe support: {{ index }}</h4>
-        <h5 style="color: #00d6b2" id="iden">动态绑定 (iden)：{{ iden }}</h5>
+        <h4 style="color: darkgreen">Interval support: {{ index }}</h4>
+        <h5 style="color: #00d6b2" id="iden">动态绑定 (iden)：</h5>
         <h5 style="color: darkgray">当前时间: {{ dateTime }}</h5>
     </div>
     <hr/>
-
     <div st-model="colorModel">
-        <h5>select bind</h5>
+        <h5>styles bind</h5>
         <select name="color" st-prop="color">
             <option value="" selected>请选择颜色</option>
             <option value="red">红色</option>
@@ -92,7 +91,6 @@
         <br/>
         <img src="../assets/images/docker.jpg" st-style="display:{{ isShow | isDisplay}}" width="100" alt=""/>
     </div>
-
     <div>
         <h5>repeat array</h5>
         <ul id="repeat-dom" st-model="repeatModel">
@@ -172,7 +170,12 @@
 
             colorModel = SYST.Model({
                 $mid: 'colorModel',
-                props: { color: 'red', isShow: 0 },
+                //props: { color: 'red', isShow: 0 },
+                init: function(){
+                    setTimeout(function(){
+                        this.set({ color: 'red', isShow: 0 });
+                    }.bind(this), 5000);
+                },
                 isDisplay: function(isShow){
                     return Number(isShow) ? 'block' : 'none';
                 }
@@ -204,8 +207,8 @@
 
                     setTimeout(function(){
                         $('#iden').html('动态绑定 (iden)：{{ iden }}');
-                        //this.props.iden = '362422********000100';
-                        this.set('iden', '362422********000100');
+                        this.watcher.addListener('iden', '362422********000100');
+                        //this.set('iden', '362422********000100');
                     }.bind(this), 5000);
                 }
 
@@ -214,13 +217,12 @@
             loginModel = SYST.Model({
                 $mid: 'loginModel',
                 props: {
-                    userName: 'Rodey',
+                    name: 'Rodey',
                     email: '111@qq.com',
                     qq: '12121212',
                     github: 'https://github.com/RodeyManager'
                 },
                 init: function(){
-                    this.set('name', 'Rodey');
                     this.set('user', { name: { first: 'Rodey', last: 'Luo' }, tech: 'Web前端工程师' });
                 },
                 filter: function(firstName){

@@ -2,22 +2,25 @@
     <h2 id="SYST.Watcher">SYST.Watcher(模型数据绑定监听对象)</h2>
 
     <article class="method" id="SYST.W.addListener">
-        <h3>addListener <code>Function(propName)</code></h3>
+        <h3>addListener <code>Function(propName, propValue)</code></h3>
         <ul>
             <li><code>propName: </code> 要添加监听的绑定的属性名，<code>this.model.props</code> 中的元素</li>
+            <li><code>propValue: </code> 要添加监听的绑定的属性值</li>
         </ul>
 
         <p>
-            监听属性，在Model初始化的时候会监听所有 props下的元素
+            动态添加监听属性，在Model初始化的时候会监听所有 props下的元素
         </p>
         <h3 class="ex-title">实例：</h3>
 <pre><code>
 
     &lt;span&gt;{{ name }}&lt;/span&gt;
+    &lt;span id="age"&gt;{{ name }}&lt;/span&gt;
 
     var model = SYST.Model();
-    model.set({'name': '张三', age: 23, skill: ['java', 'python', 'javascript']});
-    model.watcher.addListener('name');
+    model.set({'name': '张三'});
+    $('#age').html(model.get('name') + '的年龄是：{{ age }}');
+    model.watcher.addListener('age', 23);
 
 </code></pre>
     </article>

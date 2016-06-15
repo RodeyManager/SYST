@@ -33,13 +33,15 @@
         $http: SYST.Http(),
 
         _initialize: function(){
+            //初始化 Watcher
+            this.watcher = new SYST.Watcher(this);
             SYST.shareModel.add(this.$mid || null, this);
             this.init && this.init.apply(this, arguments);
+            //var startTime = Date.now();
             if(this.$mid || this.autoWatcher !== false){
-                //初始化 Watcher
-                this.watcher = new SYST.Watcher(this);
                 this.watcher.init();
             }
+            //console.log('Model: ' + this.$mid, (Date.now() - startTime) / 1000)
         },
 
         /**
@@ -78,8 +80,7 @@
         set: function(key, value){
 
             if(SYST.V.isEmpty(key)) return this;
-            var self = this,
-                props = this.props;
+            var self = this;
 
             if(SYST.V.isObject(key)){
                 // this.set({ name: 'Rodey', age: 25 });
@@ -92,8 +93,7 @@
             }
 
             function _set(k, v){
-                props[k] = v;
-                self.props = props;
+                self.props[k] = v;
                 self._watchProrp(k, v);
             }
 

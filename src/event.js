@@ -6,40 +6,27 @@
 
     'use strict';
 
-    /*var evts = (function(){
-        var events = [],
-            div = document.createElement('div');
-        for(var key in div)
-            (/^on/i.test(key)) && events.push(key.substr(2));
-        return events;
-    })();*/
-
-    var evts = "abort reset click dblclick tap touchstart touchmove touchend change mouseover mouseout mouseup mousedown mousemove mousewheel drag dragend dragenter dragleave dragover dragstart drop resize scroll submit select keydown keyup keypress touchstart touchend load unload blur focus contextmenu formchange forminput input invalid afterprint beforeprint beforeonload haschange message offline online pagehide pageshow popstate redo storage undo canplay canplaythrough durationchange emptied ended loadeddata loadedmetadata loadstart pause play playing progress ratechange readystatechange seeked seeking stalled suspend timeupdate volumechange waiting cut copy paste".split(/\s+/gi);
-
     var _hoadEvent = SYST.T.hoadEvent;
 
     function _listener(obj, pobj, evt, func, type, trigger){
+        if(!evt) throw new ReferenceError('没有添加事件名称');
         var type = type || 'on';
         if(!obj) obj = window;
 
         //对象事件侦听
-        for(var i = 0; i < evts.length; i++){
-            if(evts[i] === evt){
-                if(_isWindow(obj.selector)){
-                    (type == 'on')
-                        ? $(window).off().on(evt, _hoadEvent(pobj, func))
-                        : $(window).off(evt, _hoadEvent(pobj, func));
-                }else if(_isBuilt(obj.selector)){
-                    (type == 'on')
-                        ? $(obj.selector).off().on(evt, _hoadEvent(pobj, func))
-                        : $(obj.selector).off(evt, _hoadEvent(pobj, func));
-                }else{
-                    (type == 'on')
-                        ? $(trigger || 'body').undelegate(obj.selector, evt, _hoadEvent(pobj, func))
-                        .delegate(obj.selector, evt, _hoadEvent(pobj, func))
-                        : $(trigger || 'body').undelegate(obj.selector, evt);
-                }
-            }
+        if(_isWindow(obj.selector)){
+            (type == 'on')
+                ? $(window).off().on(evt, _hoadEvent(pobj, func))
+                : $(window).off(evt, _hoadEvent(pobj, func));
+        }else if(_isBuilt(obj.selector)){
+            (type == 'on')
+                ? $(obj.selector).off().on(evt, _hoadEvent(pobj, func))
+                : $(obj.selector).off(evt, _hoadEvent(pobj, func));
+        }else{
+            (type == 'on')
+                ? $(trigger || 'body').undelegate(obj.selector, evt, _hoadEvent(pobj, func))
+                .delegate(obj.selector, evt, _hoadEvent(pobj, func))
+                : $(trigger || 'body').undelegate(obj.selector, evt);
         }
     }
 

@@ -7,8 +7,8 @@
 
 ;!(function(SYST){
 
-    var reg = /\{\{\s*([^\{]*?)\s*\}\}/gi,
-        regState = /\s+[\w\d_-]+=\"[\s\S]*?\{\{\s*={1,2}\s*([^\{]*?)\s*\}\}[\s\S]*?\"/gi,
+    var _$ = SYST.$ || $,
+        reg = /\{\{\s*([^\{]*?)\s*\}\}/gi,
         slice = Array.prototype.slice,
         isObserve = 'observe' in Object,
         notValReg = /^[^\w]*/gi,
@@ -27,6 +27,7 @@
         st_repeat = 'st-repeat',
         st_item = 'st-item',
         st_vid = 'st-vid',
+        st_filter = 'st-filter',
         bindStPropName = 'bindStPropName',
         rawHtml = 'rawHtml',
         innerHTML = 'innerHTML';
@@ -46,7 +47,6 @@
 
         if(!model)
             throw new ReferenceError('args 1 can ben SYST.Model');
-        this.model = model;
         this._reset(model);
 
     };
@@ -59,29 +59,14 @@
 
         /**
          * 当新增属性（数据）时，将添加对应的watch
-         * @param propName
+         * @param propName      属性名
+         * @param propValue     属性值
          */
-        addListener: function(propName){
-            var bindModelTags = SYST.$('['+ st_model +']'),
-                model, $bindTag;
-            for(var i = 0, len = bindModelTags.length; i < len; ++i){
-
-                model = bindModelTags[i].getAttribute(st_model);
-                if(model === this.model.$mid){
-                    $bindTag = SYST.$(bindModelTags[i]);
-                    if(SYST.T.indexOf(this.bindTags, $bindTag) === -1){
-                        this.bindTags.push($bindTag);
-                    }
-                    this.bindElements[propName] && this._getBindElements($bindTag, propName);
-                    //获取绑定的模板 【 st-template 】
-                    this.bindTemplates[propName] && this._getBindTemplates($bindTag, propName);
-                    //获取绑定的样式 【st-style】
-                    this.bindStyles[propName] && this._getBindStyles($bindTag);
-                    //获取绑定样式 【st-repeat】
-                    this.bindRepeats[propName] && this._getBindRepeats($bindTag);
-                }
+        addListener: function(propName, propValue){
+            this._getModelTags(propName);
+            if(propValue){
+                this.model.set(propName, propValue);
             }
-            this._makeProps(this.bindElements[propName]);
         },
 
         /**
@@ -90,25 +75,15 @@
          */
         removeListener: function(propName){
             if(!propName){
-                this._reset();
-                return this;
+                return this.removeListenerAll();
             }
             //删除指定的属性绑定的数据
             this._deleteBinds(propName);
-
-            var element;
-            for(var i = 0, len = this.elements.length; i < len; ++i){
-                element = this.elements[i];
-                if(element[bindStPropName] === propName){
-                    SYST.T.arrRemove(this.elements, element);
-                    return this;
-                }
-            }
-
             return this;
         },
         removeListenerAll: function(){
-            return this.removeListener();
+            this._reset();
+            return this;
         },
 
         /**
@@ -118,18 +93,15 @@
          * @param model: 当前绑定的model
          */
         update: function(propName, propValue){
-            var elements = this.elements;
             if(!SYST.V.isEmpty(propName) && SYST.V.isString(propName)){
                 if(propValue){
                     this.model.props[propName] = propValue;
                 }
-                elements = this.bindElements[propName] || elements;
                 //同步更新绑定样式
                 this.bindElements[propName] && this.updateBindProps(propName);
                 this.bindStyles[propName] && this.updateBindStyles(propName);
                 this.bindRepeats[propName] && this.updateBindRepeats(propName);
             }
-
         },
         //重新获取监听属性tag
         reset: function(model){
@@ -140,8 +112,8 @@
 
         },
 
-        updateBindProps: function(propName, elements){
-            this._makeProps(elements);
+        updateBindProps: function(propName){
+            this._makeProps(propName);
         },
 
         /**
@@ -150,9 +122,8 @@
          * @param data
          */
         updateRenderTemplate: function(templateId, data){
-            var self = this,
-                bindTemplates = this.bindTemplates,
-                containers;
+            var self = this, containers,
+                bindTemplates = this.bindTemplates;
             if(templateId){
                 containers = bindTemplates[templateId];
                 _renderAction(templateId, containers);
@@ -165,12 +136,10 @@
             }
 
             function _renderAction(tid, cons){
-                if(SYST.V.isArray(cons)){
-                    SYST.T.each(cons, function(container){
-                        //解析模板并填充
-                        self._renderTemplate(tid, container, data);
-                    });
-                }
+                SYST.V.isArray(cons) && SYST.T.each(cons, function(container){
+                    //解析模板并填充
+                    self._renderTemplate(tid, container, data);
+                });
             }
         },
 
@@ -179,8 +148,8 @@
          * @param propName 绑定的属性名
          * @param elements
          */
-        updateBindStyles: function(propName, elements){
-            this._makeStyle(propName, elements);
+        updateBindStyles: function(propName){
+            this._makeStyles(propName);
         },
 
         /**
@@ -188,18 +157,18 @@
          * @param propName
          * @param elements
          */
-        updateBindRepeats: function(propName, elements){
-            this._makeRepeats(propName, elements);
+        updateBindRepeats: function(propName){
+            this._makeRepeats(propName);
         },
 
         //------------------------Private----------------------
         _init: function(){
             if(!this.model.props)
                 return this;
-            if(isObserve){
-                //IF Objext.observe exist
-                //this._initObserve();
-            }
+            //IF Objext.observe exist
+            //if(isObserve){
+            //    //this._initObserve();
+            //}
 
             this._getBindModelTags();
 
@@ -209,49 +178,46 @@
          * IF Object observe exits
          * change model props
          */
-        _initObserve: function(){
-            if(!isObserve)  return;
-
-            var self = this, type, name;
-            Object.observe(this.model.props, function(changes){
-                changes.forEach(function(changeProp){
-                    //console.log(changeProp);
-                    //update | add | delete
-                    watchProp(changeProp);
-                });
-            });
-
-            function watchProp(changeProp){
-                type = changeProp.type;
-                name = changeProp.name;
-                switch (type){
-                    case 'add':
-                        //对于新增加的prop，需要重新watch
-                        self.addListener(name);
-                        break;
-                    case 'update':
-                        self.update(name);
-                        break;
-                    case 'delete':
-                        //对于删除的prop，需要移除watch
-                        self.removeListener(name);
-                        break;
-                }
-                //更新监听 st-template
-                self.updateRenderTemplate();
-            }
-
-        },
+        //_initObserve: function(){
+        //    if(!isObserve)  return;
+        //
+        //    var self = this, type, name;
+        //    Object.observe(this.model.props, function(changes){
+        //        changes.forEach(function(changeProp){
+        //            //console.log(changeProp);
+        //            //update | add | delete
+        //            watchProp(changeProp);
+        //        });
+        //    });
+        //
+        //    function watchProp(changeProp){
+        //        type = changeProp.type;
+        //        name = changeProp.name;
+        //        switch (type){
+        //            case 'add':
+        //                //对于新增加的prop，需要重新watch
+        //                self.addListener(name);
+        //                break;
+        //            case 'update':
+        //                self.update(name);
+        //                break;
+        //            case 'delete':
+        //                //对于删除的prop，需要移除watch
+        //                self.removeListener(name);
+        //                break;
+        //        }
+        //        //更新监听 st-template
+        //        self.updateRenderTemplate();
+        //    }
+        //
+        //},
         _reset: function(model){
             this.model = model || this.model;
-            this.elements = [];
-            this.bindTags = [];
+            this.bindModelTags = [];
             //prop is key, elements is value
             this.bindElements = {};
             //bind templates as tag id
             this.bindTemplates = {};
-            //bind states as st-model tag content
-            this.bindStates = [];
             //bind styles as st-style tag
             this.bindStyles = {};
             //bind repeat data as st-repeat tag
@@ -266,46 +232,41 @@
                 });
             })(binds);
         },
+        //======================== st-model =======================================
+        _getModelTags: function(propName){
+            var self = this, model, $bindTag;
+            self.bindModelTags = slice.call(_$('['+ st_model +'='+ this.model.$mid +']'));
+
+            SYST.T.each(self.bindModelTags, function(tag){
+                model = tag.getAttribute(st_model);
+                $bindTag = _$(tag);
+                self._getBindElements($bindTag, propName);
+                //获取绑定的模板 【 st-template 】
+                self._getBindTemplates($bindTag, propName);
+                //获取绑定的样式 【st-style】
+                self._getBindStyles($bindTag, propName);
+                //获取绑定样式 【st-repeat】
+                self._getBindRepeats($bindTag, propName);
+            });
+        },
         /**
          * 获取数据被绑定的UI as st-model
          * @param propName: 新增加的属性
          */
-        _getBindModelTags: function(propName){
-            var bindModelTags = SYST.$('['+ st_model +']'),
-                model, $bindTag;
-
-            for(var i = 0, len = bindModelTags.length; i < len; ++i){
-
-                model = bindModelTags[i].getAttribute(st_model);
-                if(model === this.model.$mid){
-                    $bindTag = SYST.$(bindModelTags[i]);
-                    if(SYST.T.indexOf(this.bindTags, $bindTag) === -1){
-                        this.bindTags.push($bindTag);
-                    }
-                    //获取绑定的 prop 【 st-prop 】
-                    this._getBindElements($bindTag, propName);
-                    //获取绑定的模板 【 st-template 】
-                    this._getBindTemplates($bindTag, propName);
-                    //获取绑定的样式 【st-style】
-                    this._getBindStyles($bindTag);
-                    //获取绑定列表 【st-repeat】
-                    this._getBindRepeats($bindTag);
-                }
-            }
-
-            //console.log(this.elements);
-
+        _getBindModelTags: function(){
+            this._getModelTags();
         },
+        //======================== st-prop ========================================
         /**
          * 获取数据被绑定的UI as st-prop
          * @param bindTag 具有st-model属性的单个标签元素
          * @private
          */
-        _getBindElements: function(bindTag){
+        _getBindElements: function(bindTag, propName){
             //根据标签属性名来查找 绑定元素
-            this._getBindElementForAttriburte(bindTag);
+            this._getBindElementForAttriburte(bindTag, propName);
             //根据标签元素中内容查找 绑定元素
-            this._getBindElementForContent(bindTag);
+            this._getBindElementForContent(bindTag, propName);
             //开始填充数据
             this._makeProps();
 
@@ -315,55 +276,43 @@
          * @param bindTag
          * @private
          */
-        _getBindElementForAttriburte: function(bindTag){
-            var self = this, stProps, $bindTag, name;
+        _getBindElementForAttriburte: function(bindTag, propName){
+            var self = this, elements, $bindTag, name;
             $bindTag = bindTag;
+            if(propName){
+                elements = slice.call($bindTag.find('['+ st_prop +'='+ propName +']'));
+            }else{
+                elements = slice.call($bindTag.find('['+ st_prop +']'));
+            }
+            if(elements.length === 0)   return;
 
-            stProps = slice.call($bindTag.find('['+ st_prop +']'));
-            stProps.map(function(stProp){
-
-                //console.log(stProp.getAttribute('st-prop'));
-                name = self._getRootPropName(stProp.getAttribute(st_prop));
-                stProp[bindStPropName] = name;
-                self._toBindElements(name, stProp);
-                return stProp;
-
+            SYST.T.each(elements, function(element){
+                name = self._getRootPropName(element.getAttribute(st_prop));
+                self._toBindElements(name, element);
             });
-
-            //this.elements 一般只有首次绑定数据赋值才能用上
-            //除非你手动强制更新
-            //之后的数据变化将采用 this.bindElements[propName]取值后进行遍历
-            this.elements = this.elements.concat(stProps);
         },
         /**
          * 根据标签内容中含有被绑定属性，并以模板形式呈现的，如：{{ prop }}
          * @param bindTag
          * @private
          */
-        _getBindElementForContent: function(bindTag){
-            var self = this, $bindTag, temp, el, name;
-            $bindTag = bindTag, elements = [];
+        _getBindElementForContent: function(bindTag, propName){
+            var self = this, temp, elements, name,
+            $bindTag = bindTag;
             //获取绑定的元素集合
             while((temp = reg.exec($bindTag.html())) != null){
 
-                el = slice.call($bindTag.find(':contains('+ temp[0] +')')).reverse();
+                elements = slice.call($bindTag.find(':contains('+ temp[0] +')')).reverse();
                 //console.log(temp[0]);
+                if(!elements || elements.length === 0)  continue;
                 name = self._getRootPropName(temp[0]);
-                if(!el || el.length === 0) continue;
-
-                SYST.T.each(el, function(element){
-                    self._isInBindElements(element, name);
+                if(propName && name !== propName)   break;
+                SYST.T.each(elements, function(element){
+                    //保存元素原内容,便于以后置换绑定数据使用
+                    element[rawHtml] = element[innerHTML];
+                    self._toBindElements(name, element);
                 });
             }
-
-        },
-        _isInBindElements: function(element, propName){
-            element[rawHtml] = element[innerHTML];
-            element[bindStPropName] = propName;
-            if(SYST.T.indexOf(this.elements, element) === -1){
-                this.elements.push(element);
-            }
-            this._toBindElements(propName, element);
         },
 
         /**
@@ -373,7 +322,8 @@
          * @param element: 属性值
          */
         _toBindElements: function(name, element){
-
+            //元素对象添加绑定数据名称
+            element[bindStPropName] = name;
             if(!SYST.V.isArray(this.bindElements[name])){
                 this.bindElements[name] = [];
                 this.bindElements[name].push(element);
@@ -385,9 +335,10 @@
 
         },
         //更新UI
-        _makeProps: function(elements){
+        _makeProps: function(propName){
             var self = this,
-                _elements = elements || this.bindElements;
+                _elements = this.bindElements;
+            if(propName && !_elements[propName]) return;
             SYST.T.each(_elements, function(elements, index, prop){
                 var els = elements || self.bindElements[prop];
                 if(els && els.length !== 0){
@@ -427,7 +378,7 @@
                  element['onchange'] = function(evt){
                      //self.model.props[attr] = this.value;
                      var value = this.value,
-                         filters = element.getAttribute('st-filter');
+                         filters = element.getAttribute(st_filter);
                      if(filters){
                          filters = filters.split('|');
                      }
@@ -458,13 +409,13 @@
         _getProp: function(element, prop){
             var attr = prop || (function(){
                         var stProp = element.getAttribute(st_prop);
-                    if(stProp){
-                        return stProp.replace(notValReg, '')
-                    }else{
-                        return null;
-                    }
-                })(),
-                prop, filters;
+                        if(stProp){
+                            return stProp.replace(notValReg, '')
+                        }else{
+                            return null;
+                        }
+                    })(),
+                propName, filters;
             if(!attr) return '';
             // exp: <span st-prop="user.name | trim | addFirstName"></span>
             filters = this._getFilters(attr);
@@ -472,19 +423,20 @@
 
             // exp: user.name.first
             if(/\./gi.test(attr)){
-                prop = this._getFinalPropValue(attr);
+                propName = this._getFinalPropValue(attr);
             }else{
-                prop = this.model.props[attr];
+                propName = this.model.props[attr];
             }
 
-            if(prop == null) return '';
-            if(SYST.V.isFunction(prop)){
-                prop = prop.apply(this);
+            if(propName == null) return '';
+            //如果绑定的属性时一个function，则获取执行结果
+            if(SYST.V.isFunction(propName)){
+                propName = propName.apply(this.model);
             }
 
             //each methods
-            prop = this._makeFilters(prop, filters);
-            return prop;
+            propName = this._makeFilters(propName, filters);
+            return propName;
 
         },
         //get first prop for exp: user.name.first to get 'user'
@@ -505,19 +457,18 @@
             return filters;
         },
         _makeFilters: function(arg, filters){
-            var prop = arg,
-                method;
-            for(var i = 0, len = filters.length; i < len; ++i){
-                method = this.model[SYST.T.trim(filters[i])];
+            var self = this, prop = arg, method;
+            SYST.T.each(filters, function(filter){
+                method = self.model[SYST.T.trim(filter)];
                 if(SYST.V.isFunction(method)){
-                    prop = method.apply(this.model, [prop]);
+                    prop = method.apply(self.model, [prop]);
                 }else{
-                    method = strProp[filters[i]] || SYST.T[filters[i]];
+                    method = strProp[filter] || SYST.T[filter];
                     if(SYST.V.isFunction(method)){
                         prop = method(prop);
                     }
                 }
-            }
+            });
             return prop;
         },
         //获取跟属性名 ex：user.name.first => user
@@ -530,24 +481,21 @@
         },
 
         //======================== st-template ========================================
-        _getBindTemplates: function(bindTag){
-            if(isObserve && this.model.props && Object.keys(this.model.props).length === 0)  return;
-            var $bindTag = bindTag,
-                templates = $bindTag.find('['+ st_template +']'),
-                i = 0, len = templates.length,
-                templateId, container;
-            if(templates.length > 0){
-                for(; i < len; ++i){
-                    container = templates[i];
-                    templateId = '#' + container.getAttribute(st_template);
-                    //console.log(templateId);
-                    //添加到缓存
-                    this._toBindTemplates(templateId, container);
-                    //解析模板并填充
-                    this._renderTemplate(templateId, container);
-                }
-            }
+        _getBindTemplates: function(bindTag, propName){
+            //if(this.model.props && Object.keys(this.model.props).length === 0)  return;
+            var self = this,
+                templates,
+                templateId;
+            templates = this._getElements(propName, bindTag, st_template);
+            if(templates.length === 0) return;
 
+            SYST.T.each(templates, function(container){
+                templateId = '#' + container.getAttribute(st_template);
+                //添加到缓存
+                self._toBindTemplates(templateId, container);
+                //解析模板并填充
+                self._renderTemplate(templateId, container);
+            });
         },
         _toBindTemplates: function(templateId, container){
             if(!this.bindTemplates[templateId]){
@@ -558,41 +506,36 @@
             }
         },
         _renderTemplate: function(templateId, container, data){
-            var container = SYST.$(container),
-                data = SYST.V.isObject(data) ? SYST.extend(this.model.props, data) : this.model.props;
+            container = _$(container);
+            data = SYST.V.isObject(data) ? SYST.extend(this.model.props, data) : this.model.props;
             var html = '';
             if(SYST.V.isObject(data)){
                 html = SYST.T.render(templateId, data, null, {open: '{{', close: '}}'});
             }
-
-            //console.log(html);
             container.html(html);
         },
 
         //========================= st-style ===========================================
-        _getBindStyles: function(bindTag){
-            if(isObserve && this.model.props && Object.keys(this.model.props).length === 0)  return;
-            var self        = this, element, styleString, temp,
-                $bindTag    = bindTag,
-                styles      = $bindTag.find('['+ st_style +']'),
-                i           = 0,
-                len         = styles.length;
-            if(styles.length > 0){
-                for(; i < len; ++i){
-                    element     = styles[i];
-                    styleString = element.getAttribute(st_style);
-                    //获取绑定的元素集合
-                    while((temp = reg.exec(styleString)) != null){
-                        element[st_style] = styleString;
-                        //element.removeAttribute(st_style);
-                        var propName = self._getPropName(temp[1]);
-                        self._toBindStyles(propName, element);
-                        //self._toBindElements(propName, element);
-                    }
+        _getBindStyles: function(bindTag, propName){
+            //if(this.model.props && Object.keys(this.model.props).length === 0)  return;
+            var self = this, styleString, temp, styles;
+            styles = this._getElements(propName, bindTag, st_style);
+            if(styles.length === 0) return;
+
+            SYST.T.each(styles, function(element){
+                styleString = element.getAttribute(st_style);
+                //获取绑定的元素集合
+                while((temp = reg.exec(styleString)) != null){
+                    element[st_style] = styleString;
+                    element.removeAttribute(st_style);
+                    var propName = self._getPropName(temp[1]);
+                    self._toBindStyles(propName, element);
+                    //self._toBindElements(propName, element);
                 }
-                //开始解析 st-style
-                this._makeStyles();
-            }
+            });
+
+            //开始解析 st-style
+            this._makeStyles(propName);
         },
         _toBindStyles: function(propName, element){
             var bindStyleElements = this.bindStyles[propName];
@@ -603,14 +546,19 @@
                 bindStyleElements.push(element);
             }
         },
-        _makeStyles: function(){
-            var self = this;
-            SYST.T.each(this.bindStyles, function(styles, index, propName){
+        _makeStyles: function(propName){
+            var self = this, bindStyleElements = {};
+            if(propName){
+                bindStyleElements[propName] = this.bindStyles[propName];
+            }else{
+                bindStyleElements = this.bindStyles;
+            }
+            SYST.T.each(bindStyleElements, function(styles, index, propName){
                 self._makeStyle(propName, styles);
             });
         },
         _makeStyle: function(propName, elements){
-            if(this.model.props[propName] == null) return;
+            if(!(propName in this.model.props)) return;
             var self = this, styleString,
                 elements = elements || this.bindStyles[propName];
             SYST.V.isArray(elements)
@@ -627,38 +575,32 @@
                     return self.model.props[$1];
                 });
                 //console.log(styleString);
-                styleString = styleString.split(';');
-                SYST.T.each(styleString, function(style){
-                    style = style.split(':');
-                    if(style[1] != null){
-                        element.style[style[0]] = style[1];
-                    }
-                });
-
+                var style = element.style.cssText;
+                style = style.length === 0 ? '' : style.replace(/;$/i, '') + ';';
+                element.style.cssText = style + styleString;
             });
 
         },
         //========================= st-repeat ==========================================
-        _getBindRepeats: function(bindTag){
-            if(isObserve && this.model.props && Object.keys(this.model.props).length === 0)  return;
-            var self        = this, element, propName, outerHTML,
-                $bindTag    = bindTag,
-                repeats     = slice.call($bindTag.find('['+ st_repeat +']')),
-                i           = 0,
-                len         = repeats.length;
-            if(repeats.length > 0){
-                for(; i < len; ++i){
-                    element     = repeats[i];
-                    propName = element.getAttribute(st_repeat);
-                    //获取绑定的元素集合
-                    outerHTML = element.outerHTML;
-                    element['rawOuterHTML'] = outerHTML;
-                    element['parent'] = element.parentNode;
-                    this._toBindRepeats(propName, element);
-                }
-                //解析
-                this._makeRepeats();
-            }
+        _getBindRepeats: function(bindTag, propName){
+            //if(/*isObserve && */this.model.props && Object.keys(this.model.props).length === 0)  return;
+            var self = this, prop, outerHTML, repeats;
+            repeats = this._getElements(propName, bindTag, st_repeat);
+            if(repeats.length === 0) return;
+
+            SYST.T.each(repeats, function(element){
+                prop = element.getAttribute(st_repeat);
+                //获取绑定的元素集合
+                outerHTML = element.outerHTML;
+                element['rawOuterHTML'] = outerHTML;
+                element['parent'] = element.parentNode;
+                self._toBindRepeats(prop, element);
+            });
+
+            //解析
+            this._makeRepeats();
+
+
         },
         _toBindRepeats: function(propName, element){
             var bindRepeatElements = this.bindRepeats[propName];
@@ -678,20 +620,18 @@
                 bindRepeatElements = this.bindRepeats;
             }
             SYST.T.each(bindRepeatElements, function(elements, index, prop){
-                self._makeRepeat(elements, prop);
+                self._makeRepeat(prop, elements);
             });
         },
-        _makeRepeat: function(elements, propName){
+        _makeRepeat: function(propName, elements){
+            if(!(propName in this.model.props)) return;
             if(!elements || elements.length === 0)  return;
             var self = this, i = 0, len = elements.length;
             var outerHTML, element, temp = '', item;
-            //if(!self.model.has(propName)) return;
             var prop = self.model.get(propName);
 
-            for(; i < len; ++i){
-                element = elements[i];
-                if(!element)    continue;
-                outerHTML = this._removeBindAttr(element);
+            SYST.T.each(elements, function(element){
+                outerHTML = self._removeBindAttr(element);
                 item = element.getAttribute(st_item);
                 if(!SYST.V.isEmpty(item)){
                     repeatReg = new RegExp(startRS + '(\\$?'+ item +'[^\\{]*?)' + endRS, mRS);
@@ -699,7 +639,7 @@
                 if(SYST.V.isArray(prop)){
                     for(var j = 0, l = prop.length; j < l; ++j){
                         //替换其他属性，如 索引
-                        temp += this._replaceBindsArray(outerHTML, prop[j], j, l - 1, item);
+                        temp += self._replaceBindsArray(outerHTML, prop[j], j, l - 1, item);
                     }
                 }
                 else if(SYST.V.isObject(prop)){
@@ -721,8 +661,7 @@
                 }else{
                     $(element).replaceWith(temp);
                 }
-                //console.log(temp);
-            }
+            });
 
         },
         _removeBindAttr: function(element){
@@ -809,6 +748,18 @@
                 return self._makeFilters(v, filters);
             }
             return str;
+        },
+
+
+        //========================= common method =======================================
+        _getElements: function(propName, $bindTag, stString){
+            var elements;
+            if(propName){
+                elements     = slice.call($bindTag.find('['+ stString +'='+ propName +']'));
+            }else{
+                elements     = slice.call($bindTag.find('['+ stString +']'));
+            }
+            return elements;
         }
 
     };
