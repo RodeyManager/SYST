@@ -234,6 +234,29 @@
 </code></pre>
     </article>
 
+    <article class="method" id="SYST.R.switcher">
+        <h3>switcher <code>Function(route, object)</code></h3>
+        <ul>
+            <li><code>route: </code> 路由</li>
+            <li><code>object: </code> 响应对象，<a href="#SYST.R.routerObject">查看详情</a></li>
+        </ul>
+
+        <p>
+            路由更新时执行对应操作
+        </p>
+        <h3 class="ex-title">实例：</h3>
+<pre><code>
+    var listController = {
+        container: '#container',
+        template: 'load@tpl/user_list.html'
+    };
+
+    var router = new SYST.Router();
+    router.when('user/', listController).start();
+
+</code></pre>
+    </article>
+
     <article class="method" id="SYST.R.getRouter">
         <h3>getRouter <code>Function(route)</code></h3>
         <ul>

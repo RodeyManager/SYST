@@ -42,7 +42,7 @@
          * @param fail
          */
         doRequest: function(url, postData, su, fail, options){
-            var self = this, type, dataType, commonData, setting = {}, callTarget;
+            var self = this, type, dataType, commonData, commonHandler, setting = {}, callTarget;
             if(!postData || typeof postData !== 'object' || !url || url == '') return;
             //记录当前ajax请求个数
             self._ajaxCount = 0;
@@ -59,6 +59,7 @@
                 type = options.type || self.ajaxType || SYST.httpConfig['ajaxType'] || 'POST';
                 dataType = options.dataType || self.ajaxDataType || SYST.httpConfig['ajaxDataType'] || 'json';
                 commonData = options.commonData || self.commonData || SYST.httpConfig['commonData'] || {};
+                commonHandler = options.commonHandler;
                 setting = options;
                 callTarget = options['callTarget'] || self;
             }
@@ -119,6 +120,7 @@
             }
 
             function end(res, data, status, xhr){
+                SYST.V.isFunction(commonHandler) && commonHandler();
                 var end;
                 SYST.V.isFunction(ajaxEnd) && (end = ajaxEnd.call(callTarget, res, data, status, xhr));
                 return end;

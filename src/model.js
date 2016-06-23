@@ -15,10 +15,9 @@
         this.__instance_SYST__ = 'SYST Model';
         this.__name__ = 'SYST Model';
         this.autoWatcher = true;
-            //属性列表，数据绑定在里面
+        //属性列表，数据绑定在里面
         this.props = {};
         this.watcher = null;
-        this._watchers = {};
         //状态列表
         this.states = {};
     };
@@ -111,18 +110,18 @@
             return Boolean(this.props[key]);
         },
         removeProps: function(keys){
-            var self = this;
+            //var self = this;
             if(SYST.V.isString(keys)){
                 this.remove(keys);
             }
             else if(SYST.V.isArray(keys)){
                 SYST.T.each(keys, function(key){
-                    self.remove(key);
-                });
+                    this.remove(key);
+                }, this);
             }else if(SYST.V.isObject(keys)){
                 SYST.T.each(keys, function(value, index, key){
-                    self.remove(key);
-                });
+                    this.remove(key);
+                }, this);
             }else{
                 this.watcher.removeListener();
                 this.props = {};
@@ -178,12 +177,12 @@
         removeItems: function(keys, flag){
             var self = this;
             if(SYST.V.isString(keys)){
-                self.removeItem(keys, flag);
+                this.removeItem(keys, flag);
             }
             else if(SYST.V.isArray(keys)){
                 SYST.T.each(keys, function(key){
-                    self.removeItem(key, flag);
-                });
+                    this.removeItem(key, flag);
+                }, this);
             }else{
                 flag ? sessionStorage.clear() : localStorage.clear();
             }

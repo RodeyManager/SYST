@@ -90,7 +90,21 @@
         </select>
         <br/>
         <img src="../assets/images/docker.jpg" st-style="display:{{ isShow | isDisplay}}" width="100" alt=""/>
+
+        <P>
+            <label><input type="radio" name="sex" value="male" st-prop="sex"/> 男</label>
+            <label><input type="radio" name="sex" value="female" st-prop="sex"/> 女</label>
+        </P>
+
+        <P>
+            <label><input type="checkbox" name="lang" value="Java" st-prop="lang"/> Java</label>
+            <label><input type="checkbox" name="lang" value="C++" st-prop="lang"/> C++</label>
+            <label><input type="checkbox" name="lang" value="Python" st-prop="lang"/> Python</label>
+            <label><input type="checkbox" name="lang" value="JavaScript" st-prop="lang"/> JavaScript</label>
+        </P>
+
     </div>
+    <hr/>
     <div>
         <h5>repeat array</h5>
         <ul id="repeat-dom" st-model="repeatModel">
@@ -119,7 +133,7 @@
                 stProps[i].style.visibility = 'visible';
         }, false);
 
-        var userModel, loginModel, colorModel, repeatModel;
+        var userModel, loginModel, colorModel, repeatModel, view;
         $(function(){
 
             repeatModel = SYST.Model({
@@ -173,7 +187,7 @@
                 //props: { color: 'red', isShow: 0 },
                 init: function(){
                     setTimeout(function(){
-                        this.set({ color: 'red', isShow: 0 });
+                        this.set({ color: 'red', isShow: 0, sex: 'male', lang: 'JavaScript'});
                     }.bind(this), 5000);
                 },
                 isDisplay: function(isShow){
@@ -222,6 +236,7 @@
                     qq: '12121212',
                     github: 'https://github.com/RodeyManager'
                 },
+
                 init: function(){
                     this.set('user', { name: { first: 'Rodey', last: 'Luo' }, tech: 'Web前端工程师' });
                 },
@@ -240,7 +255,7 @@
                 }
             });
 
-            var view = SYST.View({
+            view = SYST.View({
                 model: loginModel,
                 events: {
                     //'keyup #name'           : 'inputHandler',

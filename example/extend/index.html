@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>类继承</title>
+    <meta charset="UTF-8"/>
+    <meta content="descriptions" charset="">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-status-bar-style" content="black-translucent">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+    <meta name="format-detection" content="telephone=no" />
+    <style>
+        .box{
+            width: 30px;
+            height: 30px;
+            position: fixed;
+            right: 30px;
+            top: 50px;
+            z-index: 100;
+            background-color: palegoldenrod;
+            border-radius: 50% 50%;
+        }
+        *[st-model]{
+            visibility: hidden;
+        }
+        .c-r{ color: red }
+        .c-g{ color: green }
+        .c-b{ color: blue }
+        .c-c{ color: cyan }
+        .c-m{ color: magenta }
+        .c-y{ color: yellow }
+        .c-k{ color: black }
+    </style>
+</head>
+<body>
+
+    <pre id="code">
+        var modelA = SYST.Model({
+            _name_: 'Model A',
+            age: 100,
+            a: 'A'
+        });
+
+        var modelB = SYST.Model(modelA, {
+            _name_: 'Model B',
+            age: 101,
+            b: 'B'
+        });
+
+        var modelC = SYST.Model(modelA, modelB, {
+            _name_: 'Model C',
+            age: 102,
+            c: 'C'
+        });
+        console.log(modelB.a);
+        console.log(modelC.a);
+        console.log(modelC.b);
+    </pre>
+    <pre id="result"></pre>
+    <button id="run-btn">运行</button>
+
+    <script src="../../bower_components/jquery/dist/jquery.min.js"></script>
+    <script src="../../dist/SYST.js"></script>
+    <script>
+        $(function(){
+
+            var modelA = SYST.Model({
+                _name_: 'Model A',
+                age: 100,
+                a: 'A'
+            });
+
+            var modelB = SYST.Model(modelA, {
+                _name_: 'Model B',
+                age: 101,
+                b: 'B'
+            });
+
+            var modelC = SYST.Model(modelA, modelB, {
+                _name_: 'Model C',
+                age: 102,
+                c: 'C'
+            });
+
+            $('#run-btn').click(function(){
+                $('#result').html(
+                        '\nmodelB.a = ' + modelB.a +
+                        '\nmodelC.a = ' + modelC.a +
+                        '\nmodelC.b = ' + modelC.b
+                );
+            });
+        });
+    </script>
+
+</body>
+</html>

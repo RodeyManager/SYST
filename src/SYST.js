@@ -67,6 +67,7 @@
         if(SYST.V.isObject(firstArgument)){
             //if firstArgument is SYST's Object
             if('__instance_SYST__' in firstArgument){
+                //实现继承
                 args.shift();
                 for(len = args.length; i < len; ++i){
                     mg = _extend(mg, args[i]);
@@ -74,6 +75,7 @@
                 mg.__proto__ = firstArgument;
                 return mg;
             }else{
+                //直接创建对象
                 for(len = args.length; i < len; ++i){
                     mg = _extend(mg, args[i]);
                 }
@@ -81,6 +83,7 @@
                 return mg;
             }
         }else{
+            //直接创建原始对象
             return mg.__proto__ = new className();
         }
     };

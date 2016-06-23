@@ -98,7 +98,7 @@
             var redirectTo = this['redirectTo'];
             if(hash && '' !== hash){
                 var currentRoute = _getRouteKey(hash);
-                this.switch(currentRoute);
+                this.switcher(currentRoute);
             }else{
                 if(redirectTo){
                     this._updateHash(redirectTo);
@@ -134,12 +134,12 @@
          * @param router
          * @returns {SYST.Router}
          */
-        switch: function(route, router){
+        switcher: function(route, router){
             if(!this._cache || {} === this._cache)  return;
             var routeOption = this._getRouter(route),
-                router = routeOption.router;
-            if(!router){
-
+                router = router || routeOption.router;
+            if(router){
+                this._cache[route] = router;
             }
             //获取url参数列表
             this.params = SYST.T.params(null, window.location.href);
@@ -204,19 +204,17 @@
                 ps = [], rs = {};
 
             if(SYST.V.isArray(params) && params.length > 0){
-                for(var i = 0, len = params.length; i < len; ++i){
-                    var param = params[i];
+                SYST.T.each(params, function(param){
                     ps.push(param ? decodeURIComponent(param) : null);
-                }
+                });
             }
 
             if(SYST.V.isArray(keys) && keys.length > 0){
-                for(var j = 0, len = keys.length; j < len; ++j){
-                    var key = keys[j];
+                SYST.T.each(keys, function(key, i){
                     if(key){
-                        rs[key.replace(/^[^\w]|[^\w]$/i, '')] = ps[j];
+                        rs[key.replace(/^[^\w]|[^\w]$/i, '')] = ps[i];
                     }
-                }
+                });
             }
 
             return {paramsObject: rs, params: ps};
@@ -309,7 +307,7 @@
                 this._onDestroy(function(){
                     self.router = currentRouter;
                     //开始路由
-                    self.switch(currentURL);
+                    self.switcher(currentURL);
                 });
             }
         },

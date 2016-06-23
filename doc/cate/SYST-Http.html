@@ -153,7 +153,14 @@
             <li><code>data:</code> 待发送 Key/value 参数。</li>
             <li><code>success:</code> 载入成功时回调函数。</li>
             <li><code>error:</code> 载入失败时回调函数。</li>
-            <li><code>type:</code> 返回内容格式，xml, html, script, json, text, _default。</li>
+            <li><code>options:</code>附加参数（可选）
+                <ul>
+                    <li><code>type:</code> 请求方式：GET/POST/PUT/DELETE，默认：POST</li>
+                    <li><code>dataType:</code> 返回内容格式，xml, html, script, json, text, _default。</li>
+                    <li><code>commonData:</code> 所有接口通用参数，比如应用中所有的接口都需要传递token</li>
+                    <li><code>commonHandler:</code> 在ajax success和error结果中执行</li>
+                </ul>
+            </li>
         </ul>
         <p>
             通过Ajax获取请求接口，获取信息。<br/>
