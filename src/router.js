@@ -41,13 +41,6 @@
     };
 
     SYST.R = Router.prototype = {
-        _cache: {},
-        _stateCache: [],
-        routes: null,
-        container: 'body',
-        router: null,
-        params: null,
-        isRender: false,
 
         //一个路由对象，包涵当前所有的路由列表
         //exp:
@@ -61,6 +54,7 @@
          * @private
          */
         _initialize: function(){
+            this._reset();
             if(SYST.V.isObject(this.routes) && this.routes != {}){
 
                 var routes = this.routes;
@@ -72,6 +66,15 @@
 
             }
             //this.init && SYST.V.isFunction(this.init) && this.init.apply(this);
+        },
+        _reset: function(){
+            this._cache = this._cache || {};
+            this._stateCache = this._stateCache || [];
+            this.routes = this.routes || null;
+            this.container = this.container || 'body';
+            this.router = this.router || null;
+            this.params = this.params || null;
+            this.isRender = this.isRender || false;
         },
 
         /**

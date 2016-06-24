@@ -571,10 +571,16 @@
                     }
                     return self.model.props[$1];
                 });
-                //console.log(styleString);
-                var style = element.style.cssText;
-                style = style.length === 0 ? '' : style.replace(/;$/i, '') + ';';
-                element.style.cssText = style + styleString;
+                //console.log(styleString); //cssText方式在IE中的性能极差
+                //var style = element.style.cssText;
+                //style = style.length === 0 ? '' : style.replace(/;$/i, '') + ';';
+                //element.style.cssText = style + styleString;
+
+                var styles = styleString.split(';');
+                styles && SYST.T.each(styles, function(s){
+                    var sy = s.split(':');
+                    sy && $(element).css(sy[0], sy[1]);
+                });
             });
 
         },

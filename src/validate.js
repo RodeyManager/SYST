@@ -9,6 +9,7 @@
 
     'use strict';
 
+    var toString = Object.prototype.toString;
 
     var Validate = function(){
         this.__instance_SYST__ = 'SYST Validate';

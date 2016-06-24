@@ -49,7 +49,7 @@
         if(!child) return parent;
         var clone = _clone(parent);
         for(var prop in child)
-            if(child.hasOwnProperty(prop))
+            //if(child.hasOwnProperty(prop))
                 clone[prop] = child[prop];
         return clone;
     };
@@ -64,6 +64,7 @@
     var _extendClass = function(args, className){
         var args = Array.prototype.slice.call(args),
             firstArgument = args[0], i = 0, mg = {}, len;
+        var hasProto = '__proto__' in mg;
         if(SYST.V.isObject(firstArgument)){
             //if firstArgument is SYST's Object
             if('__instance_SYST__' in firstArgument){
@@ -72,19 +73,29 @@
                 for(len = args.length; i < len; ++i){
                     mg = _extend(mg, args[i]);
                 }
-                mg.__proto__ = firstArgument;
+                if(!hasProto)
+                    mg = _extend(mg, firstArgument);
+                else
+                    mg.__proto__ = firstArgument;
                 return mg;
             }else{
                 //直接创建对象
                 for(len = args.length; i < len; ++i){
                     mg = _extend(mg, args[i]);
                 }
-                mg.__proto__ = new className();
+                if(!hasProto)
+                    mg = _extend(mg, className.prototype);
+                else
+                    mg.__proto__ = new className();
                 return mg;
             }
         }else{
             //直接创建原始对象
-            return mg.__proto__ = new className();
+            if(!hasProto)
+                mg = new className();
+            else
+                mg.__proto__ = new className();
+            return mg;
         }
     };
 

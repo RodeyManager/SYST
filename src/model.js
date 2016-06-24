@@ -15,11 +15,7 @@
         this.__instance_SYST__ = 'SYST Model';
         this.__name__ = 'SYST Model';
         this.autoWatcher = true;
-        //属性列表，数据绑定在里面
-        this.props = {};
         this.watcher = null;
-        //状态列表
-        this.states = {};
     };
 
     SYST.Model = function(){
@@ -29,9 +25,11 @@
     };
 
     Model.prototype = {
-        $http: SYST.Http(),
 
         _initialize: function(){
+            this.$http = this.$http || new SYST.Http();
+            //属性列表，数据绑定在里面
+            this.props = this.props || {};
             //初始化 Watcher
             this.watcher = new SYST.Watcher(this);
             SYST.shareModel.add(this.$mid || null, this);

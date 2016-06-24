@@ -12,8 +12,6 @@
     var View = function(){
         this.__instance_SYST__ = 'SYST View';
         this.__Name__ = 'SYST View';
-        this.container = 'body';
-        this.template = null;
     };
     SYST.View = function(){
         var view = SYST.extendClass(arguments, View);
@@ -22,7 +20,11 @@
     };
 
     View.prototype = {
+
         _initialize: function(){
+            this.model = this.model || new SYST.Model();
+            this.container = this.container || 'body';
+            this.template = null;
             this.container = SYST.$(this.container);
             this.containerSelector = this.container.selector;
 
@@ -153,7 +155,6 @@
             }
             return this;
         },
-        model: new SYST.Model(),
         shareModel: SYST.shareModels
     };
 

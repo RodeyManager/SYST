@@ -22,9 +22,9 @@
         return ctrl;
     };
     SYST.Controller.prototype = {
-        defaultHost: location.host,
         shareModel: SYST.shareModel,
         _initialize: function(){
+            this.defaultHost = this.defaultHost || location.host;
             SYST.V.isFunction(this.init) && this.init.apply(this, arguments);
         },
         getModel: function(key){
