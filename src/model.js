@@ -59,10 +59,11 @@
         },
 
         _generateApi: function(key, url, options){
-            var self = this;
+            var self = this, opts = {};
             options = SYST.V.isObject(options) && options || {};
             options['callTarget'] = this;
-            function _vfn(postData, su, fail){
+            function _vfn(postData, su, fail, opts){
+                options = SYST.extend(options, opts);
                 self.$http.doAjax(url, postData, su, fail, options);
             }
             ('defineProperty' in Object)
