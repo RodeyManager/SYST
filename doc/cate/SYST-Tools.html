@@ -182,12 +182,11 @@
 </code></pre>
     </article>
 
-    <article class="method" id="SYST.T.setDateFormat">
-        <h3>setDateFormat <code>Function (timestamp, [format], [prefix]) </code></h3>
+    <article class="method" id="SYST.T.dateFormat">
+        <h3>dateFormat <code>Function (date, [format]) </code></h3>
         <ul>
-            <li><code>timestamp: </code> 时间戳 </li>
+            <li><code>date: </code> Date对象|时间戳|'2016/4/3'时间字符串 </li>
             <li><code>format: </code> 显示格式 <code>如：'Y-m-d h:i:s'</code> </li>
-            <li><code>prefix: </code> 是否补0 </li>
         </ul>
 
         <p>
@@ -195,30 +194,29 @@
         </p>
         <h3 class="ex-title">实例：</h3>
 <pre><code>
-    var date = SYST.T.setDateFormat(Date.now(), 'Y-m-d h:i:s');
+    var date = SYST.T.dateFormat(Date.now(), 'YYYY-m-d h:i:s');
     console.log(date); //=> 2016-4-21 14:3:1
 
     //======>
-    var date = SYST.T.setDateFormat(Date.now(), 'Y-m-d');
-    console.log(date); //=> 2016-4-21
+    var date = SYST.T.dateFormat(Date.now(), 'YY-m-d');
+    console.log(date); //=> 16-4-21
 
     //=====>
-    var date = SYST.T.setDateFormat(Date.now(), 'm-d h:i:s');
+    var date = SYST.T.dateFormat(Date.now(), 'm-d h:i:s');
     console.log(date); //=> 4-21 14:4:3
 
     //=====>
-    var date = SYST.T.setDateFormat(Date.now(), 'Y-m-d h:i:s', true);
+    var date = SYST.T.dateFormat(Date.now(), 'YYYY-m-d hh:ii:ss');
     console.log(date); //=> 2016-04-21 14:04:49
 
 </code></pre>
     </article>
 
-    <article class="method" id="SYST.T.setDateFormatCN">
-        <h3>setDateFormatCN <code>Function (timestamp, [format], [prefix]) </code></h3>
+    <article class="method" id="SYST.T.dateFormatCN">
+        <h3>dateFormatCN <code>Function (date, [format]) </code></h3>
         <ul>
-            <li><code>timestamp: </code> 时间戳 </li>
+            <li><code>date: </code> Date对象|时间戳|'2016/4/3'时间字符串 </li>
             <li><code>format: </code> 显示格式 <code>如：'Y-m-d h:i:s'</code> </li>
-            <li><code>prefix: </code> 是否补0 </li>
         </ul>
 
         <p>
@@ -226,10 +224,10 @@
         </p>
         <h3 class="ex-title">实例：</h3>
 <pre><code>
-    var date = SYST.T.setDateFormatCN('2016/5/4 10:03:20');
+    var date = SYST.T.dateFormatCN('2016/5/4 10:03:20');
     console.log(date); //=> 2016年5月4日 10时03分20秒
 
-    var date = SYST.T.setDateFormatCN(Date.now(), 'YY-mm-dd h:i:s');
+    var date = SYST.T.dateFormatCN(Date.now(), 'YY-mm-dd h:i:s');
     console.log(date); //=> 16年5月4日 10时11分5秒
 
 </code></pre>
