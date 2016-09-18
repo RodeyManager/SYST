@@ -2,13 +2,6 @@
  * Created by r9luox on 2016/4/20.
  */
 $(function(){
-    var as = new SYST.Model();
-    var str = '';
-    for(var key in as){
-        //if(!/^_/i.test(key)){
-        str += '<li><a href="#SYST.R.' + key + '">.' + key + '</a></li>';
-        //}
-    }
 
     var listTpl = {
         '#header': './cate/header.html',
@@ -33,7 +26,7 @@ $(function(){
             $('pre code').each(function(i, block) {
                 hljs.highlightBlock(block);
             });
-            window.location.href = location.href;
+            //window.location.href = location.href;
             //关闭运行结果层
             $('.close-result-btn').on('click', function(evt){
                 $(this).parent('.result').fadeOut(100);
