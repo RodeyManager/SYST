@@ -69,14 +69,12 @@ build/
 *.tlb
 *.tli
 *.tlh
-*.tmp
 *.tmp_proj
 *.log
 *.vspscc
 *.vssscc
 .builds
 *.pidb
-*.log
 *.scc
 
 # Visual C++ cache files
@@ -194,7 +192,6 @@ $RECYCLE.BIN/
 *.egg
 *.egg-info
 #dist/
-build/
 eggs/
 parts/
 var/
@@ -221,3 +218,10 @@ pip-log.txt
 
 node_modules
 bower_components
+src/watcher-2016-12-01.js
+src/watcher-2017-03-01.js
+src/watcher-2017-01-03.js
+src/watcher__.js
+temp.js
+src/watcher-2016-12-08.js
+src/promise-2016-12-10.js
