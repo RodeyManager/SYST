@@ -23,7 +23,7 @@
 
     </div>
     <div class="app">
-        <em>渲染10万条数据</em>
+        <em>渲染100万条数据</em>
         <button id="test-btn">性能测试</button>
         <p id="test-rs"></p>
     </div>
@@ -67,11 +67,13 @@
 </script>
 
 <!--载入js-->
-<script src="../../bower_components/jquery/dist/jquery.min.js"></script>
+<!--<script src="../../bower_components/jquery/dist/jquery.min.js"></script>-->
 <script src="../../dist/SYST.js"></script>
 <script>
 
-    $(function(){
+    SYST.$(function(){
+
+        var $ = SYST.$;
 
         function filter(str){
             return str.replace(/\d+/gi, '');
@@ -82,7 +84,7 @@
         }
 
         var data = {
-            title: '<h1>&模板渲染实例</h1>',
+            title: '<h1>模板渲染实例</h1>',
             "posts": [{
                 "expert": "<<content 1>>",
                 "time": 1448603587595
@@ -108,26 +110,26 @@
         };
 
         var html = SYST.Render('tpl', data, {filter: filter, toMailLink: toMailLink} );
-        //console.log(html);
-        document.querySelector('#app').innerHTML = html;
+        $('#app').html(html);
 
         //性能测试
         var testBtn = $('#test-btn'), isTesting = false;
-        if(isTesting) return;
         testBtn.click(function(){
+            if(isTesting) return;
+            isTesting = true;
             testBtn.html('测试中......');
             var list = [];
-            for(var i = 0; i < 10000; ++i){
+            for(var i = 0; i < 1000000; ++i){
                 list.push({ name: 'test', age: i+1 });
             }
 
             var start = Date.now();
-            for(var j = 0; j < 10; ++j){
-                SYST.T.render('test', { list: list });
-            }
+            SYST.T.render('test', { list: list });
+
             var time = (Date.now() - start) / 1000;
             $('#test-rs').html('总花费 ' + time + ' 秒');
             testBtn.html('性能测试');
+            isTesting = false;
         });
 
     });

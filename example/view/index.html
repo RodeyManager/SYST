@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <title>SYST JS MINI Framework</title>
+    <meta charset="UTF-8"/>
+    <meta content="descriptions" charset="">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-status-bar-style" content="black-translucent">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+    <meta name="format-detection" content="telephone=no" />
+    <style>
+        *{outline: none;}
+        html,body{ margin:0; padding:0; width: 100%;height: 100%; overflow-x: hidden; overflow-y: scroll;}
+        body{padding-top: 30px;}
+        a, a:link{ color: #333; }
+        a:hover, a:active{ color: #00D2D4; }
+        input {
+            display: block;
+            width: 80%;
+            margin: 0 auto;
+            height: 30px;
+            padding-left: 10px;
+            border-radius: 5px;
+            border: 1px solid rgb(0, 124, 128);
+        }
+        .form-group.btns{ text-align: center; }
+        .grade-btn{
+            display: inline-block;
+            background-color: rgb(0, 139, 127);
+            width: 35%;
+            margin: 0 auto;
+            padding: 10px;
+            text-align: center;
+            border-radius: 5px;
+            color: rgb(255, 255, 255);
+            cursor: pointer;
+        }
+        .grade-btn .loading{
+            display: none;
+        }
+        .grade-btn:active{
+            background-color: rgb(20, 173, 160);
+        }
+        .tips{
+            width: 80%;
+            margin: 10px auto 20px auto;
+            font-size: 12px;
+            color: rgb(255, 0, 0);
+        }
+        .success{color: rgb(10, 150, 146);}
+        .disabled{background-color: rgb(179, 179, 179)}
+    </style>
+
+</head>
+<body>
+
+    <div class="app member-app test" id="app" scroll="no">
+        <form action="" id="loginForm">
+            <div class="form-group">
+                <label for="username" class="icon icon-usname username"></label>
+                <input type="tel" id="username" class="put username" maxlength="11" placeholder="请输入用户名或手机号码"/>
+                <p class="tips flash test" id="username-tip"></p>
+            </div>
+            <div class="form-group test">
+                <label for="password" class="icon icon-lock password"></label>
+                <input type="password" id="password" class="put password" placeholder="请输入登录密码"/>
+                <p class="tips flash" id="pwd-tip"></p>
+            </div>
+            <div class="form-group btns test" id="btns">
+                <div class="btn grade-btn" id="login-btn">
+                    <span class="text test">登录</span>
+                    <span class="loading">正在登录...</span>
+                </div>
+                <a id="forget-btn" href="http://www.baidu.com" target="_blank">忘记密码</a>
+            </div>
+        </form>
+    </div>
+
+<!--载入js-->
+<!--<script src="../../bower_components/jquery/dist/jquery.min.js"></script>-->
+<script src="../../dist/SYST.js"></script>
+
+<script>
+
+    var http, view, controller, model;
+    SYST.ready(function(){
+
+        http = SYST.Http({
+            //ajax send before
+            ajaxBefore: function(){
+                (loginBtn = document.querySelector('#login-btn')) && (loginBtn.classList.add('disabled'));
+            },
+            //ajax complate
+            ajaxComplete: function(res){
+                //console.log(res.readyState, res.responseText);
+                (loginBtn = document.querySelector('#login-btn')) && (loginBtn.classList.remove('disabled'));
+            },
+            //ajax success
+            ajaxSuccess: function(res){ console.log(res); },
+            //ajax Error
+            ajaxError: function(err){ console.log(err.responseText); }
+        });
+
+        //SYST Model Object
+        model = SYST.Model({
+            $http: http,
+            //初始化方法
+            init: function(){},
+            login: function(postData, su, fail){
+                this.$http.doAjax('../test.json', postData, su, fail);
+            }
+        });
+
+        //SYST Controller Object
+       controller = SYST.Controller({
+            model: model,
+            //初始化方法
+            init: function(){},
+            //获取登录时间
+            getLoginTime: function(timeStamp){
+                return SYST.T.dateFormatCN(timeStamp);
+            }
+
+        });
+
+        //SYST View Object
+        view = SYST.View({
+            ctrl: controller,
+            events: {
+                '#app': {
+                    'click span': 'onClickSpan',
+                    'click #login-btn'   : 'login',
+//                    'mouseover input': 'onMouseOver',
+//                    'mouseout input': 'onMouseOut',
+                    'click #forget-btn': 'onForget'
+                }
+            },
+            //初始化方法
+            init: function(){
+                this.usmDom = document.querySelector('#username');
+                this.pwdDom = document.querySelector('#password');
+                this.usmTipDom = document.querySelector('#username-tip');
+                this.pwdTipDom = document.querySelector('#pwd-tip');
+                this.posting = false;
+
+                this.onEvent('dblclick #app', 'onDblclick', 'body');
+                this.$('body').once('click', function(evt){
+                    console.log(evt.target);
+                });
+
+            },
+            onDblclick: function(evt){
+                console.log(evt.currentTarget);
+                //移除指定事件
+                this.offEvent('dblclick #app', 'onDblclick', 'body');
+                //移除view中所有侦听的事件
+                //this.offEvent();
+            },
+            onClickSpan: function(evt){
+                //evt.stopImmediatePropagation();
+                if(!this.toRed){
+                    evt.target.style.color = 'red';
+                }else{
+                    evt.target.style.color = 'white';
+                }
+                this.toRed = !this.toRed;
+            },
+            onMouseOver: function(evt){
+                evt.target.style.borderColor = 'red';
+                //this.offEvent();
+            },
+            onMouseOut: function(evt){
+                evt.target.style.borderColor = 'rgb(0, 124, 128)';
+            },
+            onForget: function(evt){
+                this.offEvent('click #login-btn', 'login', '#app');
+                return false;
+            },
+            login: function(evt){
+
+                if(this.posting)    return;
+                var self = this, postData,
+                    target = evt.target || evt.currentTarget,
+                    username = this.usmDom.value,
+                    password = this.pwdDom.value;
+                this.userName = username;
+
+                //Validate username
+                if(SYST.V.isEmpty(username)){
+                    this.usmTipDom.innerHTML = '用户名不能为空';
+                    return false;
+                }else if(!SYST.V.isBetween(username, 3, 10, true)){
+                    this.usmTipDom.innerHTML = '用户名长度在3 ~ 10位之间';
+                    return false;
+                }else{
+                    this.usmTipDom.innerHTML = '';
+                }
+                //Validate password like username again
+                this.pwdTipDom.classList.remove('success');
+                if(SYST.V.isEmpty(password)){
+                    this.pwdTipDom.innerHTML = '密码不能为空';
+                    return false;
+                }else if(!SYST.V.isBetween(password, 6, 16, true)){
+                    this.pwdTipDom.innerHTML = '密码长度在6 ~ 16位之间';
+                    return false;
+                }else{
+                    this.pwdTipDom.innerHTML = '';
+                }
+
+                postData = { um: username, pwd: password };
+                this.posting = true;
+
+                this.ctrl.getModel().login(postData, function(res){
+                    if(res.code === 200)
+                        self.loginSuccess(res);
+                    else
+                        self.loginError(res);
+
+                }, this.loginError.bind(this) /*function(err){}*/);
+
+
+            },
+            //Success callback
+            loginSuccess: function(res){
+                this.pwdTipDom.classList.add('success');
+                this.pwdTipDom.innerHTML = 'Hello, ' + (this.userName || res.data.userName) + '！ <br />当前登录时间：【'+ this.ctrl.getLoginTime(res.data.loginTime) +'】'
+            },
+            //Error callback
+            loginError: function(res){
+                this.pwdTipDom.innerHTML = res.msg || '登录异常，请稍后重试！';
+            }
+
+        });
+
+
+
+    });
+
+</script>
+
+</body>
+</html>

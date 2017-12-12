@@ -5,13 +5,7 @@
 
 ;(function(SYST){
 
-    'use strict';
-
     var uri = window.location,
-        host = uri.host,
-        port = uri.port,
-        origin = uri.origin || (uri.protocol + '//' + host),
-        pathname = uri.pathname,
         hash = uri.hash,
         supportPushState = 'pushState' in history,
         isReplaceState = 'replaceState' in history;
@@ -41,7 +35,7 @@
     };
 
     SYST.R = Router.prototype = {
-
+        $: SYST.$,
         //一个路由对象，包涵当前所有的路由列表
         //exp:
         // routes: {
@@ -65,7 +59,6 @@
                 this.start();
 
             }
-            //this.init && SYST.V.isFunction(this.init) && this.init.apply(this);
         },
         _reset: function(){
             this._cache = this._cache || {};
@@ -172,10 +165,7 @@
                     break;
                 }
             }
-
-            router = SYST.V.isObject(router) ? router : SYST.V.isFunction(router) ? router.apply(this) : null;
             return {routeKey: routeKey, router: router};
-
         },
 
         /**
@@ -232,6 +222,7 @@
                 router = routeOption.router,
                 routeKey = routeOption.routeKey;
             //保存当前路由控制对象
+            if(!router) return this;
             this.router = router;
             this.router['route'] = routeKey;
 
@@ -276,6 +267,9 @@
             var router  = this.router,
                 view    = router['view'],
                 action  = router['action'];
+            //执行对应的action
+            SYST.V.isFunction(router) && router.apply(this);
+            //如果action是Object，并且object的action方法存在
             action && SYST.V.isFunction(action) && action.call(this, view, this.params, tpl);
 
         },
@@ -287,20 +281,22 @@
          */
         _changeStart: function(){
             this._changeStop();
-            window.addEventListener('hashchange', SYST.hoadEvent(this, '_changeHandler'), false);
+            window.addEventListener('hashchange', SYST.T.proxy(this, '_changeHandler'), false);
         },
         _changeStop: function(){
-            window.removeEventListener('hashchange', SYST.hoadEvent(this, '_changeHandler'), false);
+            window.removeEventListener('hashchange', SYST.T.proxy(this, '_changeHandler'), false);
         },
         _changeHandler: function(evt){
 
             var self = this,
-                preventRouter = this.router,
                 currentRouter;
 
             //前后路由数据保存
-            this.oldURL = '#' + evt.oldURL.split('#')[1];
-            this.newURL = '#' + evt.newURL.split('#')[1];
+            if(evt.newURL){
+                this.newURL = '#' + evt.newURL.split('#')[1];
+            }else{
+                this.newURL = '#' + location.hash.split('#')[1];
+            }
             //获取当前路由字符串
             var currentURL = _getRouteKey(this.newURL);
             if(currentURL)
@@ -324,7 +320,7 @@
          */
         _template: function(html, cid, callback){
             var self = this;
-            this.container = SYST.$(cid);
+            this.container = SYST.Dom(cid);
 
             //渲染前执行 renderBefore
             SYST.V.isFunction(self.renderBefore) && self.renderBefore.apply(self);
@@ -421,32 +417,8 @@
         },
         //$private 更新hash值
         _updateHash: function(hash){
-            window.location.hash = '#!' + hash.replace(/^#!/i, '');
-        },
-        //$private 路由之间切换动画
-        _onAnimate: function(type, cb){
-            var router = this.router;
-            if(!router)
-                return;
-
-            var animate = router['animate'],
-                duration = router['animateDuration'] || 300,
-                container = this.container,
-                type = type || 'on';
-
-            if(router && container){
-                switch (animate){
-                    case 'slide':
-                        type === 'on' ? container.slideDown(duration, cb) : container.slideUp(100, cb);
-                        break;
-                    case 'fade':
-                        type === 'on' ? container.fadeIn(duration, cb) : container.fadeOut(100, cb);
-                        break;
-                    default :
-                        container.show();
-                        break;
-                }
-            }
+            //window.location.hash = '#!' + hash.replace(/^#!/i, '');
+            window.location.hash = '#' + hash.replace(/^#/i, '');
         }
 
     };

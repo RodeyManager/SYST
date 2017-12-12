@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>数据监听(observe)</title>
+    <meta charset="UTF-8"/>
+    <meta content="descriptions" charset="">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-status-bar-style" content="black-translucent">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+    <meta name="format-detection" content="telephone=no" />
+    <style>
+        *[st-model]{
+            visibility: hidden;
+        }
+    </style>
+</head>
+<body>
+
+<div>
+    <div st-model="userModel" id="user-model" st-style="background: {{ background }}; color:{{color}}" style="padding:10px;">
+        <p>id: {{ id }}</p>
+        <p>name: {{ user.name }}</p>
+        <p>age: {{ user.age }}</p>
+        <p>age: {{ user.son.name }}</p>
+        <p>age: {{ user.son.age }}</p>
+    </div>
+</div>
+
+<script src="../../dist/SYST.js"></script>
+<script>
+
+//    document.addEventListener('DOMContentLoaded', function(){
+//        var stProps = document.querySelectorAll('[st-model]');
+//        for(var i = 0, len = stProps.length; i < len; ++i)
+//            stProps[i].style.visibility = 'visible';
+//    }, false);
+    var userModel, loginModel;
+    var data, ob;
+    SYST.ready(function(){
+
+        data = {
+            background: '#DFFBFF',
+            color: 'black',
+            id: 10,
+            user: {
+                name: 'Jack',
+                age: 28,
+                son: {
+                    name: 'Tom',
+                    age: 5
+                }
+            }
+        };
+        var props = SYST.clone(data);
+
+        userModel = SYST.Model({
+            $mid: 'userModel',
+            props: props
+        });
+
+        var promise = new SYST.Promise();
+        setTimeout(function(){
+            promise.resolve(null);
+        }, 3000);
+        promise.then(function(){
+            userModel.props.background = 'green';
+            userModel.props.color = 'white';
+        });
+
+        var cloneData = SYST.clone(data),
+            index = 1, stin;
+        SYST.Observe(cloneData, function(changer){
+            //console.log(changer);
+            if(changer.name == 'id' && changer.newValue > 59){
+                clearInterval(stin);
+            }
+        });
+        stin = setInterval(function(){
+            cloneData.id = index;
+            userModel.props.id = index;
+            userModel.props.user.age++;
+            userModel.props.user.son.age++;
+            userModel.props.background = (function(){
+                function getColor(){
+                    return parseInt(Math.random() * 100 + 100, 10);
+                }
+                var rgb = '(' + [getColor(), getColor(), getColor()] + ')';
+                return 'rgb' + rgb;
+            })();
+            index++;
+        }, 1000);
+
+    });
+
+</script>
+
+</body>
+</html>

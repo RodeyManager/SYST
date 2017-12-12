@@ -4,8 +4,6 @@
 
 ;(function(SYST){
 
-    'use strict';
-
     /**
      * Module 共享数据模型
      * @type {Object}

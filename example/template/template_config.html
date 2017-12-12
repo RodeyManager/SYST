@@ -53,11 +53,11 @@
 </script>
 
 <!--载入js-->
-<script src="../../bower_components/jquery/dist/jquery.min.js"></script>
+<!--<script src="../../bower_components/jquery/dist/jquery.min.js"></script>-->
 <script src="../../dist/SYST.js"></script>
 <script>
 
-    $(function(){
+    SYST.$(function(){
 
         var data = {
             title: '<h1>&模板渲染实例</h1>',
@@ -89,7 +89,7 @@
 
         var html = SYST.Render('tpl', data);
         //console.log(html);
-        document.querySelector('#app').innerHTML = html;
+        SYST.$('#app').html(html);
 
 
     });

@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>数据绑定(st-if)</title>
+    <meta charset="UTF-8"/>
+    <meta content="descriptions" charset="">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-status-bar-style" content="black-translucent">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+    <meta name="format-detection" content="telephone=no" />
+    <style>
+        .box{
+            width: 30px;
+            height: 30px;
+            position: fixed;
+            right: 30px;
+            top: 50px;
+            z-index: 100;
+            background-color: palegoldenrod;
+            border-radius: 50% 50%;
+        }
+        *[st-model]{
+            visibility: hidden;
+        }
+        .c-r{ color: red }
+        .c-g{ color: green }
+        .c-b{ color: blue }
+        .c-c{ color: cyan }
+        .c-m{ color: magenta }
+        .c-y{ color: yellow }
+        .c-k{ color: black }
+    </style>
+</head>
+<body>
+
+    <div st-model="userModel">
+        <div>
+            <div data-name="{{ name }}">
+                <span data-name="{{ name }}"></span>
+                <strong st-if="isTeacher">{{ name }} is teacher</strong>
+                <strong st-else="isTeacher">{{ name }} is no teacher</strong>
+            </div>
+            <div st-model="loginModel" data-name="{{ name }}">
+                <span data-name="{{ name }}"></span>
+                <strong st-show="ued | isUED">{{ name }} is UED</strong>
+                <strong st-hide="ued">{{ name }} is no UED</strong>
+            </div>
+        </div>
+    </div>
+
+    <!--<script src="../../bower_components/jquery/dist/jquery.min.js"></script>-->
+    <script src="../../dist/SYST.js"></script>
+    <script>
+
+        SYST.ready(function(){
+            var stProps = document.querySelectorAll('[st-model]');
+            for(var i = 0, len = stProps.length; i < len; ++i)
+                stProps[i].style.visibility = 'visible';
+        });
+
+        var userModel, loginModel;
+        SYST.$(function(){
+
+            loginModel = SYST.Model({
+                $mid: 'loginModel',
+                props: {
+                    name: 'Tom',
+                    ued: null
+                },
+                isUED: function(ued){
+                    return ued;
+                }
+            });
+
+            userModel = SYST.Model({
+                $mid: 'userModel',
+                props: {
+                    name: 'Jack',
+                    isTeacher: true
+                },
+
+                init: function(){
+                    var timer = setTimeout(function(){
+                        this.props.isTeacher = false;
+                        loginModel.props.ued = true;
+                    }.bind(this), 3000);
+                    timer = setTimeout(function(){
+                        this.props.isTeacher = true;
+                        loginModel.props.ued = false;
+                    }.bind(this), 6000);
+                }
+            });
+
+        });
+
+    </script>
+
+</body>
+</html>

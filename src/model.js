@@ -1,25 +1,24 @@
 /**
  * Created by Rodey on 2015/10/16.
- *
  * Model 模型对象
  * @type {Function}
  */
 
 ;(function(SYST, root){
 
-    'use strict';
-
-    var _$ = SYST.$;
-    var isObserve = 'observe' in Object;
     var Model = function(){
         this.__instance_SYST__ = 'SYST Model';
         this.__name__ = 'SYST Model';
         this.autoWatcher = true;
         this.watcher = null;
+        this.components = [];
     };
 
     SYST.Model = function(){
-        var model = SYST.extendClass(arguments, Model);
+        var args = slice.call(arguments), firstArg = args[0], model, isMid = SYST.V.isString(firstArg);
+        isMid && args.splice(0, 1);
+        model = SYST.extendClass(args, Model);
+        isMid && (model.$mid = firstArg);
         model._initialize();
         return model;
     };
@@ -28,85 +27,89 @@
 
         _initialize: function(){
             this.$http = this.$http || new SYST.Http();
+            this._props = {};
+
+            //helpers
+            this.helpers = SYST.V.isFunction(this.helpers) ? this.helpers.apply(this) : this.helpers || {};
+            if(SYST.V.isObject(this.helpers)){
+                SYST.T.each(this.helpers, function(method, i, name){
+                    this.helpers[name] = method.bind(this);
+                }, this);
+            }
             //属性列表，数据绑定在里面
-            this.props = this.props || {};
+            this.props = SYST.V.isFunction(this.props) ? this.props.apply(this) : this.props || {};
+            this._props = SYST.clone(this.props);
+            this.props = {};
+            //初始化，将props代理到 $props对象上
+            this._$proxyProps();
+
+            Object.defineProperty(this.props, '$M', { value: SYST.shareModel, enumerable: true, writable: true, configurable: false });
+
+            //components
+            if(this.components && this.components.length > 0){
+                //this._initComponents();
+            }
+
             //初始化 Watcher
+            this._getTags();
             this.watcher = new SYST.Watcher(this);
-            SYST.shareModel.add(this.$mid || null, this);
             this.init && this.init.apply(this, arguments);
+            SYST.shareModel.add(this.$mid || null, this);
             //var startTime = Date.now();
-            if(this.$mid || this.autoWatcher !== false){
+            if(this.$mid && this.autoWatcher !== false){
                 this.watcher.init();
             }
-            //console.log('Model: ' + this.$mid, (Date.now() - startTime) / 1000)
+            //console.log((Date.now() - startTime) / 1000);
         },
-
-        /**
-         * 根据数组自动生成对象属性
-         * @param apis
-         */
-        generateApi: function(apis, urls, options){
-            var self = this;
-            SYST.V.isArray(apis) && SYST.T.each(apis, function(key, index){
-                self._generateApi(key, urls[key], options);
-            });
-
-            if(SYST.V.isObject(apis)){
-                for(var key in apis){
-                    this._generateApi(key, apis[key], options);
-                }
-            }
-        },
-
-        _generateApi: function(key, url, options){
-            var self = this, opts = {};
-            options = SYST.V.isObject(options) && options || {};
-            options['callTarget'] = this;
-            function _vfn(postData, su, fail, opts){
-                options = SYST.extend(options, opts);
-                self.$http.doAjax(url, postData, su, fail, options);
-            }
-            ('defineProperty' in Object)
-                ? Object.defineProperty(self, key, { value: _vfn })
-                : (self[key] = _vfn);
-
-        },
-
+        $: SYST.$,
         // 在本模型中存取
-        get: function(key){    return this.props[key];    },
+        get: function(key){
+            return this._props[key];
+        },
         // 动态添加属性
-        set: function(key, value){
+        set: function(key, value, flag){
 
             if(SYST.V.isEmpty(key)) return this;
-            var self = this;
 
             if(SYST.V.isObject(key)){
-                // this.set({ name: 'Rodey', age: 25 });
                 for(var k in key){
-                    _set(k, key[k]);
+                    _set.call(this, k, key[k]);
                 }
-            }else if(SYST.V.isString(key) && key.length > 0){
-                //this.set('name', 'Rodey') | this.set('one', { name: 'Rodey', age: 25, isBoss: false }
-                _set(key, value);
+            }else if(SYST.V.isString(key)){
+                _set.call(this, key, value);
             }
 
             function _set(k, v){
-                self.props[k] = v;
-                self._watchProrp(k, v);
-            }
+                if(this.has(k)){
+                    this._props[k] = v;
+                    !flag && this._watchProp(k, v);
+                }else{
+                    this._props[k] = v;
+                    this._$proxyProp(this.props, k);
+                    !flag && this._watchAddProp(k, v);
+                }
 
-            //不是每次设置单个prop都 watcher template
-            //而是整个set动作完成之后，执行watcher template
-            self._watchTemplate();
+                //if(v && !v.__ob__){
+                //    this._observe(v, k);
+                //}
+            }
 
             return this;
         },
-        add: function(key, value){
-            this.set(key, value);
+        add: function(key, value, flag){
+            this.set(key, value, flag);
+            this.watcher.addListener(key, value);
+        },
+        refresh: function(key){
+            this.set(key, this.get(key));
+        },
+        //判断某个属性值是否存在
+        has: function(key){
+            return this.hasProp(key) || this.get[key] != undefined;
         },
         //判断某个属性是否存在
-        has: function(key){
-            return Boolean(this.props[key]);
+        hasProp: function(key){
+            return SYST.V.isObject(this._props) && key in this._props;
         },
         removeProps: function(keys){
             //var self = this;
@@ -123,7 +126,7 @@
                 }, this);
             }else{
                 this.watcher.removeListener();
-                this.props = {};
+                this.props = this._props = {};
             }
             return this;
 
@@ -134,13 +137,12 @@
         //动态删除属性
         remove: function(key){
             if(!key || key == '') return this;
-            this.props[key] = null;
-            delete this.props[key];
+            this._props[key] = null;
+            delete this._props[key];
             this.watcher.removeListener(key);
             return this;
         },
-
-        // 在localStorage中存取
+        // 在localStorage中存取 flag == true 代表 sessionStorage
         getItem: function(key, flag){
             var item =  (!flag ? root.localStorage : root.sessionStorage).getItem(key);
             try{
@@ -174,7 +176,6 @@
             (!flag ? root.localStorage : root.sessionStorage).removeItem(key);
         },
         removeItems: function(keys, flag){
-            var self = this;
             if(SYST.V.isString(keys)){
                 this.removeItem(keys, flag);
             }
@@ -187,14 +188,72 @@
             }
         },
 
-        //监听 st-prop 属性变化
-        _watchProrp: function(key, value){
-            //if(!isObserve)
-                this.watcher && this.watcher.update(key);
+        _initComponents: function(){
+            SYST.T.each(this.components, function(component){
+
+            }, this);
         },
-        //监听 st-template
-        _watchTemplate: function(){
-            this.watcher && this.watcher.updateRenderTemplate();
+
+        _getTags: function(){
+            this.tags = [];
+            this.tags = (this.$mid && this.tags.length === 0) && (function($mid){
+                var mId = $mid[0] === '#', mClass = $mid[0] === '.';
+                if(mId || mClass){
+                    return document.querySelectorAll($mid);
+                }else{
+                    return document.querySelectorAll('[st-model='+ $mid +']');
+                }
+            })(this.$mid);
+        },
+        //代理 $props
+        //将 props中的属性代理到 $props上，getter and setter
+        _$proxyProps: function(){
+            SYST.T.each(this._props, function(value, i, key){
+                //如果值是数组，或者Oject
+                if(value && !value.__ob__){
+                    this._observe(value, key);
+                }
+                this._$proxyProp(this.props, key);
+            }, this);
+        },
+        _$proxyProp: function(object, key){
+            var self = this;
+            var _object = object || this.props;
+
+            Object.defineProperty(_object, key, {
+                configurable: true,
+                enumerable: true,
+                get: function getterProp(){
+                    return self.get(key);
+                },
+                set: function setterProp(value){
+                    if(value && !value.__ob__){
+                        self._observe(value, key);
+                    }
+                    self.set(key, value);
+                }
+            });
+        },
+        _observe: function(value, tier){
+            SYST.Observe(value, this._watchServe.bind(this), this, tier);
+        },
+        _watchServe: function(changer){
+            //console.log(changer);
+            if(!changer.tier){
+                changer.type == 'update' && this.set(changer.name, changer.newValue);
+            }else{
+                if(changer.target[changer.tier]){
+                    this._props[changer.tier][changer.name] = changer.newValue;
+                }
+                changer.type == 'update' && this.watcher.update(changer.tier, this._props[changer.tier]);
+            }
+        },
+        //监听 st-prop 属性变化(已存在)
+        _watchProp: function(key, value){
+            this.watcher && this.watcher.update(key);
+        },
+        _watchAddProp: function(key, value){
+            this.watcher && this.watcher.add(key, value);
         }
 
     };

@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>事件绑定(st-on)</title>
+    <meta charset="UTF-8"/>
+    <meta content="descriptions" charset="">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-status-bar-style" content="black-translucent">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+    <meta name="format-detection" content="telephone=no" />
+    <style>
+        .box{
+            width: 30px;
+            height: 30px;
+            position: fixed;
+            right: 30px;
+            top: 50px;
+            z-index: 100;
+            background-color: palegoldenrod;
+            border-radius: 50% 50%;
+        }
+        *[st-model]{
+            visibility: hidden;
+        }
+        .c-r{ color: red }
+        .c-g{ color: green }
+        .c-b{ color: blue }
+        .c-c{ color: cyan }
+        .c-m{ color: magenta }
+        .c-y{ color: yellow }
+        .c-k{ color: black }
+        .langs p {
+            border-bottom: 1px green solid;
+            padding: 5px;
+            margin: 0 auto;
+        }
+    </style>
+</head>
+<body>
+
+<div st-model="repeatModel">
+    <h5>repeat array</h5>
+
+    <div st-for="lang in langs | addeat" class="langs" st-on="dblclick: onDblClick">
+        <p st-on="click: onClickItem(lang); mouseover: onMouseOver; mouseout: onMouseOut">
+            {{ lang | addAst }} - {{ $index + 1 }} - {{ $first }} - {{ $last }}
+        </p>
+    </div>
+
+</div>
+
+<script src="../../dist/SYST.js"></script>
+<script>
+
+    SYST.ready(function(){
+        var stProps = document.querySelectorAll('[st-model]');
+        for(var i = 0, len = stProps.length; i < len; ++i)
+            stProps[i].style.visibility = 'visible';
+    });
+
+    var repeatModel;
+    SYST.ready(function(){
+
+        repeatModel = SYST.Model({
+            $mid: 'repeatModel',
+            props: {
+                langs: ['c', 'c++', 'java', 'javaScript', 'python', 'ruby', 'swift', 'go', 'lua'],
+                color: '#64AFB9'
+            },
+            init: function(){
+                this.fix = '@';
+            },
+            helpers: {
+                addeat: function(arr){
+                    //console.log(this);
+                    var rs = [];
+                    for(var i = 0; i < arr.length; i++){
+                        rs.push(SYST.T.toFirstUpperCase(arr[i]));
+                    }
+                    return rs;
+                },
+                addAst: function(str){
+                    return this.fix + str + '   ***   ';
+                }
+            },
+            //双击
+            onDblClick: function(evt){
+                evt.preventDefault();
+                evt.stopPropagation();
+                this.isDBclick = !this.isDBclick;
+                evt.currentTarget.style.backgroundColor = this.isDBclick ? 'gray' : '';
+            },
+            onClickItem: function(evt, lang){
+                evt.preventDefault();
+                evt.stopPropagation();
+                console.log(this);
+                console.log(evt);
+                console.log(lang);
+            },
+            onMouseOver: function(evt){
+                evt.$target.css('color', 'red');
+            },
+            onMouseOut: function(evt){
+                evt.$target.css('color', '');
+            }
+        });
+
+    });
+
+</script>
+
+</body>
+</html>

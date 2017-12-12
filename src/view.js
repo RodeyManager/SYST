@@ -1,14 +1,10 @@
 /**
- * Created by Rodey on 2015/10/16.
- *
+ * Created by Rodey on 2016/10/16.
  * Module 视图对象
  * @type {Function}
  */
 
-;(function(SYST, root){
-
-    'use strict';
-
+;(function(SYST){
     var View = function(){
         this.__instance_SYST__ = 'SYST View';
         this.__Name__ = 'SYST View';
@@ -23,135 +19,128 @@
 
         _initialize: function(){
             this.model = this.model || new SYST.Model();
+            this.$http = this.$http || new SYST.Http();
             this.container = this.container || 'body';
             this.template = null;
-            this.container = SYST.$(this.container);
-            this.containerSelector = this.container.selector;
-
+            this.container = SYST.Dom(this.container);
+            this._eventCaches_ = {};
+            //自动解析 events对象，处理view中的事件绑定
+            !this.autoEvent && this.events && SYST.V.isObject(this.events) && this._autoHandleEvent('on');
             //自定义init初始化
             !this.unInit && this.init && this.init.apply(this);
-
-            //自动解析 events对象，处理view中的事件绑定
-            this.events && this.events != {} && SYST.V.isObject(this.events) &&  this.onEvent();
         },
-
+        $: SYST.$,
         destroy: function(){
             this.container.html('');
+            this._autoHandleEvent('off');
             return this;
         },
-        /**
-         * 改变对象属性作用域 (常用在元素触发事件侦听函数中)
-         * @param callback
-         * @param value
-         * @return {Function}
-         */
-        handEvent: function(callback, value){
-            var self = this, args = [];
-            for(var i = 2; i < arguments.length; i++)   args.push(arguments[i]);
-            return function(e){
-                args.push(value);
-                args.push(e);
-                callback.apply(self, args);
-            }
-        },
-        //处理事件绑定，以改变对象作用域
-        hoadEvent: SYST.T.hoadEvent,
+        proxy: SYST.T.proxy,
         /**
          * 格式化 events对象
          * @param events对象
          * @return {*}
          */
-        _parseEvent: function(evtObj){
-            if(!evtObj || evtObj.length == 0 || evtObj === {}) return this;
-            var evts = [], objs = [], handleFunctions = [], o, selector, evtType, func;
-            for(var evt in evtObj){
-                var eobj = evtObj[evt];
-                if(SYST.V.isObject(eobj)){
-                    for(var k in eobj){
-                        o = this._parseString(eobj, k), selector = o[0], evtType = o[1], func = o[2];
-                        pushs(selector, evtType, func);
-                    }
+        _parseEvent: function(events){
+
+            if(!SYST.V.isObject(events))    return this;
+
+            _getEvent.call(this, events, 'body');
+
+            function _getEvent(event, container, fn){
+                if(SYST.V.isObject(event)){
+                    SYST.T.each(event, function(handler, i, evt){
+                        if(!SYST.V.isObject(handler)){
+                            this._toCache(evt, container, handler);
+                        }else{
+                            _getEvent.call(this, handler, evt);
+                        }
+                    }.bind(this));
                 }else{
-                    o = this._parseString(evtObj, evt), selector = o[0], evtType = o[1], func = o[2];
-                    pushs(selector, evtType, func);
+                    this._toCache.call(event, container, fn);
                 }
-
             }
 
-            function pushs(selector, evtType, func){
-                objs.push(selector);
-                evts.push(evtType);
-                handleFunctions.push(func);
-            }
-            //储存事件名称
-            //this.evts = evts;
-            //储存事件侦听对象
-            //this.objs = objs;
-            //储存事件函数
-            //this.handleFunctions = handleFunctions;
-
-            return { events: evts, elements: objs, functions: handleFunctions };
         },
         /**
          * 自动绑定事件
          * @param 将被替换的对象
          */
         _autoHandleEvent: function(type){
-            var parseEvents = this._parseEvent(this.events),
-                evts = parseEvents['events'],
-                objs = parseEvents['elements'],
-                funs = parseEvents['functions'];
-            if(!evts || evts.length == 0 || evts.length == {}) return this;
-            var type = type || 'on';
-            for(var i = 0, l = evts.length; i < l; i++){
-                if(!evts[i])
-                    throw new Error('对象侦听'+ evts[i] + '不存在');
-                if(!funs[i])
-                    throw new Error('对象'+ this + '不存在' + funs[i] + '方法');
-                if(!objs[i])
-                    throw new Error('事件函数'+ funs[i] + '不存在');
-
-                SYST.Events($(objs[i]), this, evts[i], funs[i], type, this.containerSelector);
+            type = type || 'on';
+            if(Object.keys(this._eventCaches_).length === 0){
+                this._parseEvent(this.events);
             }
-            return this;
-        },
 
-        _parseString: function(obj, k){
-            var o = ($.trim(k)).split(/\s+/gi);
+            SYST.T.each(this._eventCaches_, function(events){
+                events.length > 0 && SYST.T.each(events, function(event){
+                    SYST.Events.initEvent(SYST.Dom(event.selector), event.eventName, this.proxy(this, event.fnName), type, event.container);
+                }, this);
+            }, this);
+
+        },
+        _toCache: function(event, container, fn){
+            var flag = false;
+            var temp = this._parseString(event),
+                caches = this._eventCaches_[temp.eventName];
+            if(!temp.eventName)
+                throw new Error('对象侦听'+ temp.eventName + '不存在');
+            if(!this[fn])
+                throw new Error('对象'+ this + '不存在' + fn + '方法');
+            if(!temp.selector)
+                throw new Error('事件函数'+ temp.selector + '不存在');
+
+            temp.handler = this[fn];
+            temp.fnName = fn;
+            temp.container = container;
+
+            if(!caches) caches = [];
+            caches.length > 0 && SYST.T.each(caches, function(cache){
+                if(temp.eventName == cache.eventName
+                    && temp.fnName == cache.fnName
+                    && temp.container == cache.container
+                ){
+                    flag = true;
+                }else{
+                    flag = false;
+                }
+            });
+            !flag && caches.push(temp);
+            this._eventCaches_[temp.eventName] = caches;
+            return temp;
+        },
+        _getCache: function(event, container, fn){
+            var temp = this._parseString(event), rs;
+            SYST.T.each(this._eventCaches_, function(events){
+                events.length > 0 && SYST.T.each(events, function(event){
+                    if(event.selector == temp.selector && event.fnName == fn && event.container == container && event.handler == this[fn]){
+                        rs = event;
+                    }
+                }, this);
+            }, this);
+            return rs;
+        },
+        _parseString: function(event){
+            var o = SYST.T.trim(event).split(/\s+/gi);
             var selector = o[1].replace(/^\$*|[\(*]|[\)*]$/gi, '').replace(/"|'/gi, '\"');
-            var evtType = o[0].replace(/^\s*|\s*$/gi, '');
-            var func = obj[k];
-            return [selector, evtType, func];
+            var eventName = o[0].replace(/^\s*|\s*$/gi, '');
+            return { eventName: eventName, selector: selector };
         },
-
-        /**
-         * 开始监听
-         * @param selector
-         * @param event
-         * @param func
-         */
-        onEvent: function(selector, event, func){
-            if(SYST.V.isEmpty(selector)) {
-                this._autoHandleEvent('on');
+        onEvent: function(event, func, container){
+            if(event && func){
+                var temp = this._toCache(event, container, func);
+                SYST.Events.initEvent(SYST.Dom(temp.selector), temp.eventName, this.proxy(this, temp.fnName), 'on', temp.container);
             }else{
-                SYST.Events.initEvent(SYST.V.isString(selector) ? $(selector) : selector, this, event, func, 'on', this.containerSelector);
+                this._autoHandleEvent('on');
             }
             return this;
         },
-
-        /**
-         * 结束监听
-         * @param selector
-         * @param event
-         * @param func
-         */
-        offEvent: function(selector, event, func){
-            //this.autoHandleEvent('off');
-            if(SYST.V.isEmpty(selector)){
-                this._autoHandleEvent('off');
+        offEvent: function(event, func, container){
+            if(event && func){
+                var cache = this._getCache(event, container, func);
+                cache && SYST.Events.initEvent(SYST.Dom(cache.selector), cache.eventName, this.proxy(this, cache.fnName), 'off', cache.container);
             }else{
-                //this._e.uninitEvent(selector, event, func);
-                SYST.Events.initEvent(SYST.V.isString(selector) ? $(selector) : selector, this, event, func, 'off', this.containerSelector);
+                this._autoHandleEvent('off');
             }
             return this;
         },

@@ -15,7 +15,7 @@ var data = {
 };
 
 var view = SYST.View({
-
+    autoEvent: false,
     unInit: true,
     model: userListModel,
     container: '#u-list',
@@ -55,7 +55,7 @@ var listController = {
     },
     onRender: function(tpl){
         //this.container.html(SYST.T.render(tpl, { user: this.data }));
-        $('#click-me').removeAttr('disabled');
+        this.$('#click-me').removeAttr('disabled');
     },
     onDestroy: function(){
         console.log('list 路由销毁状态');

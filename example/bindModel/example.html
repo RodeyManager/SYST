@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>数据绑定</title>
+    <meta charset="UTF-8"/>
+    <meta content="descriptions" charset="">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-status-bar-style" content="black-translucent">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+    <meta name="format-detection" content="telephone=no" />
+    <style>
+        [st-lock]{
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+    <h5>数据绑定</h5>
+    <div class="model-1" st-model="model-1">
+        <input type="text" st-prop="name"/>
+        <br/>
+        <br/>
+        <br/>
+        <br/>
+        <br/>
+        <br/>
+        <br/>
+        <p st-lock>You Name is {{ name }} --- <strong>{{ name + 'ppp' }}</strong></p>
+        <br/>
+        <br/>
+        <br/>
+        <br/>
+        <br/>
+        <br/>
+        <br/>
+        <input type="text" st-prop="name"/>
+    </div>
+
+
+
+    <script src="../../bower_components/jquery/dist/jquery.min.js"></script>
+    <script src="../../dist/SYST.js"></script>
+    <script>
+        SYST.ready(function(){
+            var stProps = document.querySelectorAll('[st-model]');
+            for(var i = 0, len = stProps.length; i < len; ++i)
+                stProps[i].style.visibility = 'visible';
+        });
+
+        SYST.ready(function(){
+            var mode1 = SYST.Model({
+                $mid: 'model-1',
+                props: { name: '' }
+            });
+        });
+
+    </script>
+</body>
+</html>

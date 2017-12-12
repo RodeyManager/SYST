@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title></title>
+    <style>
+        *[st-lock]{ display: none; }
+        .tag{ display: inline-block; padding: 0 3px; background-color: #66d9ef; border-radius: 3px; margin: 0 2px; }
+        .tag i { display: inline-block; cursor: pointer; font-style: normal; font-size: 12px; font-family: Microsoft YaHei; }
+        .tag i:hover { color: red; }
+    </style>
+</head>
+<body>
+    <div id="app" st-lock="true">
+        <table cellpadding="1" cellspacing="1" border="1">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Age</th>
+                    <th>Langs</th>
+                    <th>Dev</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody st-for="user in users" st-index="uIndex">
+                <tr>
+                    <td>{{ user.name }}</td>
+                    <td>{{ user.age }}</td>
+                    <td st-for="lang in user.langs"><span class="tag">{{ lang }} <i st-on="click: onRemoveLang(uIndex, lang)">X</i></span></td>
+                    <td>{{ user.dev }}</td>
+                    <td>
+                        <a href="javascript:void(0);" st-on="click: onEditUser(user)">Edit</a>
+                        <a href="javascript:void(0);" st-on="click: onDeleteUser(uIndex)">Delete</a>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div style="margin-top: 20px;border-top: solid 1px lightgray">
+            <p><input type="text" id="name" value="" placeholder="Are you name?" st-prop="name"></p>
+            <p><input type="number" min="1" max="120" step="1" id="age" placeholder="Are you age?" st-prop="age"></p>
+            <p>
+                <input type="checkbox" name="langs" value="Java" st-prop="lang">Java
+                <input type="checkbox" name="langs" value="Go" st-prop="lang">Go
+                <input type="checkbox" name="langs" value="Python" st-prop="lang">Python
+                <input type="checkbox" name="langs" value="JavaScript" st-prop="lang">JavaScript
+                <input type="checkbox" name="langs" value="Lua" st-prop="lang">Lua
+                <input type="checkbox" name="langs" value="PHP" st-prop="lang">PHP
+            </p>
+            <!--<p>
+                <select name="dev" id="dev" st-for="dev in devors" st-prop="devor">
+                    <option value="{{ dev.id }}">{{ dev.title }}</option>
+                </select>
+            </p>-->
+            <p st-for="dev in devors">
+                <input type="radio" name="dev" st-prop="devor" value="{{ dev.id }}"/>{{ dev.title }}
+            </p>
+            <button st-on="click: onAddUser">Add</button>
+        </div>
+    </div>
+    <script src="../../dist/SYST.js"></script>
+    <script>
+
+        var testModel;
+        SYST.ready(function($){
+            console.log($);
+            var data = {
+                users: [
+                    {name: 'Tom', age: '28', langs: ['Java', 'Go']},
+                    {name: 'Jack', age: '38'}
+                ],
+                devors: [
+                    { id: '', title: '请选择' },
+                    { id: 'web', title: 'web前端开发' },
+                    { id: 'server', title: '服务端开发' },
+                    { id: 'sys', title: '系统开发' }
+                ],
+                devor: '',
+                name: '',
+                age: 1,
+                lang: ''
+            };
+
+            testModel = SYST.Model({
+                $mid: '#app',
+                props: data,
+                init: function(){},
+                onClickUser: function(evt, user, index){
+                    console.log(this.$mid);
+                    console.log(evt);
+                    console.log(index, user);
+                },
+                onAddUser: function (evt) {
+                    console.log(evt);
+                    console.log(this.props);
+                    var user = {
+                        name: this.props.name,
+                        age: this.props.age,
+                        langs: this.props.lang,
+                        dev: this.props.devor
+                    };
+
+                    var tmp = this.props.users.query(this.props.name, 'name');
+                    if(tmp){
+                        var index = this.props.users.getIndex(this.props.name, 'name');
+                        this.props.users[index] = user;
+                        this.props.users.update();
+                    }else{
+                        this.props.users.push(user);
+                    }
+
+                    this.props.name = null;
+                    this.props.age = 1;
+                    this.props.lang = null;
+                    this.props.devor = null;
+
+                },
+                onEditUser: function(evt, user){
+                    this.props.name = user.name;
+                    this.props.age = user.age;
+                    this.props.lang = user.langs;
+                    this.props.devor = user.devor;
+                },
+                onDeleteUser: function(evt, index){
+                    if(this.props.users[index]){
+                        this.props.users.remove(index);
+                    }
+                },
+                onRemoveLang: function(evt, userIndex, lang){
+                    var user = this.props.users.query(userIndex);
+                    user.langs.splice(user.langs.indexOf(lang), 1);
+                    this.props.users.set(userIndex, user);
+                }
+            });
+
+
+        });
+
+
+    </script>
+</body>
+</html>

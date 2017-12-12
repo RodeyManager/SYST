@@ -1,20 +1,104 @@
-/**
- * Created by Rodey on 2015/10/16.
- */
-
 ;(function(SYST){
-
-    'use strict';
 
     //需要转移的字符
     var escapeMap = {
-        '&': '&amp;',
-        '<': '&lt;',
-        '>': '&gt;',
-        '"': '&quot;',
-        "'": '&#x27;',
-        '`': '&#x60;'
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            '"': '&quot;',
+            "'": '&#x27;',
+            '`': '&#x60;'
+        },
+        wordReg = /^([a-zA-Z]){1}/i;
+
+    function each(data, callback, target){
+        if(!data){
+            throw new SyntaxError('args1 is must Object or Array or String');
+        }
+        var i = 0, len;
+        if(SYST.V.isObject(data)){
+            var index = 0, keys = Object.keys(data), key;
+            len = keys.length;
+            if(len === 0)  return;
+            for(; i < len; ++i){
+                key = keys[i];
+                if(data.hasOwnProperty(key)){
+                    if(false === callback.call(target || data, data[key], index++, key)) return data;
+                }
+            }
+        }
+        else if((data && data.length) || SYST.V.isArray(data)){
+            if(!SYST.V.isArray(data)) data = slice.call(data);
+            len = data.length;
+            if(len === 0)  return;
+            for(; i < len; ++i){
+                if(false === callback.call(target || data, data[i], i)) return data;
+            }
+        }
+        else{}
+    }
+
+    /**
+     * Function 浏览器 cookie操作
+     * @param key       键名
+     * @param value     键值
+     * @param options   附件选项
+     * @returns {*}
+     * @constructor
+     */
+    function Cookie(key, value, options) {
+        if(arguments.length > 1 && (!/Object/.test(Object.prototype.toString.call(value)) || value === null || value === undefined)) {
+            options = options || {};
+
+            if(value === null || value === undefined) {
+                options.expires = -1;
+            }
+
+            if( typeof options.expires === 'number') {
+                var days = options.expires, t = options.expires = new Date();
+                t.setDate(t.getDate() + days);
+            }
+
+            value = String(value);
+            return (document.cookie = [encodeURIComponent(key), '=', options.raw ? value : encodeURIComponent(value), options.expires ? '; expires=' + options.expires.toUTCString() : '', options.path ? '; path=' + options.path : '', options.domain ? '; domain=' + options.domain : '', options.secure ? '; secure' : ''].join(''));
+        }
+        options = value || {};
+        var decode = options.raw ? function(s) {
+            return s;
+        } : decodeURIComponent;
+        var pairs = document.cookie.split('; ');
+        for(var i = 0, pair; pair = pairs[i] && pairs[i].split('='); i++) {
+            if(decode(pair[0]) === key)
+                return decode(pair[1] || '');
+        }
+        return null;
+    }
+    function _Cookies(keys, options){
+        var value;
+        if(!keys) return;
+        if(SYST.V.isObject(keys)){
+            each(Object.keys(keys), function(key){
+                value = keys[key];
+                value && Cookie(key, keys[key], options);
+            },  this);
+        }
+        else if(SYST.V.isArray(keys)){
+            var rs = {}, name;
+            for(var i = 0, len = keys.length; i < len; ++i){
+                name = keys[i];
+                rs[name] = Cookie(name);
+            }
+            return rs;
+        }
+    }
+
+    var cookie = {
+        add: function(key, val, options){
+
+        },
+        remove: function(key){}
     };
+
 
     /**
      * Module web通用公共函数对象
@@ -29,52 +113,36 @@
     };
     SYST.T = Tools.prototype = {
         /**
-         * Function 触发事件
-         * @param  {[type]}   element  [触发对象]
-         * @param  {[type]}   event    [事件名称]
-         * @param  {[type]}   data     [参数]
-         * @param  {Function} callback [回调]
-         * @return {[type]}            [undefined]
-         * use:
-         * $(document.body).bind('click', function(){});
-         * SYST.T.trigger($(document.body)[0], 'onclick', 'hello', function(evt, data){
-         *     console.log(this); //output:     <body>...</body。
-         *     console.log(data); //output；    'hello'
-         * });
-         */
-        trigger: function(element, event, data, callback){
-            var handler;
-            if(element && event && '' !== event){
-                event = event.search(/^(on)/i) !== -1 ? event : 'on' + event;
-                handler = function(evt){
-                    SYST.V.isFunction(callback) && callback.call(element, evt, data);
-                };
-                try{
-                    element[event] = handler;
-                }catch(e){
-                    throw new Error(element + '不存在' + event + '方法 <::>');
-                }
-            }
-        },
-        /**
-         * 事件侦听传递处理回调
+         * 改变对象属性作用域 (常用在元素触发事件侦听函数中)
          * @param obj       作用域目标对象
          * @param func      obj对象中的属性
+         * @param cature    是否阻止事件冒泡
          * @returns {Function}
+         * SYST.Dom('#btn').on('click', SYST.T.proxy(view, 'onLogin'));
          */
-        hoadEvent: function(obj, func){
+        proxy: function(obj, func, cature){
             var args = [];
             obj = obj || window;
-            for(var i = 2; i < arguments.length; i++) args.push(arguments[i]);
+            var i = 2;
+            if(cature == undefined){
+                cature = true;
+            }else{
+                i = 3;
+            }
+            for(; i < arguments.length; i++) args.push(arguments[i]);
             return function(e){
-                if(e && typeof e === 'object'){
-                    e.preventDefault();
+                if(e && /^\[object\s[A-Z][a-z]+Event\]$/.test(toString.call(e)) && cature){
+                    //e.preventDefault();
                     e.stopPropagation();
+                    e.stopImmediatePropagation();
                 }
-                args.push(e);
+                //args.unshift(e);
+                var _args = slice.call(arguments);
                 //保证传递 Event对象过去
-                if(obj[func])
-                    obj[func].call(obj, e, args);
+                if(SYST.V.isFunction(func)){
+                    return func.apply(obj, _args);
+                }else if(obj[func])
+                    return obj[func].apply(obj, _args);
                 else
                     throw new Error(func + ' 函数未定义！');
             }
@@ -115,9 +183,9 @@
          */
         indexOf: function(array, obj) {
             if (array.indexOf) return array.indexOf(obj);
-            for (var i = 0; i < array.length; i++) {
+            array = slice.call(array);
+            for (var i = 0, len = array.length; i < len; i++)
                 if (obj === array[i]) return i;
-            }
             return -1;
         },
         /**
@@ -134,7 +202,15 @@
         },
         //首字符大写
         toFirstUpperCase: function(str){
-            return str.replace(/^(\w)?/i, function(match, $1){ return $1.toUpperCase(); });
+            if(!str)    return '';
+            return wordReg.test(str) ?
+                str.replace(wordReg, function(match, $1){ return $1.toUpperCase(); }) : str;
+        },
+        //首字符小写
+        toFirstLowerCase: function(str){
+            if(!str)    return '';
+            return wordReg.test(str) ?
+                str.replace(wordReg, function(match, $1){ return $1.toLowerCase(); }) : str;
         },
         /**
          * Function 全角字符转为半角,并去除所有空格
@@ -144,7 +220,7 @@
          */
         F2C: function(str){
             var s = "", str = str.replace(/\s*/gi, '');
-            for(var i = 0; i < str.length; i++){
+            for(var i = 0, len = str.length; i < len; i++){
                 var c = str.charCodeAt(i);
                 if(c == 12288){
                     s += String.fromCharCode(32);
@@ -185,7 +261,7 @@
             if(!date) return '';
             var self = this;
             format = format || 'yyyy-mm-dd hh:ii:ss';
-            date = (/^\d+$/gi.test(date) || /\d+\/+/gi.test(date)) ? new Date(date) : SYST.V.isDate(date) ? date : null;
+            date = (/^\d+$/gi.test(date) || /\d+[\/-]+/gi.test(date)) ? new Date(parseInt(date, 10)) : SYST.V.isDate(date) ? date : null;
             if(!date)   return null;
             format = format.replace(/(y+)/i, function(m){
                 var year = '' + date.getFullYear();
@@ -219,9 +295,9 @@
             var fs = ['年', '月', '日', '时', '分', '秒', '毫秒'],
                 ds = this.setDateFormat(date, format).split(/[-:\s]+/gi);
             if(!ds || ds.length === 0)  return '';
-            for(var i = 0; i < ds.length; ++i){
-                ds[i] = (i === 3 ? ' ' : '') + ds[i] + fs[i];
-            }
+            this.each(ds, function(dv, i){
+                ds[i] = (i === 3 ? ' ' : '') + dv + fs[i];
+            });
             return ds.join('');
 
         },
@@ -253,33 +329,6 @@
         },
 
         /**
-         * Function 获取随机字符（包括数字和字母）
-         * @param size:  字符长度
-         * @param flag: 是否去除干扰
-         * @return {String}
-         */
-        randomChar: function(size, flag){
-            var start = 48,     end = 122,
-                i = 0,          len = size,
-                random,         rs = '',
-                flag = true,
-                //特殊字符
-                filter = [58, 59, 60, 61, 62, 63, 64, 91, 92, 93, 94, 95, 96],
-                //去除扰乱视线 I L l o O
-                f2 = [48, 49, 73, 76, 79, 108, 111];
-
-            for( ; i < len; ++i ){
-                random = Math.floor(Math.random() * start + Math.random() * end);
-                if(random >= start && random <= end && filter.indexOf(random) === -1){
-                    if(flag === true)   (f2.indexOf(random) === -1) ? rs += String.fromCharCode(10, random) : len++;
-                    else                rs += String.fromCharCode(10, random);
-                }else{
-                    len++;
-                }
-            }
-            return rs.replace(/[\n\t\r]*/gi, '');
-        },
-        /**
          * Function 获取指定参数或者所有参数列表
          * @param name
          * @param url       传入的url地址
@@ -294,8 +343,6 @@
             if(!SYST.V.isEmpty(url)){
                 if(/\?+/i.test(url))
                     search = url.split(grap)[1] || '';
-                else
-                    search = url;
             }else{
                 search = location.href.split(grap)[1];
             }
@@ -340,8 +387,8 @@
          */
         paramData: function(object, flag){
             if(SYST.V.isEmpty(object) || !SYST.V.isObject(object))  return '';
-            var data = object, s = '';
-            for(var k in data)  (s += '&' + k + '=' + encodeURI(data[k]));
+            var s = '';
+            each(object, function(v, i, k){ s += '&' + k + '=' + encodeURI(v); });
             s = s.substr(1);
             return (flag === true) ? '?'+ s : s;
         },
@@ -361,91 +408,32 @@
             location.href = url;
         },
         redirect: function(url, params){ this.jumpTo(url, params); },
-
         /**
          * 组装字符串
          * @param str
          * @returns {*}
-         * use: displace('my name is \s, age is \d', 'rodey', 26);
+         * use: displace('my name is %s, age is %d', 'rodey', 26);
          */
         displace: function(str){
             if(!str) return;
             var index = 0, args = [],
-                regx = /\%[s|d|f]?/gi;
-            for(var i = 1, len = arguments.length; i < len; ++i)
-                args.push(arguments[i]);
-            var string = str.replace(regx, function(match){
+                regx = /\%[s|d|f]+?/gi;
+            each(slice.call(arguments, 1), function(arg){  args.push(arg); });
+            str = str.replace(regx, function(match){
                 return args[index++];
             });
-            return string;
+            return str;
         },
-
-        /**
-         * Function 浏览器 cookie操作
-         * @param key       键名
-         * @param value     键值
-         * @param options   附件选项
-         * @returns {*}
-         * @constructor
-         */
-        Cookie: function(key, value, options) {
-            if(arguments.length > 1 && (!/Object/.test(Object.prototype.toString.call(value)) || value === null || value === undefined)) {
-                options = options || {};
-
-                if(value === null || value === undefined) {
-                    options.expires = -1;
-                }
-
-                if( typeof options.expires === 'number') {
-                    var days = options.expires, t = options.expires = new Date();
-                    t.setDate(t.getDate() + days);
-                }
-
-                value = String(value);
-                return (document.cookie = [encodeURIComponent(key), '=', options.raw ? value : encodeURIComponent(value), options.expires ? '; expires=' + options.expires.toUTCString() : '', options.path ? '; path=' + options.path : '', options.domain ? '; domain=' + options.domain : '', options.secure ? '; secure' : ''].join(''));
-            }
-            options = value || {};
-            var decode = options.raw ? function(s) {
-                return s;
-            } : decodeURIComponent;
-            var pairs = document.cookie.split('; ');
-            for(var i = 0, pair; pair = pairs[i] && pairs[i].split('='); i++) {
-                if(decode(pair[0]) === key)
-                    return decode(pair[1] || '');
-            }
-            return null;
-        },
-        _Cookies: function(keys, options){
-            var self = this;
-            if(!keys) return;
-            if(SYST.V.isObject(keys)){
-                SYST.T.each(Object.keys(keys), function(key){
-                    self.Cookie(key, keys[key], options);
-                });
-            }
-            else if(SYST.V.isArray(keys)){
-                var rs = {}, name;
-                if(keys.length === 1){
-                    name = keys[0];
-                    rs[name] = self.getCookie(name);
-                }else{
-                    for(var i = 0, len = keys.length; i < len; ++i){
-                        name = keys[i];
-                        rs[name] = self.getCookie(name);
-                    }
-                }
-                return rs;
-            }
-        },
+        Cookie: Cookie,
         getCookie: function(key){
             return SYST.V.isString(key)
-                ? this.Cookie(key)
-                : this._Cookies(key);
+                ? Cookie(key)
+                : _Cookies(key);
         },
         setCookie: function(key, value, options){
             return SYST.V.isString(key)
-                ? this.Cookie(key, value, options)
-                : this._Cookies(key, options);
+                ? Cookie(key, value, options)
+                : _Cookies(key, options);
         },
 
         /**
@@ -454,23 +442,67 @@
          * @param target   回调作用域对象
          * @param callback
          */
-        each: function(object, callback, target){
-            if(SYST.V.isObject(object)){
-                var index = 0;
-                for(var k in object){
-                    if(object.hasOwnProperty(k)){
-                        callback.call(target || object, object[k], index++, k);
-                    }
-                }
+        each: each,
+        extend: SYST.extend,
+        clone: SYST.clone,
+
+        /**
+         * 数组转成Object对象
+         * @param arr
+         * @param key
+         * @param flag      是否以数组元素作为Object的key
+         * @returns {{}}
+         */
+        arr2object: function(arr, key, flag){
+            var _obj = {};
+            if(key){
+                _obj[key] = arr;
+            }else{
+                each(arr, function(v, i){
+                    flag ? (_obj[v] = v) : (_obj[i] = v);
+                });
             }
-            else if(SYST.V.isArray(object)){
-                var i = 0, len = object.length;
-                for(; i < len; ++i){
-                    callback.call(target || object, object[i], i);
-                }
+            return _obj;
+        },
+        /**
+         * 数组去重
+         * @param arr
+         * @returns {Array}
+         */
+        unique: function(arr) {
+            var result = [];
+            each(arr, function(v){ result.indexOf(v) === -1 && result.push(v); });
+            return result;
+        },
+        /**
+         * 合并数组或对象
+         * @param v1
+         * @param v2
+         * @param flag (是否对合并的数据进行去重)
+         */
+        merge: function(v1, v2, flag){
+            var rs;
+            if(!v1) return v2;
+            if(!v2) return v1;
+            if(SYST.V.isArray(v1) && SYST.V.isArray(v2)){
+                rs = [].concat(v1, v2);
+                rs = (flag === true) ? this.unique(rs) : rs;
+            }
+            else if(SYST.V.isObject(v1) && SYST.V.isObject(v2)){
+                rs = SYST.extend(v1, v2);
             }
             else{
-                throw new SyntaxError('args1 is must Object or Array');
+                rs = v1 + v2;
+            }
+            return rs;
+        },
+        json: {
+            stringify: function(){
+                return JSON.stringify.apply(null, arguments).replace(/\"/g, "_@");
+            },
+            parse: function(){
+                var str = arguments[0].replace(/_\@/g, '"');
+                return JSON.parse(str);
             }
         }
     };

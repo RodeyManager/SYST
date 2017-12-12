@@ -1,14 +1,4 @@
-/**
- * Created by Rodey on 2015/10/16.
- *
- * Module Native相关 移动开发工具（web端调用native）
- * @type {Function}
- * USE: //调用native方法 , 未完待续>>>>>>>>
- */
-
 ;(function(SYST){
-
-    'use strict';
 
     var ua = navigator.userAgent.toUpperCase(),
         // 当前环境是否为Android平台
@@ -30,6 +20,7 @@
         return SYST.extendClass(arguments, Native);
     };
     SYST.N = Native.prototype = {
+        UA          : ua,
         isAndroid   : IS_ANDROID,
         isIos       : IS_IOS,
         isNative    : IS_NATIVE,

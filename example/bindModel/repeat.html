@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>数据绑定(st-for)</title>
+    <meta charset="UTF-8"/>
+    <meta content="descriptions" charset="">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-status-bar-style" content="black-translucent">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+    <meta name="format-detection" content="telephone=no" />
+    <style>
+        .box{
+            width: 30px;
+            height: 30px;
+            position: fixed;
+            right: 30px;
+            top: 50px;
+            z-index: 100;
+            background-color: palegoldenrod;
+            border-radius: 50% 50%;
+        }
+        *[st-lock]{
+            display: none;
+        }
+        .c-r{ color: red }
+        .c-g{ color: green }
+        .c-b{ color: blue }
+        .c-c{ color: cyan }
+        .c-m{ color: magenta }
+        .c-y{ color: yellow }
+        .c-k{ color: black }
+    </style>
+</head>
+<body>
+    <div id="app" st-lock>
+        <h5>repeat array</h5>
+        <ul id="repeat-dom" st-for="item in array | addeat">
+            <li>
+                {{ '@' + item }} - {{ $index }} - {{ $first }} - {{ $last }} ====
+                <span>{{ colorType }}</span>
+            </li>
+        </ul>
+        <div st-for="item in array">
+            <div>{{ '@' + item }} - {{ $index }} - {{ $first }} - {{ $last }}</div>
+        </div>
+        <div st-for="user as users">
+            <p>{{ $index }}   Name: {{ user.name }} ;   Age: {{ user.age }} - {{ $first }} - {{ $last }}</p>
+        </div>
+        <h5>repeat object</h5>
+        <div>
+            <ol st-for="object">
+                <li><strong>{{ $key }}:</strong> {{ $item }}</li>
+            </ol>
+        </div>
+        <div st-for="bigArray" style="display: none;">
+            <p>{{ $value }}</p>
+        </div>
+        <div style="padding: 10px;background-color: #B7B7B7;">
+            <select id="select-color" st-prop="colorType | getColor" st-for="cate of colorCate" >
+                <option value="{{ cate.name }}">{{ cate.name.toUpperCase() }}</option>
+            </select> <br/>
+            <div st-for="color as colors">
+                <span class="c-{{ $key }}" data-key="{{ $key | SYST.T.toFirstUpperCase }}" data-index="{{ $index }}"> {{ $key }} - {{ color | SYST.T.toFirstUpperCase }}</span><br/>
+            </div>
+        </div>
+    </div>
+
+    <script src="../../dist/SYST.js"></script>
+    <script>
+
+        var repeatModel;
+        SYST.$(function(){
+
+            repeatModel = SYST.Model({
+                $mid: '#app',
+                props: {
+                    colorType: 'rgb',
+                    colorCate: [{ name: 'rgb' }, { name: 'cmyk' }]
+                },
+                helpers: {
+                    addeat: function(arr){
+                        var rs = [];
+                        for(var i = 0; i < arr.length; i++){
+                            rs.push(arr[i].toUpperCase());
+                        }
+                        return rs;
+                    },
+                    getColor: function(colorType){
+                        var colors;
+                        if(colorType === 'rgb'){
+                            colors = this.format({ r: 'red', g: 'green', b: 'blue'});
+                        }else if(colorType === 'cmyk'){
+                            colors = this.format({ c: 'cyan', m: 'magenta', y: 'yellow', k: 'black' });
+                        }
+                        this.set('colors', colors);
+                        this.set('array', this.array);
+                        return colorType;
+                    }
+                },
+                init: function(){
+                    this.array = ['a', 'b', 'c', 'd', 'e', 'f'];
+                    this.set('array', this.array);
+                    var users = [
+                        { name: 'jack', age: 23 },
+                        { name: 'tom', age: 24}
+                    ];
+                    this.set('users', users);
+                    this.helpers.getColor(this.props.colorType);
+                    this.set('object', {
+                        name: 'Rodey',
+                        email: '111@qq.com',
+                        qq: '12121212',
+                        github: 'https://github.com/RodeyManager'
+                    });
+                    var bigArr = [];
+                    for(var i = 0; i < 10000; ++i){
+                        bigArr.push(i);
+                    }
+                    //this.set('bigArray', bigArr);
+                },
+                format: function(color){
+                    for(var key in color){
+                        color[key] = color[key] + '   (' + this.toRGB(color[key]) + ')';
+                    }
+                    return color;
+                },
+                toRGB: function(color){
+                    switch (color){
+                        case 'red':
+                            color = '#FF0000'; break;
+                        case 'green':
+                            color = '#00FF00'; break;
+                        case 'blue':
+                            color = '#0000FF'; break;
+                        case 'cyan':
+                            color = '#00FFFF'; break;
+                        case 'magenta':
+                            color = '#FF00FF'; break;
+                        case 'yellow':
+                            color = '#FFFF00'; break;
+                        case 'black':
+                            color = '#000000'; break;
+                    }
+                    return color;
+                }
+            });
+
+
+
+        });
+
+    </script>
+
+</body>
+</html>

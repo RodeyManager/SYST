@@ -3,37 +3,29 @@
  * Http 相关
  */
 
-
 ;(function(SYST){
-
-    'use strict';
-
-    var _$ = SYST.$;
-    if(!_$){
-        throw new Error('doRequest: $不存在，此方法依赖于(jQuery||Zepto||Ender)');
-    }
 
     SYST.httpConfig = {};
     var Http = function(){
         this.__instance_SYST__ = 'SYST Http';
         this.__name__ = 'SYST Http';
     };
-    SYST.Http = function(){
-        return SYST.extendClass(arguments, Http);
+    SYST.Http = SYST.Request = function(){
+        var http = SYST.extendClass(arguments, Http);
+        http._initialize();
+        return http;
     };
 
-    //SYST.Http.prototype = {
+    var Ajax = SYST.Ajax;
+
     Http.prototype = {
-
-        load: function(dom, url, data, callback){
-            _$(dom).load(url, data, callback);
+        _initialize: function(){
+            this.init && this.init.apply(this);
         },
-        ajax: _$.ajax,
-        get: _$.get,
-        getJSON: _$.getJSON,
-        getScript: _$.getScript,
-        post: _$.post,
-
+        ajax: Ajax.ajax,
+        get: Ajax.get,
+        getJSON: Ajax.getJSON,
+        post: Ajax.post,
         /**
          * Function 通用AJAX请求方法
          * @param url
@@ -42,92 +34,66 @@
          * @param fail
          */
         doRequest: function(url, postData, su, fail, options){
-            var self = this, type, dataType, commonData, commonHandler, setting = {}, callTarget;
-            if(!postData || typeof postData !== 'object' || !url || url == '') return;
+            var type, dataType, commonData, commonHandler, setting = {}, callTarget;
+            if(!postData || !SYST.V.isObject(postData) || !url) return;
             //记录当前ajax请求个数
-            self._ajaxCount = 0;
-            this.ajaxUrl = url;
-            dataType = self.ajaxDataType || SYST.httpConfig['ajaxDataType'] || 'json';
+            type = this.type || SYST.httpConfig.type || 'GET';
+            dataType = this.dataType || SYST.httpConfig.dataType || 'json';
+            commonData = this.commonData || SYST.httpConfig.commonData || {};
+            callTarget = this.target || this;
 
-            var ajaxBefore      = self.ajaxBefore   || SYST.httpConfig.ajaxBefore,
-                ajaxSuccess     = self.ajaxSuccess  || SYST.httpConfig.ajaxSuccess,
-                ajaxError       = self.ajaxError    || SYST.httpConfig.ajaxError,
-                ajaxComplete    = self.ajaxComplete || SYST.httpConfig.ajaxComplete,
-                ajaxEnd         = self.ajaxEnd      || SYST.httpConfig.ajaxEnd;
+            var ajaxBefore      = this.ajaxBefore   || SYST.httpConfig.ajaxBefore,
+                ajaxSuccess     = this.ajaxSuccess  || SYST.httpConfig.ajaxSuccess,
+                ajaxError       = this.ajaxError    || SYST.httpConfig.ajaxError,
+                ajaxComplete    = this.ajaxComplete || SYST.httpConfig.ajaxComplete,
+                ajaxEnd         = this.ajaxEnd      || SYST.httpConfig.ajaxEnd;
 
             if(SYST.V.isObject(options)){
-                type = options.type || self.ajaxType || SYST.httpConfig['ajaxType'] || 'POST';
-                dataType = options.dataType || self.ajaxDataType || SYST.httpConfig['ajaxDataType'] || 'json';
-                commonData = options.commonData || self.commonData || SYST.httpConfig['commonData'] || {};
-                commonHandler = options.commonHandler;
                 setting = options;
-                callTarget = options['callTarget'] || self;
+                commonHandler = options['commonHandler'];
+                callTarget = options['callTarget'] || this;
             }
-            //提交前触犯
-            if(before() === false) return;
 
-            var ajaxSetting = SYST.extend(setting, {
+            var ajaxSetting = SYST.extend({
                 url: url,
                 type: type,
                 data: SYST.extend(postData, commonData),
                 dataType: dataType,
-                success: function(res, data, status, xhr){
+                before: ajaxBefore,
+                success: function(){
                     //console.log('请求成功', res);
-                    end(res, data, status, xhr);
+                    end(arguments);
                     //如果ajaxSuccess返回false 则将阻止之后的代码运行
-                    var rs = success(res, data, status, xhr);
-                    rs !== false && SYST.V.isFunction(su) && su.call(callTarget, res, data, status, xhr);
+                    var rs = success.apply(callTarget, arguments);
+                    rs !== false && SYST.V.isFunction(su) && su.apply(callTarget, arguments);
                 },
-                error: function(xhr, errType){
+                error: function(){
                     //console.log('请求失败');
-                    var response = xhr.response;
-                    try{
-                        response = JSON.parse(response);
-                    }catch(e){
-                    }
-                    end(response, xhr, errType);
+                    end(arguments);
                     //如果ajaxError返回false 则将阻止之后的代码运行
-                    var rs = error(response, xhr, errType);
-                    rs !== false && SYST.V.isFunction(fail) && fail.call(callTarget, response, xhr, errType);
+                    var rs = error.apply(callTarget, arguments);
+                    rs !== false && SYST.V.isFunction(fail) && fail.apply(callTarget, arguments);
                 },
-                complete: function(res, data, status, xhr){
-                    //console.log('请求完成');
-                    complate(res, data, status, xhr);
-                }
-            });
-
-            function before(){
-                SYST.V.isFunction(ajaxBefore) && (setting['beforeSend'] = ajaxBefore.apply(callTarget));
-                if(setting['beforeSend'] === false) return false;
-            }
-
-            function success(res, data, status, xhr){
+                complete: ajaxComplete
+            }, setting);
+            function success(){
                 var su;
-                SYST.V.isFunction(ajaxSuccess) && (su = ajaxSuccess.call(callTarget, res, data, status, xhr));
+                SYST.V.isFunction(ajaxSuccess) && (su = ajaxSuccess.apply(callTarget, arguments));
                 return su;
             }
-
-            function error(res, xhr, errType){
+            function error(){
                 var err;
-                SYST.V.isFunction(ajaxError) && (err = ajaxError.call(callTarget, res, xhr, errType));
+                SYST.V.isFunction(ajaxError) && (err = ajaxError.apply(callTarget, arguments));
                 return err;
             }
-
-            function complate(res, data, status, xhr){
-                var complete;
-                SYST.V.isFunction(ajaxComplete) && (complete = ajaxComplete.call(callTarget, res, data, status, xhr));
-                return complete;
-            }
-
-            function end(res, data, status, xhr){
-                SYST.V.isFunction(commonHandler) && commonHandler();
+            function end(){
+                SYST.V.isFunction(commonHandler) && commonHandler.call(callTarget);
                 var end;
-                SYST.V.isFunction(ajaxEnd) && (end = ajaxEnd.call(callTarget, res, data, status, xhr));
+                SYST.V.isFunction(ajaxEnd) && (end = ajaxEnd.apply(callTarget, arguments));
                 return end;
             }
 
-            _$.ajax(ajaxSetting);
-            self._ajaxCount++;
+            this.ajax(ajaxSetting);
         },
         /**
          * Function doRequest 包装
@@ -139,46 +105,13 @@
         doAjax: function(url, postData, su, fail, options){
             this.doRequest(url, postData, su, fail, options);
         },
-
+        load: Ajax.load,
+        loadHTML: Ajax.loadHTML,
         /**
          * HTML5 fetch api
+         * use: fetch(url, data, type)
          */
-        fetch: (function(){
-            //throw new ReferenceError('fetch api is not support!');
-            return function(url, init, type){
-                init = init || {};
-                var headers = init['headers'] || {},
-                    method = (init['method'] || 'post').toUpperCase(),
-                    body = init['body'];
-                if(!'fetch' in window){
-                    var p = new SYST.Promise();
-                    var setting = $.extend(init, {
-                        url: url,
-                        data: body,
-                        type: method,
-                        dataType: type,
-                        success: function(res){ p.resolve(res); },
-                        error: function(err){   p.reject(err);  }
-                    });
-                    _$.ajax(setting);
-                    return p;
-                }else{
-                    if(method == 'GET' || method == 'HEAD'){
-                        if(SYST.V.isObject(body))
-                            url += SYST.T.paramData(body, true);
-                        else if(SYST.V.isString(body))
-                            url += '?' + body;
-                        init['body'] = null;
-                        delete init['body'];
-                    }else{
-                        SYST.V.isObject(body) && (init['body'] = JSON.stringify(body));
-                    }
-                    return window['fetch'](url, init).then(function(res){
-                        return (SYST.V.isFunction(res[type]) && res[type]());
-                    });
-                }
-            };
-        })(),
+        fetch: Ajax.fetch,
 
         /**
          * HTML5 WebSockets Object
@@ -190,9 +123,30 @@
             if(!'WebSocket' in window)
                 throw new ReferenceError('WebSocket api is not support!');
             return new WebSocket(uri, options);
+        },
+
+        /**
+         * 根据api对象自动生成对象方法
+         * @param apis
+         */
+        generateApi: function(apis, options){
+            SYST.V.isObject(apis) && SYST.T.each(apis, function(url, i, key){
+                this._generateApi(key, url, options);
+            }, this);
+        },
+        _generateApi: function(key, url, options){
+            var self = this;
+            options = SYST.V.isObject(options) && options || {};
+            function _vfn(postData, su, fail, opts, target){
+                options = SYST.extend(options, opts || {});
+                options.callTarget = target || this.target || options.callTarget || this;
+                this.doAjax(url, postData, su, fail, options);
+            }
+            ('defineProperty' in Object)
+                ? Object.defineProperty(self, key, { value: _vfn.bind(this) })
+                : (self[key] = _vfn);
         }
 
     }
-
 
 })(SYST);

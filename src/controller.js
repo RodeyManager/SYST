@@ -1,16 +1,4 @@
-/**
- * Created by Rodey on 2015/10/16.
- */
-
 ;(function(SYST){
-
-    'use strict';
-
-
-    /**
-     * Module 控制器对象
-     * @type {Function}
-     */
 
     var Controller = function(){
         this.__instance_SYST__ = 'SYST Controller';
@@ -21,10 +9,12 @@
         ctrl._initialize();
         return ctrl;
     };
-    SYST.Controller.prototype = {
+    Controller.prototype = {
         shareModel: SYST.shareModel,
+        $: SYST.$,
         _initialize: function(){
             this.defaultHost = this.defaultHost || location.host;
+            this.model = SYST.Model();
             SYST.V.isFunction(this.init) && this.init.apply(this, arguments);
         },
         getModel: function(key){

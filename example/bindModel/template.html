@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>数据绑定(st-template)</title>
+    <meta charset="UTF-8"/>
+    <meta content="descriptions" charset="">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-status-bar-style" content="black-translucent">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+    <meta name="format-detection" content="telephone=no" />
+    <style>
+        .box{
+            width: 30px;
+            height: 30px;
+            position: fixed;
+            right: 30px;
+            top: 50px;
+            z-index: 100;
+            background-color: palegoldenrod;
+            border-radius: 50% 50%;
+        }
+        *[st-model]{
+            visibility: hidden;
+        }
+        .c-r{ color: red }
+        .c-g{ color: green }
+        .c-b{ color: blue }
+        .c-c{ color: cyan }
+        .c-m{ color: magenta }
+        .c-y{ color: yellow }
+        .c-k{ color: black }
+    </style>
+</head>
+<body>
+
+    <div st-model="userModel">
+        <div>
+            <label for="name"><input type="text" st-prop="name" id="name" autocomplete="off" placeholder="请输入您的姓名"/></label>
+            <h3>您的姓名：<span st-prop="name | filter"></span></h3>
+            <div data-name="{{ name }}">
+                <span data-name="{{ name }}">{{ name }}</span>
+            </div>
+        </div><hr/>
+        <!--没有指定属性，解析数据将为Model的props对象-->
+        <div st-template="user-info-tpl"></div><hr/>
+        <!--指定Model.props.hobby 数组-->
+        <div st-prop="hobby" st-template="hobby-tpl" data-hobby="{{ hobby }}"></div><hr/>
+        <!--指定Model.props.user Object 对象-->
+        <div st-prop="user" st-template="user-tpl"></div><hr/>
+        <div st-prop="email" st-template="email-tpl"></div><hr/>
+        <button id="server-btn">获取最新用户信息</button><hr/>
+    </div>
+    <script type="text/html" id="user-info-tpl">
+        <ul>
+            <li>{{= name }}</li>
+            <li>{{= email }}</li>
+            <li>{{= qq }}</li>
+            <li>{{= github }}</li>
+            <li>{{= user.tech }}</li>
+            {{ if(SYST.V.isArray(hobby)){ }}
+            <li>{{= hobby.join('、')  }}</li>
+            {{ } }}
+        </ul>
+    </script>
+    <script type="text/html" id="hobby-tpl">
+        {{= hobby.join('、') }}
+    </script>
+    <script type="text/html" id="user-tpl">
+        <span><strong>First Name:</strong> {{= user.name.first }}</span><br/>
+        <span><strong>Last Name:</strong> {{= user.name.last }}</span><br/>
+        <span><strong>Techer:</strong> {{= user.tech }}</span>
+    </script>
+    <script type="text/html" id="email-tpl">
+        <a href="mailto:{{= email }}">{{= email }}</a>
+    </script>
+
+    <!--<script src="../../bower_components/jquery/dist/jquery.min.js"></script>-->
+    <script src="../../dist/SYST.js"></script>
+    <script>
+
+        SYST.ready(function(){
+            var stProps = document.querySelectorAll('[st-model]');
+            for(var i = 0, len = stProps.length; i < len; ++i)
+                stProps[i].style.visibility = 'visible';
+        });
+
+        var userModel, view;
+        SYST.ready(function(){
+
+            userModel = SYST.Model({
+                $mid: 'userModel',
+                props: {
+                    name: 'Rodey',
+                    email: '111@qq.com',
+                    qq: '12121212',
+                    github: 'https://github.com/RodeyManager',
+                    hobby: ['音乐', '游戏', '远动', '阅读']
+                },
+
+                init: function(){
+                    this.set('user', { name: { first: 'Yong', last: 'Luo' }, tech: 'Web前端工程师' });
+                },
+                filter: function(firstName){
+                    return '{ ' + firstName + ' }';
+                },
+                addDate: function(str){
+                    return str + '\r当前日期：' + SYST.T.setDateFormat(Date.now(), 'YYYY-mm-dd', true);
+                },
+                login: function(su){
+                    this.$http.get('../test.json', {}, function(res){
+                        this.set(res.data);
+                        //this.watcher.updateRenderTemplate('#user-info-tpl', res.data);
+                        var names = res.data.name.split(' ');
+                        this.props.user.name.first = names[0];
+                        this.props.user.name.last = names[1];
+                        console.log(this.get('user'));
+                        //this.props.user = this.get('user');
+                        SYST.V.isFunction(su) && su.call(this, res);
+                    }.bind(this));
+                }
+            });
+
+            view = SYST.View({
+                model: userModel,
+                events: {
+                    'click #server-btn'     : 'serverHandler'
+                },
+                inputHandler: function(evt){
+                    evt.preventDefault();
+                    this.model.set('name', evt.currentTarget.value);
+                },
+                serverHandler: function(evt){
+                    this.model.login(function(res){
+                        console.log(res);
+                        //$('#user-info').show();
+                    }.bind(this));
+                }
+
+            });
+
+        });
+
+    </script>
+
+</body>
+</html>

@@ -1,15 +1,4 @@
-/**
- * Created by Rodey on 2015/10/16.
- *
- * Module web通用验证数据对象
- * @type {Function}
- */
-
 ;(function(SYST){
-
-    'use strict';
-
-    var toString = Object.prototype.toString;
 
     var Validate = function(){
         this.__instance_SYST__ = 'SYST Validate';
@@ -27,9 +16,9 @@
             else                            return (/[\u4e00-\u9fa5]+/gi.test(str));
         },
         //验证 E-mail 地址
-        isEmail     : function(email){      return /^\w+([-+.]\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*$/gi.test(email); },
+        isEmail     : function(email){      return /^([a-z0-9]+([\.\-_]?[a-z0-9]+)?)@([a-z0-9]+)\.([a-z0-9]+(\.[a-z0-9]+)?)$/i.test(email); },
         //验证 URL 地址
-        isURL       : function(url){        return /^http:\/\/[A-Za-z0-9]+\.[A-Za-z0-9]+[\/=\?%\-&_~`@[\]\':+!]*([^<>\"\"])*$/i.test(url); },
+        isURL       : function(url){        return /^http:\/\/[\w\d]+\.[A-Za-z0-9]+[\/=\?%\-&_~`@[\]\':+!]*([^<>\"\"])*$/i.test(url); },
         //验证电话号码
         isTel       : function(tel){        return /^(\(\d{3,4}\)|\d{3,4}-)?\d{7,8}$/gi.test(tel); },
         //验证手机号码
@@ -54,7 +43,12 @@
         isdefined   : function(value){      return typeof value !== 'undefined';},
         isRegExp    : function(value){      return toString.call(value) === '[object RegExp]'; },
         isWindow    : function(value){      return value && value.document && value.location && value.alert && value.setInterval; },
-        isElement   : function(value){      return !!(value && (value.nodeName || (value.prop && value.attr && value.find))); }
+        isDocument  : function(value){      return value != null && value.nodeType == value.DOCUMENT_NODE },
+        isElement   : function(value){      return !!(value && value.nodeName && value.nodeType); },
+        isNodeList  : function(value){      return toString.call(value) === '[object NodeList]'; },
+        isBetween   : function(value, min, max, flag){
+            return flag ? (value.length >= min && value.length <= max) : (value.length > min && value.length < max);
+        }
 
     };
 

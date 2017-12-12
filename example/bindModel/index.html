@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>数据绑定</title>
+    <title>数据绑定(all)</title>
     <meta charset="UTF-8"/>
     <meta content="descriptions" charset="">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -34,44 +34,35 @@
 <body>
 
     <div st-model="loginModel">
-        <p>
+        <div>
             <label for="name"><input type="text" st-prop="name" id="name" autocomplete="off" placeholder="请输入您的姓名"/></label>
             <h3>您的姓名：<span st-prop="name | filter"></span></h3>
             <div>
                 <span>{{ name }}</span>
                 <span>{{ name }}</span>
-                <span>{{ name }}</span>
-                <span>{{ name }}</span>
-                <span>{{ name }}</span>
-                <span>{{ name }}</span>
-                <span>{{ name }}</span>
-                <span>{{ name }}</span>
-                <span>{{ name }}</span>
-                <span>{{ name }}</span>
             </div>
-        </p>
+        </div>
         <div st-template="user-info-tpl"></div>
         <button id="server-btn">获取最新用户信息</button>
-        <script type="text/html" id="user-info-tpl">
-            <ul>
-                <li>{{= name }}</li>
-                <li>{{= email }}</li>
-                <li>{{= qq }}</li>
-                <li>{{= github }}</li>
-            </ul>
-        </script>
-    </div>
-    <div st-model="loginModel">
         <p>
             当前职位：{{ user.tech }}
         </p>
     </div>
+    <script type="text/html" id="user-info-tpl">
+        <ul>
+            <li>{{= name }}</li>
+            <li>{{= email }}</li>
+            <li>{{= qq }}</li>
+            <li>{{= github }}</li>
+        </ul>
+    </script>
     <hr/>
     <div st-model="userModel">
         <h3 id="t-d" style="color:red">Name: {{ name }}  --  Age: {{ age }}</h3>
         <h4 style="color: darkgreen">Interval support: {{ index }}</h4>
-        <h5 style="color: #00d6b2" id="iden">动态绑定 (iden)：</h5>
+        <h5 style="color: #00d6b2" id="iden">动态绑定 (idenNo)：</h5>
         <h5 style="color: darkgray">当前时间: {{ dateTime }}</h5>
+        <h5 style="color: darkgray">  {{ idenNo }} </h5>
     </div>
     <hr/>
     <div st-model="colorModel">
@@ -89,58 +80,70 @@
             <option value="0" selected>隐藏</option>
         </select>
         <br/>
-        <img src="../assets/images/docker.jpg" st-style="display:{{ isShow | isDisplay}}" width="100" alt=""/>
+        <img src="../assets/images/docker.jpg" st-style="display:{{ isShow | isDisplay }}" width="100" alt=""/>
 
         <P>
             <label><input type="radio" name="sex" value="male" st-prop="sex"/> 男</label>
             <label><input type="radio" name="sex" value="female" st-prop="sex"/> 女</label>
         </P>
-
+        <p>selected： {{ sex }}</p>
         <P>
             <label><input type="checkbox" name="lang" value="Java" st-prop="lang"/> Java</label>
             <label><input type="checkbox" name="lang" value="C++" st-prop="lang"/> C++</label>
             <label><input type="checkbox" name="lang" value="Python" st-prop="lang"/> Python</label>
             <label><input type="checkbox" name="lang" value="JavaScript" st-prop="lang"/> JavaScript</label>
         </P>
-
+        <p>selected： {{ lang }}</p>
     </div>
     <hr/>
-    <div>
+    <div st-model="repeatModel">
         <h5>repeat array</h5>
-        <ul id="repeat-dom" st-model="repeatModel">
-            <li st-repeat="array" st-item="arr">{{ arr | toUpperCase | addeat }} - {{ $index }} - {{ $first }} - {{ $last }} ==== <span>{{ colorType }}</span></li>
+        <ul id="repeat-dom" st-for="item in array | addeat">
+            <li>
+                {{ '@' + item }} - {{ $index }} - {{ $first }} - {{ $last }} ====
+                <span>{{ colorType }}</span>
+            </li>
         </ul>
-        <div st-model="repeatModel">
-            <p st-repeat="users" st-item="user">{{ $index }}   Name: {{ user.name }} ;   Age: {{ user.age }} - {{ $first }} - {{ $last }}</p>
+        <div st-for="user as users">
+            <p>{{ $index }}   Name: {{ user.name }} ;   Age: {{ user.age }} - {{ $first }} - {{ $last }}</p>
         </div>
         <h5>repeat object</h5>
-        <div st-model="repeatModel" style="padding: 10px;background-color: #B7B7B7;">
-            <select id="select-color" st-prop="colorType" st-filter="getColor">
+        <div>
+            <ol st-for="object">
+                <li><strong>{{ $key }}:</strong> {{ $value }}</li>
+            </ol>
+        </div>
+        <div style="display: none;" st-for="bigArray">
+            <p>{{ $value }}</p>
+        </div>
+        <div style="padding: 10px;background-color: #B7B7B7;">
+            <select id="select-color" st-prop="colorType | getColor">
                 <option value="rgb" selected>RGB</option>
                 <option value="cmyk">CMYK</option>
             </select> <br/>
-            <span st-repeat="colors" class="c-{{ $key }}" data-key="{{ $key | toFirstUpperCase }}" data-index="{{ $index }}"> {{ $key }} - {{ $val | format | toFirstUpperCase }} <br/></span>
+            <div st-for="color as colors">
+                <span class="c-{{ $key }}" data-key="{{ $key | SYST.T.toFirstUpperCase }}" data-index="{{ $index }}"> {{ $key }} - {{ color | SYST.T.toFirstUpperCase }}</span><br/>
+            </div>
         </div>
     </div>
 
-    <script src="../../bower_components/jquery/dist/jquery.min.js"></script>
+    <!--<script src="../../bower_components/jquery/dist/jquery.min.js"></script>-->
     <script src="../../dist/SYST.js"></script>
     <script>
 
-        document.addEventListener('DOMContentLoaded', function(){
-            var stProps = document.querySelectorAll('[st-model]');
-            for(var i = 0, len = stProps.length; i < len; ++i)
-                stProps[i].style.visibility = 'visible';
-        }, false);
+        SYST.ready(function(){
+            var stModels = SYST.$('[st-model]');
+            stModels.css('visibility', 'visible');
+        });
 
         var userModel, loginModel, colorModel, repeatModel, view;
-        $(function(){
+        SYST.$(function(){
 
             repeatModel = SYST.Model({
                 $mid: 'repeatModel',
                 init: function(){
-                    var array = ['a', 'b', 'c', 'd', 'e', 'f'];
-                    this.set('array', array);
+                    this.array = ['a', 'b', 'c', 'd', 'e', 'f'];
+                    this.set('array', this.array);
                     var users = [
                         { name: 'jack', age: 23 },
                         { name: 'tom', age: 24}
@@ -148,14 +151,28 @@
                     this.set('users', users);
                     this.set('colorType', 'rgb');
                     this.getColor(this.get('colorType'));
+                    this.set('object', {
+                        name: 'Rodey',
+                        email: '111@qq.com',
+                        qq: '12121212',
+                        github: 'https://github.com/RodeyManager'
+                    });
                 },
-                addeat: function(str){ return '@' + str; },
+                addeat: function(arr){
+                    var rs = [];
+                    for(var i = 0; i < arr.length; i++){
+                        rs.push(arr[i].toUpperCase()); //.toUpperCase();
+                    }
+                    return rs;
+                },
                 getColor: function(colorType){
                     if(colorType === 'rgb'){
                         this.set('colors', { r: 'red', g: 'green', b: 'blue'});
                     }else if(colorType === 'cmyk'){
                         this.set('colors', { c: 'cyan', m: 'magenta', y: 'yellow', k: 'black' });
                     }
+                    //---
+                    this.set('array', this.array);
                     return colorType;
                 },
                 format: function(color){
@@ -184,45 +201,45 @@
 
             colorModel = SYST.Model({
                 $mid: 'colorModel',
-                //props: { color: 'red', isShow: 0 },
+                props: { color: null, sex: 'female', lang: ['Java', 'C++'] },
                 init: function(){
                     setTimeout(function(){
-                        this.set({ color: 'red', isShow: 0, sex: 'male', lang: 'JavaScript'});
-                    }.bind(this), 5000);
+                        this.set({ color: 'red', isShow: 0, sex: 'male', lang: ['JavaScript', 'Python'], name: '测试嵌套model prop是否覆盖'});
+                    }.bind(this), 7000);
                 },
                 isDisplay: function(isShow){
                     return Number(isShow) ? 'block' : 'none';
                 }
+
             });
 
             userModel = SYST.Model({
                 $mid: 'userModel',
-                props: { name: 'Jack', age: 12, index: '0' },
+                props: { name: 'Jack', age: 12, index: '0', idenNo: '' },
                 init: function(){
                     this.set('dateTime', SYST.T.setDateFormat(Date.now(), 'YYYY-mm-dd h:i:s', true));
+                    this.index = 1;
                     this.autoTry();
                 },
                 autoTry: function(){
-                    var self = this;
                     this.stimp = new SYST.Promise();
                     setTimeout(function(){
                         this.stimp.resolve({name: '招商信诺人寿保险公司', age: 5});
-                    }.bind(this), 5000);
+                    }.bind(this), 3000);
 
                     this.stimp.then(function(name){
                         this.set(name);
                     }.bind(this));
 
-                    this.stin = setInterval(function(){
-                        if(this.props.index < 100)
-                            this.props.index++;
+                    setInterval(function(){
+                        if(this.index < 100)
+                            this.set('index', this.index++);
                         this.set('dateTime', SYST.T.setDateFormat(Date.now(), 'YYYY-mm-dd h:i:s', true));
                     }.bind(this), 1000);
 
                     setTimeout(function(){
-                        $('#iden').html('动态绑定 (iden)：{{ iden }}');
-                        this.watcher.addListener('iden', '362422********000100');
-                        //this.set('iden', '362422********000100');
+                        SYST.$('#iden').html('动态绑定 (idenNo)：{{ idenNo }}');
+                        this.add('idenNo', '362422********000100');
                     }.bind(this), 5000);
                 }
 

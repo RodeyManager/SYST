@@ -47,10 +47,10 @@
 
         <!--links-->
         <div class="links">
-            <a class="info" href="#!user/">find user</a>
-            <a class="add" href="#!user/add">add user</a>
-            <a class="edit" href="#!user/edit?id=5">edit user</a>
-            <a class="delete" href="#!user/delete?id=5">delete user</a>
+            <a class="info" href="#user/">find user</a>
+            <a class="add" href="#user/add">add user</a>
+            <a class="edit" href="#user/edit?id=5">edit user</a>
+            <a class="delete" href="#user/delete?id=5">delete user</a>
             <button class="info">Click me</button>
         </div>
         <!--<ul>
@@ -60,12 +60,13 @@
     </div>
 
 <!--载入js-->
-<script src="../../bower_components/jquery/dist/jquery.min.js"></script>
+<!--<script src="../../bower_components/jquery/dist/jquery.min.js"></script>-->
 <script src="../../dist/SYST.js"></script>
+<script src="../../dist/SYST.Router.js"></script>
 
 <script>
 
-    $(function(){
+    SYST.ready(function(){
 
         var router = SYST.Router({
 
@@ -75,23 +76,24 @@
                 'user/edit': 'editAction',
                 'user/delete': 'deleteAction'
             },
+            redirectTo: 'user/',
 
             listAction: {
                 action: function(){
-                    console.log(this);
+                    console.log('list: ', this);
                 }
             },
 
             addAction: function(){
-
+                console.log('add: ', this);
             },
 
             editAction: function(){
-
+                console.log('edit: ', this);
             },
 
             deleteAction: function(){
-
+                console.log('delete: ', this);
             }
 
 

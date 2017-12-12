@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<!--suppress ALL -->
+<html lang="en">
+<head>
+    <title>TODO LIST(Array)</title>
+    <meta charset="UTF-8"/>
+    <meta content="descriptions" charset="">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-status-bar-style" content="black-translucent">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+    <meta name="format-detection" content="telephone=no" />
+    <link rel="stylesheet" href="assets/css/index.css"/>
+    <style>
+        [st-lock]{ display: none; }
+    </style>
+</head>
+<body>
+
+    <div id="todo-model" class="">
+        <header>
+            <h1>TODO</h1>
+            <input type="text" id="add-todo" st-on="{ keydown: onAddTodo }" placeholder="What needs to be done?"/>
+        </header>
+        <div id="todo-list" class="todo-list" st-for="todo as todoList">
+            <div class="todo-item" st-lock>
+                <span>{{ $index + 1 }}</span>
+                <p>{{ todo }}</p>
+                <i class="close-btn" st-on="{ click: onRemoveTodoItem }">X</i>
+            </div>
+        </div>
+        <footer><p st-lock>{{ tip }}</p></footer>
+    </div>
+    <p class="tips" id="tips">添加成功!</p>
+
+    <script src="../../dist/SYST.js"></script>
+    <script>
+        SYST.ready(function(){
+            var stProps = document.querySelectorAll('[st-model]');
+            for(var i = 0, len = stProps.length; i < len; ++i)
+                stProps[i].style.visibility = 'visible';
+        });
+        SYST.ready(function(){
+
+            var $tips = SYST.$('#tips');
+            SYST.$(document).click(function(evt){
+                if($tips.hasClass('success|error')){
+                    $tips.removeClass('success error');
+                }
+            });
+
+            var todoModel = SYST.Model({
+                $mid: '#todo-model',
+                props: {
+                    todoList: [],
+                    tip: '请添加todo'
+                },
+                onAddTodo: function(evt){
+                    var keyCode = evt.keyCode,
+                        type = evt.type,
+                        target = evt.target,
+                        value = target.value;
+                    if(!value || value.length < 5) return;
+                    if(keyCode === 13){
+                        if(this.props.todoList.indexOf(value) > -1){
+                            $tips.html('this todo is exist').addClass('error');
+                        }else{
+                            $tips.html('Add todo item successfully').removeClass('error').addClass('success');
+                            this.props.todoList.push(value);
+                            target.value = '';
+                        }
+                    }
+                },
+                onRemoveTodoItem: function(evt){
+                    var itemNode = this.$(evt.target).parent(),
+                        value = itemNode.find('p')[0].text();
+                    var index = this.props.todoList.indexOf(value);
+                    if(index > -1){
+                        //this.props.todoList.splice(index, 1);
+                        this.props.todoList.remove(value);
+                    }
+                }
+            });
+
+        });
+
+    </script>
+
+</body>
+</html>

@@ -1,10 +1,4 @@
-/**
- * Created by Rodey on 2015/12/8.
- */
-
 ;(function(SYST){
-
-    'use strict';
 
     var PENDING = 1,
         FULFILLED = 2,
@@ -66,13 +60,10 @@
             return this.then(fulfil);
         },
         success: function(fulfil){
-            return this.then(fulfil);
+            return this.done(fulfil);
         },
 
         //将 rejected状态的回调 加入到执行队列中
-        catch: function(reject){
-            return this.then(null, reject);
-        },
         error: function(reject){
             return this.then(null, reject);
         },

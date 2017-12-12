@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title></title>
+</head>
+<body>
+<div id="app">
+    <div st-for="user as users">
+            <span st-for="item in user">
+                <em st-for="char of item">{{= char + ',' }}</em>
+            </span>
+        <strong></strong>
+        <p><span></span></p>
+    </div>
+</div>
+<script src="../../dist/SYST.js"></script>
+<script>
+
+    SYST.ready(function(){
+        var stProps = document.querySelectorAll('[st-model]');
+        for(var i = 0, len = stProps.length; i < len; ++i)
+            stProps[i].style.visibility = 'visible';
+    });
+
+    var testModel;
+    SYST.ready(function(){
+
+        //            testModel = SYST.Model({
+        //                $mid: '#app',
+        //                props: {},
+        //                init: function(){}
+        //            });
+
+        var tplConfig = {open: '{{', close: '}}'};
+        var data = {
+            users: [
+                {name: 'Tom', age: '28'},
+                {name: 'Jack', age: '38'}
+            ]
+        };
+
+        function BindRepeat(node){
+            this.node = node;
+            this.parent = null;
+            this.childs = [];
+        }
+
+        var $app = SYST.$('#app'),
+                $frame = SYST.$(document.createElement('div'));
+        var div = SYST.$($app.html());
+
+        $frame.append(div);
+        var childNodes = $frame.childrenAll().reverse();
+
+        SYST.T.each(childNodes, function(node){
+
+            var parent = node.parent('[st-for]');
+            if(parent){
+                node._p_st_for = parent.attr('st-for');
+            }
+            node.st_for = node.attr('st-for');
+            //node.removeAttr('st-for');
+            //addBeforeTextNode(node);
+            //addAfterTextNode(node);
+            renderNode(node, data);
+
+        }, this);
+
+        function renderNode(node, data){
+            var temp = node.clone(true);
+            var frame = SYST.$(document.createElement('div'));
+            frame.append(temp);
+            addBeforeTextNode(temp);
+            addAfterTextNode(temp);
+            var html = frame.html();
+            console.log(html);
+            html = SYST.T.render(html, data, null, tplConfig);
+            frame.html(html);
+            node.after(SYST.$(temp.html()));
+            node.remove();
+        }
+
+        //            var stFor = div.attr('st-for');
+        //            if(stFor){
+        //                addBeforeTextNode(div);
+        //                addAfterTextNode(div);
+        //                div.st_for = stFor;
+        //                div.removeAttr('st-for');
+        //            }
+
+        var html = $frame.html();
+        console.log(html);
+        //            html = SYST.T.render($frame.html(), data, null, tplConfig);
+        //            console.log(html);
+        //            $app.html(html);
+
+        function addBeforeTextNode(node){
+            var stFor = node.attr('st-for') || node.st_for;
+            var fis = stFor.split(/as|in|of/i).map(function(tis){
+                return tis.trim();
+            });
+
+            var text = '{{ each('+ fis[1] +', function('+ fis[0] +'){   }}';
+            var textNode = document.createTextNode(text);
+            node.before(textNode);
+        }
+
+        function addAfterTextNode(node){
+            var text = '{{ }); }}';
+            var textNode = document.createTextNode(text);
+            node.after(textNode);
+        }
+
+
+    });
+
+
+</script>
+</body>
+</html>

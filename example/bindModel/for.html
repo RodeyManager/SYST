@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>数据绑定(st-for)</title>
+    <meta charset="UTF-8"/>
+    <meta content="descriptions" charset="">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-status-bar-style" content="black-translucent">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+    <meta name="format-detection" content="telephone=no" />
+    <style>
+        .box{
+            width: 30px;
+            height: 30px;
+            position: fixed;
+            right: 30px;
+            top: 50px;
+            z-index: 100;
+            background-color: palegoldenrod;
+            border-radius: 50% 50%;
+        }
+        *[st-lock]{
+            visibility: hidden;
+        }
+        .c-r{ color: red }
+        .c-g{ color: green }
+        .c-b{ color: blue }
+        .c-c{ color: cyan }
+        .c-m{ color: magenta }
+        .c-y{ color: yellow }
+        .c-k{ color: black }
+    </style>
+</head>
+<body>
+    <div st-model="repeatModel" st-lock>
+        <h5>repeat array</h5>
+
+        <div st-for="lang in langs">
+            <p>{{ fix }}{{ lang | addAst }} - {{ $index + 1 }} - {{ $first }} - {{ $last }}</p>
+        </div>
+
+        <hr/>
+        <div st-for="item as user"><p>{{ item }}<br/></p></div>
+
+        <hr/>
+        <div st-for="item as user" st-style="background-color:{{ bgcolor }}">
+            <p>
+                <span><strong>{{ $key }}：</strong> {{ item }} : </span><br/>
+                <span st-for="char in item" st-style="color:{{ color }}" style="font-size: 10px;"><i st-on="click: clickI">{{ char + ',' }}</i></span><br/><br/>
+            </p>
+        </div>
+
+    </div>
+
+    <script src="../../dist/SYST.js"></script>
+    <script>
+
+        var repeatModel;
+        SYST.ready(function(){
+
+            var user = {
+                name: 'Jack',
+                email: '111@qq.com',
+                qq: '12121212',
+                github: 'https://github.com/RodeyManager'
+            };
+
+            repeatModel = SYST.Model({
+                $mid: 'repeatModel',
+                props: {
+                    langs: ['c', 'c++', 'java', 'javaScript', 'python', 'ruby', 'swift', 'go', 'lua'],
+                    user: user,
+                    color: '#64AFB9',
+                    fix: '@'
+                },
+                init: function(){
+                    setTimeout(function(){
+                        user.email = '453474593@qq.com';
+                        user.qq = '453474593';
+                        this.props.color = 'red';
+                        this.props.user = user;
+                        this.props.bgcolor = '#EAFFEB';
+                    }.bind(this), 5000);
+                },
+                addAst: function(str){
+                    return str + '   ***   ';
+                },
+                clickI: function(evt) {
+                    console.log(evt);
+                }
+            });
+
+
+
+        });
+
+    </script>
+
+</body>
+</html>

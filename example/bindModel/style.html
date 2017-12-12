@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>数据绑定(st-style)</title>
+    <meta charset="UTF-8"/>
+    <meta content="descriptions" charset="">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-status-bar-style" content="black-translucent">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+    <meta name="format-detection" content="telephone=no" />
+    <style>
+        .box{
+            width: 30px;
+            height: 30px;
+            position: fixed;
+            right: 30px;
+            top: 50px;
+            z-index: 100;
+            background-color: palegoldenrod;
+            border-radius: 50% 50%;
+        }
+        *[st-lock]{
+            display: none;
+        }
+        .c-r{ color: red }
+        .c-g{ color: green }
+        .c-b{ color: blue }
+        .c-c{ color: cyan }
+        .c-m{ color: magenta }
+        .c-y{ color: yellow }
+        .c-k{ color: black }
+    </style>
+</head>
+<body>
+
+    <div st-model="colorModel" st-style="margin:{{width}}" st-lock>
+        <h5>styles bind</h5>
+        <p>
+            <select name="color" st-prop="color" st-for="cate of colorCate">
+                <option value="{{ cate.id }}">{{ cate.name }}</option>
+            </select>
+            <span id="color-show" st-style="color:{{color}};font-weight:bold;">显示您的选择</span>
+        </p>
+        <p>
+            是否显示图片：<select st-prop="isShow">
+                <option value="1">显示</option>
+                <option value="0" selected>隐藏</option>
+            </select>
+        </p>
+        <div>
+            <p><input type="range" max="300" min="50" step="1" st-prop="width"/>{{ width }}</p>
+            <p><input type="number" value="160" st-prop="width" st-style="border: solid 1px {{color}}; color: {{color}}"/></p>
+            <img id="img" src="../assets/images/html5.jpg" st-style="display: {{ isShow | isDisplay }}; width: {{ width | getWidth('px') }}" alt=""/>
+            <div st-style="display: {{ isShow | isDisplay }}; width: {{ width | getWidth('px') }};"></div>
+            <div id="spa" st-style="{{ styles }}"></div>
+        </div>
+    </div>
+
+    <script type="text/html" id="tpl">
+        {{= color }}
+        {{= isDisplay(isShow) }}
+    </script>
+
+    <script src="../../dist/SYST.js"></script>
+    <script>
+
+        var colorModel;
+        SYST.ready(function(){
+
+            colorModel = SYST.Model({
+                $mid: 'colorModel',
+                props: {
+                    color: 'red',
+                    isShow: 1,
+                    width: 160,
+                    margin: 0,
+                    sex: 'male',
+                    lang: ['JavaScript', 'Python'],
+                    colorCate: [
+                        {id: '', name: '请选择颜色'},
+                        {id: 'red', name: '红色'},
+                        {id: 'blue', name: '蓝色'},
+                        {id: 'green', name: '绿色'}
+                    ]
+                },
+                init: function(){
+                    this.set('styles', this.getStyles(this));
+                },
+                isDisplay: function(isShow){
+                    return Number(isShow) ? 'block' : 'none';
+                },
+                getStyles: function(){
+                    return 'display: '+ this.isDisplay(this.props.isShow) + this.getWidth(this.props.width);
+                },
+                getWidth: function(w){
+                    return w + 'px';
+                }
+
+            });
+
+        });
+
+    </script>
+
+</body>
+</html>

@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>TODO LIST(Object BG Color Random)</title>
+    <meta charset="UTF-8"/>
+    <meta content="descriptions" charset="">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-status-bar-style" content="black-translucent">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+    <meta name="format-detection" content="telephone=no" />
+    <link rel="stylesheet" href="assets/css/index.css"/>
+    <style>
+        [st-lock]{ display: none; }
+    </style>
+</head>
+<body>
+
+    <section id="todo-model" class="" st-lock>
+        <header>
+            <h1 st-style="color: {{titleColor}}">TODO</h1>
+            <input type="text" id="add-todo" st-on="{ keydown@enter: onAddTodo }" autofocus placeholder="What needs to be done?"/>
+        </header>
+        <div id="todo-list" class="todo-list" st-for="todo in todoList">
+            <div class="todo-item {{ todo.isCompleted ? 'complete' : '' }}" st-style="background-color: {{ todo.bgColor }}">
+                <span st-on="click: onComplete($index)">{{ $index + 1 }}</span>
+                <p st-on="{ dblclick: onEditTodo($index) }">{{ todo.text }}</p>
+                <input type="text" value="{{ todo.text }}" st-on="{ blur|keydown@enter: onEditTodo($index) }" style="display: none;" />
+                <i class="close-btn" st-on="{ click: onRemoveTodoItem($index) }">X</i>
+            </div>
+        </div>
+        <footer>
+            <p>请添加todo</p>
+        </footer>
+        <div class="bottom-status">
+            <div class="links">
+                <a href="#todo/" class="{{ active == 'all' ? 'active' : '' }}">全部</a>
+                <a href="#todo/active" class="{{ active == 'active' ? 'active' : '' }}">未完成(<strong style="color: red">{{ unFinishSize }}</strong>)</a>
+                <a href="#todo/completed" class="{{ active == 'completed' ? 'active' : '' }}">已完成</a>
+            </div>
+        </div>
+    </section>
+    <p class="tips" id="tips">添加成功!</p>
+
+    <script src="../../dist/SYST.js"></script>
+    <script src="../../src/router.js"></script>
+    <script src="assets/js/app.js"></script>
+    <script src="assets/js/router.js"></script>
+
+</body>
+</html>

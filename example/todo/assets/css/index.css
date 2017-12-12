@@ -1,0 +1,203 @@
+*{
+    padding: 0;
+    margin: 0;
+    box-sizing: border-box;
+    font-family: Microsoft YaHei;
+    font-size: 14px;
+}
+html, body{  }
+header, footer{
+    -webkit-user-select: none;
+    cursor: default;
+}
+header h1{
+    display: block;
+    margin: 20px auto;
+    font-size: 80px;
+    text-align: center;
+    color: rgb(184, 231, 236);
+}
+header input{
+    display: block;
+    padding: 10px 10px;
+    width: 320px;
+    margin: 0 auto;
+    border: solid 1px #00BCD4;
+    background-color: #FBFDFD;
+    box-shadow: 0 0 3px 1px rgba(232, 252, 255, 0.72), inset 0 0 3px 1px #D4F8FD;
+    outline: none;
+}
+header input:hover,
+header input:focus{
+    box-shadow: 0 0 3px 1px rgba(232, 252, 255, 0.72), inset 0 0 3px 1px #95EDF9;
+}
+.todo-list{
+    margin: 10px auto;
+    padding-bottom: 30px;
+}
+.todo-item{
+    position: relative;
+    margin: 5px auto;
+    width: 320px;
+    text-align: left;
+    padding: 10px 5px;
+    background: #A5E3EA;
+    box-shadow: 0 0 2px 1px rgba(164, 194, 197, 0.32);
+    box-sizing: border-box;
+    color: #28343A;
+}
+.todo-item:hover{
+    width: 330px;
+}
+.todo-item p{
+    width: 90%;
+    padding-left: 25px;
+    text-shadow: 1px 1px 1px white;
+}
+.todo-item i,
+.todo-item span{
+    position: absolute;
+    top: 50%;
+    -webkit-transform: translate3d(0, -50%, 0);
+    -moz-transform: translate3d(0, -50%, 0);
+    -ms-transform: translate3d(0, -50%, 0);
+    transform: translate3d(0, -50%, 0);
+}
+.todo-item span{
+    display: block;
+    padding: 3px;
+    border: solid 1px white;
+    border-radius: 50%;
+    text-align: center;
+    text-indent: -99999px;
+    width: 20px;
+    height: 20px;
+    line-height: 13px;
+    left: 5px;
+    cursor: pointer;
+}
+.todo-item span:hover{
+    border-color: #03CC1B;
+}
+.todo-item.complete{
+    text-decoration: line-through;
+    color: #8E8E8E;
+}
+.todo-item.complete span{
+    border-color: #00BCD4;
+}
+.todo-item.complete span:before,
+.todo-item.complete span:after{
+    content: "";
+    display: block;
+    height: 1px;
+    width: 12px;
+    background-color: #00BCD4;
+    pointer-events: none;
+    position: absolute;
+    top: 0;
+    left: 2px;
+}
+.todo-item.complete span:before{
+    width: 6px;
+    transform: rotate(40deg) translate(8px, 8px);
+}
+.todo-item.complete span:after{
+    transform: rotate(121deg) translate(6px, -7px);
+}
+.todo-item input{
+    display: block;
+    width: 265px;
+    position: absolute;
+    left: 30px;
+    top: 4px;
+    padding: 5px;
+}
+.todo-item input.editing{
+    display: block;
+}
+
+.todo-item i{
+    display: none;
+    right: 0;
+    font-family: cursive;
+    font-style: normal;
+    cursor: pointer;
+    padding: 6px;
+    color: white;
+}
+.todo-item i:hover{
+    color: #202028;
+}
+.todo-item:hover i{
+    display: block;
+}
+
+footer{
+    margin: 0 auto;
+    font-size: 10px;
+    color: #CBDCE4;
+    text-align: center;
+}
+.tips{
+    display: block;
+    width: 100%;
+    margin: 0 auto;
+    padding: 5px;
+    height: 30px;
+    position: fixed;
+    top: -30px;
+    left: 0;
+    text-shadow: 1px 1px 1px white;
+    text-align: center;
+}
+.tips.success{
+    background-color: #C0E09A;
+    top: 0;
+}
+.tips.error{
+    background-color: salmon;
+    top: 0;
+}
+.bottom-status{
+    position: fixed;
+    left: 0;
+    bottom: 0;
+    width: 100%;
+    background-color: #eaeaea;
+}
+.bottom-status .links {
+    text-align: center;
+    width: 100%;
+    font-size: 0;
+}
+.bottom-status .links a {
+    display: inline-block;
+    padding: 10px 5px;
+    margin: 0 auto;
+    width: 33.3333333333%;
+    background-color: #D6D6D6;
+    text-decoration: none;
+    border-left: solid 1px #9C9C9C;
+    color: #3A3A3A;
+}
+.bottom-status .links a.active{
+    color: #000000;
+    font-weight: bold;
+}
+.bottom-status .state-bar{
+
+}
+
+.tips,
+.todo-item,
+.todo-item i,
+.todo-item span,
+.todo-item.complete span:before,
+.todo-item.complete span:after,
+.bottom-status .links a{
+    -webkit-transition: all 0.25s ease-in-out;
+    -moz-transition: all 0.25s ease-in-out;
+    -ms-transition: all 0.25s ease-in-out;
+    transition: all 0.25s ease-in-out;
+}

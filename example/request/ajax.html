@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <title>SYST JS MINI Framework</title>
+    <meta charset="UTF-8"/>
+    <meta content="descriptions" charset="">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-status-bar-style" content="black-translucent">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+    <meta name="format-detection" content="telephone=no" />
+    <style>
+        *{outline: none;}
+        html,body{ margin:0; padding:0; width: 100%;height: 100%; overflow-x: hidden; overflow-y: scroll;}
+        body{padding-top: 30px;}
+        pre{ word-wrap: break-word; }
+    </style>
+
+</head>
+<body>
+
+<div class="app member-app" id="app" scroll="no">
+
+    <pre id="result"></pre>
+</div>
+
+<!--载入js-->
+<!--<script src="../../bower_components/jquery/dist/jquery.min.js"></script>-->
+<script src="../../dist/SYST.js"></script>
+<script>
+    SYST.ready(function(){
+
+        function _html(s, c){
+            var elm = typeof(s) === 'string' ? document.querySelector('#' + s.replace('#', '')) : s;
+            if(typeof c === 'object'){
+                try{ c = JSON.stringify(c, null, 4) }catch(e){}
+            }
+            elm && (elm.innerHTML = c);
+            console.log(c);
+        }
+
+        console.html = _html;
+
+        SYST.Model({
+            init: function(){
+                this.login();
+            },
+
+            login: function(){
+                this.$http.ajax({
+                    type: 'GET',
+                    url: '../test.json',
+                    data: { id: 1, name: 'ajax' },
+                    success: function(res){
+                        console.html('result', res);
+                        this.login2(res);
+                    }.bind(this),
+                    error: function(err){
+                        console.html('result', err);
+                    }
+                });
+            },
+
+            login2: function(xhr){
+                this.$http.ajax({
+                    type: 'POST',
+                    url: '../test.json',
+                    dataType: 'json',
+                    data: { id: 2, name: 'ajax2' },
+                    ajaxBefore: function(){
+                        console.log('...ajax send before...');
+                    },
+                    success: function(res){
+                        console.html('result', res);
+                    },
+                    error: function(err){
+                        console.html('result', err);
+                    },
+                    complate: function(res){
+                        console.log('...ajax readySatus complate...');
+                        console.html('result', xhr);
+                    }
+                });
+            }
+        });
+    });
+
+</script>
+
+</body>
+</html>

@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>数据绑定(array)</title>
+    <meta charset="UTF-8"/>
+    <meta content="descriptions" charset="">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-status-bar-style" content="black-translucent">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+    <meta name="format-detection" content="telephone=no" />
+    <style>
+
+        *[st-model]{
+            visibility: hidden;
+        }
+    </style>
+</head>
+<body>
+<div st-model="repeatModel">
+    <h5>repeat array</h5>
+
+    <div st-for="lang of indes">
+        <p>{{ lang.id }} - {{ lang.text | prefix }} <a href="javascript:void(0);" data-id="{{lang.id}}" st-on="click: removeLang">Remove</a></p>
+    </div>
+
+    <hr/>
+    <div>
+        <input type="text" id="lang" placeholder="输入语言" st-on="keydown: addLang"/><button st-on="click: addLang">添加</button>
+    </div>
+
+</div>
+
+<!--<script src="../../bower_components/jquery/dist/jquery.min.js"></script>-->
+<script src="../../dist/SYST.js"></script>
+<script>
+
+    SYST.ready(function(){
+        var stProps = document.querySelectorAll('[st-model]');
+        for(var i = 0, len = stProps.length; i < len; ++i)
+            stProps[i].style.visibility = 'visible';
+    });
+
+    var repeatModel;
+    SYST.ready(function(){
+
+        repeatModel = SYST.Model({
+            $mid: 'repeatModel',
+            props: {
+
+            },
+            init: function(){
+                var data = {
+                    name: 'langs',
+                    indes: [{ id: 1, text: 'Java' }, { id: 2, text: 'C++' }]
+                };
+                // langs: [{ id: 1, text: 'Java' }, { id: 2, text: 'C++' }]
+                this.set(data);
+            },
+            prefix: function(v){
+                return '> ' + v;
+            },
+            addLang: function(evt){
+                var $lang = this.$('#lang'), lang = $lang.val();
+                if(('click' === evt.type || 13 == evt.keyCode) && lang){
+                    lang = { id: this.getId(), text: lang };
+                    this.props.indes.push(lang);
+                    $lang.val('');
+                }
+            },
+            removeLang: function(evt){
+                var id = this.$(evt.target).attr('data-id');
+                this.props.indes.remove(id, 'id');
+            },
+            getId: function(){
+                return parseInt(Math.random() * 1000000, 10);
+            }
+        });
+    });
+
+</script>
+
+</body>
+</html>

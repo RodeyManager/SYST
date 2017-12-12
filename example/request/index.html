@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>SYST.Ajax（Request）</title>
+</head>
+<body>
+
+    <div st-model="userModel">
+        <ul st-for="user">
+            <li><strong>{{ $key }}：</strong>{{ $value }}</li>
+        </ul>
+    </div>
+
+    <h2 id="login-title" class="login-title"></h2>
+    <div id="login-container" st-model="userModel"></div>
+
+    <!--<script src="../../bower_components/jquery/dist/jquery.min.js"></script>-->
+    <script src="../../dist/SYST.js"></script>
+    <script>
+        var data;
+        var userModel = SYST.Model({
+            $mid: 'userModel',
+            props:{
+                user: {}
+            },
+            onLogin: function(evt){
+                alert(JSON.stringify(this.props.user), null, 2);
+            }
+        });
+        var ajax = new SYST.Ajax({
+            url: '../test.json',
+            type: 'GET',
+            data: { name: 'Tom' },
+            timeout: 10000
+        });
+        ajax.on('AJAX_BEFORE', function(){
+            console.log('ajax before');
+        });
+        ajax.on('AJAX_SUCCESS', function(res){
+            console.log('ajax success', res);
+            userModel.set('user', res.data);
+        });
+        ajax.on('AJAX_COMPLETE', function(res){
+            console.log('ajax complete', res);
+        });
+        ajax.on('AJAX_ERROR', function(){
+            console.log(arguments);
+        });
+        ajax.send();
+
+        //timeout
+        var tajax = new SYST.Ajax({ url: 'https://github.com/webpack/webpack/issues/300', timeout: 5000, dataType: 'text' });
+        tajax.on('AJAX_SUCCESS', function(res){
+                console.log(res.length);
+            })
+            .on('AJAX_ERROR', function(xhr, status){
+                console.log(status);
+            })
+            .send();
+
+        //post
+        SYST.Ajax.post('../test.json', {name: 10}, function(res){
+            console.log(res);
+        });
+        //get
+        SYST.Ajax.get('../test.json', {name: 11}, function(res){
+            console.log(res);
+        });
+        //getJSON
+        SYST.Ajax.getJSON('../test.json', {name: 12}, function(res){
+            console.log(res);
+        });
+        //load
+        SYST.Ajax.load('.login-title', '../template/title.stml', function(res){
+            console.log(res);
+        });
+        //load
+        SYST.Ajax.loadHTML('#login-container', '../template/tpl.html?toHtml', function(res){
+            console.log(res.querySelector('#username'));
+            userModel.$props.user = userModel.get('user');
+        });
+        //fetch api
+        SYST.Ajax.fetch('../test.json', { method: 'get', body: { name: 13 } }, 'json').then(function(res){
+            console.log('fetch api: ', res);
+        });
+
+        SYST.httpConfig = {
+            type: 'POST',
+            dataType: 'json',
+            commonData: { token: SYST.T.randomChar(20) },
+            ajaxBefore: function(){
+                console.log('ajax before: 请求前');
+            },
+            ajaxSuccess: function(res){
+                console.log('ajax success: 请求成功', arguments);
+            },
+            ajaxError: function(xhr, err){
+                console.log('ajax error: 请求失败', arguments);
+            },
+            ajaxComplete: function(){
+                console.log('ajax complete: 请求完成', arguments);
+            },
+            ajaxEnd: function(){
+                console.log('ajax end: 请求结束 success error before call');
+            }
+        };
+
+
+        //配置api地址， 自动将api注入到http对象中作为方法使用
+        var apis = {
+            test: '../test.json'
+        };
+
+        var http = SYST.Http({
+            //存在init将自动执行init方法
+            init: function(){
+                //根据api地址列表，自动生成方法
+                this.generateApi(apis, {callTarget: userModel});
+                //请求 test api
+                this.test({ name: 'Rodey' }, function(res){
+                    console.log('http: ', res);
+                });
+            }
+        });
+
+        /*http.generateApi(apis);
+        http.test({ name: 'Rodey' }, function(res){
+            console.log(res);
+        });*/
+
+        http.doRequest('../test.json', { name: 'Rodey' }, function(res){
+            console.log(res);
+        }, function(err){}, { complete: function(){
+            //覆盖全局的 ajaxComplete 函数
+            console.log('调用完成-------------------');
+        } });
+
+        var model = SYST.Model({
+            $http: http,
+            init: function(){
+                this.$http.test({}, function(res){
+                    console.log('scope: ', this);
+                }.bind(this));
+            }
+        });
+
+        var model2 = SYST.Model({
+            $mid: 'model2',
+            $http: http,
+            init: function(){
+                this.$http.test({}, function(res){
+                    console.log('scope: ', this);
+                }.bind(this));
+            }
+        });
+
+
+        // jquery ajax
+//        $(function(){
+//            var formData = new FormData();
+//            formData.append('name', 'Tom');
+//            formData.append('blob', new Blob(['ddddasdasd'], { type: "text/xml"}));
+//            $.ajax({
+//                url: '../test.json',
+//                type: 'POST',
+//                data: formData,
+//                processData: false,
+//                contentType: false
+//            });
+//        });
+
+
+    </script>
+</body>
+</html>

@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>数据绑定(input)</title>
+    <meta charset="UTF-8"/>
+    <meta content="descriptions" charset="">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-status-bar-style" content="black-translucent">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+    <meta name="format-detection" content="telephone=no" />
+    <style>
+        .box{
+            width: 30px;
+            height: 30px;
+            position: fixed;
+            right: 30px;
+            top: 50px;
+            z-index: 100;
+            background-color: palegoldenrod;
+            border-radius: 50% 50%;
+        }
+        *[st-lock]{
+            display: none;
+        }
+        .c-r{ color: red }
+        .c-g{ color: green }
+        .c-b{ color: blue }
+        .c-c{ color: cyan }
+        .c-m{ color: magenta }
+        .c-y{ color: yellow }
+        .c-k{ color: black }
+    </style>
+</head>
+<body>
+
+    <div id="app" st-model="inputModel" st-lock>
+        <div data-name="{{ name | filter | setFullName('--CMB') }}">
+            <input type="text" st-prop="name" id="name" autocomplete="off" placeholder="请输入您的姓名"/>
+            <span>{{ name }}</span>
+            <h3>您的姓名：<span st-prop="name | filter | setFullName('--CMB')"></span></h3>
+            <ul st-for="object">
+                <li>{{ $key }}：{{ $value }}</li>
+            </ul>
+            <span st-prop="user.tech" st-style="color: {{ color }}"></span>
+        </div>
+        <br/><br/>
+        <div>
+            <textarea cols="30" rows="5" st-prop="text"></textarea>
+            <p st-prop="text"></p>
+        </div>
+
+        <canvas style="height: 50px;">{{ name }} {{ $M.get('tempModel').get('name') }}</canvas>
+
+        <div data-sex="{{ bol }}">
+            <label><input type="radio" name="bol" value="Yes" st-prop="bol"/> 是</label>
+            <label><input type="radio" name="bol" value="No" st-prop="bol"/> 否</label>
+        </div>
+        <p>selected： {{ bol }}</p>
+        <hr/>
+
+        <div data-sex="{{ sex }}">
+            <label><input type="radio" name="sex" value="male" st-prop="sex"/> 男</label>
+            <label><input type="radio" name="sex" value="female" st-prop="sex"/> 女</label>
+        </div>
+        <p>selected： {{ sex }}</p>
+        <hr/>
+
+        <div data-lang="{{ lang }}">
+            <label><input type="checkbox" name="lang" value="Java" st-prop="lang"/> Java</label>
+            <label><input type="checkbox" name="lang" value="C++" st-prop="lang"/> C++</label>
+            <label><input type="checkbox" name="lang" value="Python" st-prop="lang"/> Python</label>
+            <label><input type="checkbox" name="lang" value="JavaScript" st-prop="lang"/> JavaScript</label>
+        </div>
+        <p>selected： {{ lang }}</p>
+        <hr/>
+
+        <div data-hobby="{{ hobby }}">
+            <label><input type="checkbox" name="hobby" value="music" st-prop="hobby"/> 音乐</label>
+            <label><input type="checkbox" name="hobby" value="sport" st-prop="hobby"/> 远动健身</label>
+            <label><input type="checkbox" name="hobby" value="film" st-prop="hobby"/> 电影</label>
+            <label><input type="checkbox" name="hobby" value="read" st-prop="hobby"/> 阅读</label>
+            <label><input type="checkbox" name="hobby" value="game" st-prop="hobby"/> 游戏</label>
+        </div>
+        <p>selected： {{ hobby }}</p>
+        <hr/>
+
+        <div>
+            <input type="range" max="100" min="0" step="1" st-prop="volume"/>
+            <span>{{ volume }}</span>
+            <div st-style="width: {{ volume | getWidth }}" style="height: 30px;background-color: aquamarine;"></div>
+        </div>
+        <p>Range： {{ volume }}</p>
+        <hr/>
+
+        <p>
+            <button id="server-btn" st-on="click: login">获取最新用户信息</button>
+        </p>
+
+    </div>
+
+    <!--<script src="../../bower_components/jquery/dist/jquery.min.js"></script>-->
+    <script src="../../dist/SYST.js"></script>
+    <script>
+
+        var inputModel, view;
+        SYST.ready(function(){
+
+            var tempModel = SYST.Model({
+                $mid: 'tempModel',
+                autoWatcher: false,
+                props: { name: 'temp-Model' }
+            });
+
+            inputModel = SYST.Model({
+                $mid: '#app',
+                props: {
+                    name: 'Rodey',
+                    nameHTML: '<b>Rodey</b>',
+                    hobby: [],
+                    bol: 'No',
+                    color: 'red',
+                    volume: 20
+                },
+
+                init: function(){
+                    this.set('text', '---textarea---');
+                    this.set('user', { name: { first: 'Rodey', last: 'Luo' }, tech: 'Web前端工程师' });
+                    this.set({ color: 'red', isShow: 0, sex: 'male', lang: ['JavaScript', 'Python'] });
+                    this.set('object', {
+                        name: 'Jack',
+                        email: '111@qq.com',
+                        qq: '12121212',
+                        github: 'https://github.com/RodeyManager'
+                    });
+                },
+
+                helpers: {
+                    filter: function(firstName){
+                        return '{ ' + firstName + ' }';
+                    },
+                    setFullName: function(name, tcmb){
+                        return name + tcmb;
+                    },
+                    getWidth: function(){
+                        return this.props.volume * 3 + 'px';
+                    },
+                    addDate: function(str){
+                        return str + '\r当前日期：' + SYST.T.setDateFormat(Date.now(), 'YYYY-mm-dd', true);
+                    }
+                },
+                login: function(evt){
+                    // http fetch api
+                    //return this.$http.fetch('../test.json', {}, 'json');
+                    this.$http.fetch('../test.json', {}, 'json').then(function(res) {
+                        this.set(res.data);
+                        //this.props.object.name = res.data.name;
+                        //this.props.object.email = res.data.email;
+                        this.props.object = res.data;
+                    }.bind(this));
+                }
+            });
+
+//            view = SYST.View({
+//                model: inputModel,
+//                events: {
+//                    'click #server-btn'     : 'serverHandler'
+//                },
+//                serverHandler: function(evt){
+//                    this.model.login().then(function(res){
+//                        console.log(res);
+//                        this.set(res.data);
+//                        //var object = this.props.object;
+//                        //object.name = res.data.name;
+//                        this.props.object.name = res.data.name;
+//                        this.props.object.email = res.data.email;
+//                    }.bind(this.model));
+//
+//                }
+//
+//            });
+
+        });
+
+    </script>
+
+</body>
+</html>

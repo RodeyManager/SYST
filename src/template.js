@@ -4,8 +4,6 @@
 
 ;(function(SYST){
 
-    'use strict';
-
     /**
      * SYST Template Render mini engine
      * @type {{open: string, close: string}}
@@ -14,6 +12,7 @@
     var lineFeedRegx = /\\|\'|\r|\n|\u2028|\u2029/g,
         body = '([\\s\\S]+?)',
         empty = /^=+\s*|\s*$/gi,
+        commentRegx = /("([^\\\"]*(\\.)?)*")|('([^\\\']*(\\.)?)*')|(\/{2,}.*?(\r|\n|$))|(\/\*(\n|.)*?\*\/)/g,
         lg = SYST.tplConfig.open,
         rg = SYST.tplConfig.close,
         regxs,
@@ -40,8 +39,9 @@
     //将匹配正则对象转换为数据正则字符串
     var fromatRegx = function (rgs){
         var rs = [];
-        for(var k in rgs){
-            rs.push(rgs[k].source);
+        var keys = Object.keys(rgs);
+        for(var i = 0; i < keys.length; ++i){
+            rs.push(rgs[keys[i]].source);
         }
         return rs.join('|').replace(/|$/i, '');
     };
@@ -60,7 +60,31 @@
         macs = new RegExp(fromatRegx(regxs), 'g');
     };
 
-    var _includeReg = /^include\(\s*([^,]+?)\s*,\s*([^,]+?)\s*\)/i;
+    var _includeReg = /^include\(\s*([^,]+?)\s*,\s*([^,]+?)\s*\)/i,
+        _fnNameReg = /^function([^\(]+?)\(/i;
+    function getFnCode(method, methodName){
+        var fnString = method.toString();
+        fnString = fnString.replace(commentRegx, function(code){
+            return /^\/{2,}/.test(code) || /^\/\*/.test(code) ? "" : code;
+        });
+
+        if(_fnNameReg.test(fnString) || !method.name){
+            fnString = fnString.replace(_fnNameReg, function(m, c){
+                var name = !SYST.T.trim(c) && methodName;
+                return 'var ' + name + ' = function '+ name +'(';
+            });
+        }
+
+        //if(!method.name){
+        //    fnString = fnString.replace(_fnNameReg, function(m, $1){
+        //        if(!SYST.T.trim($1)){
+        //            return 'var '+ methodName +' = function (';
+        //        }
+        //    });
+        //}
+        fnString += '.bind(this);';
+        return fnString;
+    }
 
     /**
      * 渲染模板并输出结果
@@ -74,30 +98,9 @@
 
         var $source = [],
             $text = [],
-            $tplString = 'var _s=""; with($d || {}){ ',
-            helperStr = '',
-            index = 0,
-            data = data;
-
-        //判断helper是否存在
-        if(helper){
-            if(SYST.V.isObject(helper)){
-                for(var k in helper){
-                    helperStr += helper[k].toString() + ';';
-                }
-            }
-            else if(SYST.V.isFunction(helper)){
-                helperStr += helper.toString() + ';';
-            }
-            else if(SYST.V.isString(helper) && /function\(\)/gi.test(helper)){
-                helperStr += helper.replace(/;$/i, '') + ';';
-            }else{
-                throw new EvalError('helper can be function');
-            }
-
-            $tplString = helperStr + $tplString;
-        }
-
+            $tplString = 'var $_H=$h,$_D=$d,_s="";for(var n in $_D){eval("var "+n+"=$_D[\'"+n+"\'];");} ' +
+                'if($_H && SYST.V.isObject($_H)){ for(var h in $_H){ eval("var "+h+"=$_H[\'"+h+"\'];"); } }',
+            index = 0;
         /**
          * 将SYST.T.each方法置入Function字符串中
          * use:
@@ -125,7 +128,6 @@
             index = $5 + $1.length;
             $text.push(text);
             $source.push(SYST.T.trim($2));
-
             return $1;
         });
 
@@ -133,28 +135,24 @@
         if($source.length === 0){
             return tplContent;
         }
-
-        //console.log($source, $text);
         //生成 Function 主体字符串
         var source, text;
-        for(var i = 0, len = $source.length; i < len; ++i){
-            //SYST.T.each($source, function(source, i){
+        for(var i = 0; i < $source.length; ++i){
             source = $source[i];
             text = $text[i + 1];
             //转移处理
-            if(source.search(/^\s*={2}/) !== -1){
+            if(/^\s*={2}/i.test(source) || /^\s*=>/i.test(source)){
                 source = source.replace(empty, "");
-                source = 'if(!!'+ source +'){ _s+=(SYST.T.escapeHtml('+ source +')); }else{ _s+=""; }';
+                source = 'if(null !=('+ source +')){_s+=(SYST.T.escapeHtml('+ source +'));}else{ _s+="";}';
             }
             else if(/^=[^=]+?/i.test(source)){
                 source = source.replace(empty, "");
-                source = 'if(!!'+ source +'){ _s+=('+ source +');}else{_s+="";}';
+                source = 'if(null !=('+ source +')){_s+=('+ source +');}else{_s+="";}';
             }
             //include file
             else if(_includeReg.test(source)){
                 var stiv;
                 source.replace(_includeReg, function(match, src, selector){
-                    //console.log(match, src, dom, time);
                     if(src && '' !== src){
                         stiv = setInterval(function(){
                             if(SYST.$(selector)[0]){
@@ -167,17 +165,17 @@
                 source = '';
             }
             $tplString += (source || '') + (text || '');
-            //});
         }
 
         //遍历数据
-        $tplString = ''+ $tplString +' }; return _s;';
-        //console.log($tplString);
+        $tplString = ''+ $tplString +'return _s;';
+        //$tplString = $tplString.replace(/[\n\r\t]/gi, '');
+
         //创建function对象
-        Render = new Function('$d', $tplString);
-        _tplCache[_content] = Render;
+        var render = new Function('$d', '$h', $tplString);
+        _tplCache[_content] = render;
         //执行渲染方法
-        return Render.call(target || this, data);
+        return render.call(target || this, data, helper);
     };
 
     /**
@@ -192,8 +190,8 @@
      */
     var Render = function(content, data, helper, options, target){
 
-        if(!content){
-            throw new SyntaxError('no found template content');
+        if(content == null){
+            throw new SyntaxError('no found template content(string or node)');
         }
 
         var element, tplContent = '', id, render;
@@ -201,35 +199,35 @@
         if(_tplCache[_content]){
             render =  _tplCache[_content];
             //执行渲染方法
-            return render.call(target || this, data);
+            return render.call(target || this, data, helper);
         }
         //重置配置
         _reset(options);
 
-        //如果直接是模板字符串
-        if(content.search(/[<|>|\/]/i) !== -1){
+        //如果直接是模板字符串或者html字符串
+        if(/[<|>|\/]/gi.test(content) || regxs.execter.test(content)){
             tplContent = SYST.T.trim(content);
         }
         //content为element id
         else{
-
-            if(SYST.V.isString(content)){
+            if(SYST.V.isElement(content)){
+                element = content;
+            }
+            else if(SYST.V.isString(content)){
                 id = content.replace(/^#/i, '');
                 element = document.getElementById(id);
             }
-            else if(SYST.V.isElement(content)){
-                element = content;
-            }
-            //element = document.getElementById('#' + content.replace(/^#/i, ''));
             if(element){
-                var tplStr = /^(TEXTEREA|INPUT)$/i.test(element.nodeName) ? element.value : element.innerHTML;
+                var tplStr = /^(TEXTEREA|INPUT)$/i.test(element.nodeName) ? element.value : (element.innerHTML || element.textContent);
                 tplContent = SYST.T.trim(tplStr);
             }
         }
-
+        if(!tplContent) return '';
         return _template(tplContent, data, helper, target);
 
     };
+    Render.getFnSourceCode = getFnCode;
+    Render.template = _template;
 
     SYST.Render = Render;
     SYST.T.render = Render;

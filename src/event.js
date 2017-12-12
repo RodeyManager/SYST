@@ -1,32 +1,45 @@
-/**
- * Created by Rodey on 2015/10/16.
- */
-
 ;(function(SYST){
 
-    'use strict';
-
-    var _hoadEvent = SYST.T.hoadEvent;
-
-    function _listener(obj, pobj, evt, func, type, trigger){
-        if(!evt) throw new ReferenceError('没有添加事件名称');
+    function _listener(obj, evt, handler, type, trigger){
+        if(!evt) throw new ReferenceError('Event name is must');
         var type = type || 'on';
         if(!obj) obj = window;
 
         //对象事件侦听
         if(_isWindow(obj.selector)){
             (type == 'on')
-                ? $(window).off().on(evt, _hoadEvent(pobj, func))
-                : $(window).off(evt, _hoadEvent(pobj, func));
+                ? SYST.Dom(window).off().on(evt, handler)
+                : SYST.Dom(window).off(evt, handler);
         }else if(_isBuilt(obj.selector)){
             (type == 'on')
-                ? $(obj.selector).off().on(evt, _hoadEvent(pobj, func))
-                : $(obj.selector).off(evt, _hoadEvent(pobj, func));
+                ? SYST.Dom(obj.selector).off().on(evt, handler)
+                : SYST.Dom(obj.selector).off(evt, handler);
         }else{
-            (type == 'on')
-                ? $(trigger || 'body').undelegate(obj.selector, evt, _hoadEvent(pobj, func))
-                .delegate(obj.selector, evt, _hoadEvent(pobj, func))
-                : $(trigger || 'body').undelegate(obj.selector, evt);
+            var delegate = SYST.Dom(trigger || 'body');
+            if(SYST.V.isArray(delegate)){
+                SYST.T.each(delegate, function(dgt){
+                    (type == 'on')
+                        ? dgt.undelegate(obj.selector, evt, handler)
+                            .delegate(obj.selector, evt, handler)
+                        : dgt.undelegate(obj.selector, evt, handler);
+                });
+            }else{
+                (type == 'on')
+                    ? delegate.undelegate(obj.selector, evt, handler)
+                        .delegate(obj.selector, evt, handler)
+                    : delegate.undelegate(obj.selector, evt, handler);
+            }
+        }
+    }
+
+    function _addListener(obj, evt, func, type, trigger){
+        if(!obj)    return;
+        if(SYST.V.isArray(obj)){
+            SYST.T.each(obj, function(dom){
+                _listener(dom, evt, func, type, trigger);
+            }, this);
+        }else{
+            _listener(obj, evt, func, type, trigger);
         }
     }
 
@@ -41,27 +54,20 @@
     /**
      * Module 事件处理（ 事件绑定 ）
      * @obj     事件侦听对象
-     * @pobj    this作用域被替换对象
+     * @context    this作用域被替换对象
      * @evt     事件名称
      * @func    事件函数
      * @type {Function}
      */
-    var Events = function(obj, pobj, evt, func, type, trigger){
-        _listener(obj, pobj, evt, func, type, trigger);
+    var Events = function(obj, evt, func, type, trigger){
+        _addListener(obj, evt, func, type, trigger);
     };
     // static
-    Events.initEvent = function(obj, pobj, evt, func, type, trigger){
-        _listener(obj, pobj, evt, func, type, trigger);
+    Events.initEvent = function(obj, evt, func, type, trigger){
+        _addListener(obj, evt, func, type, trigger);
     };
-    Events.uninitEvent = function(selector, event, func, trigger){
-        if (_isWindow(selector)) {
-            $(window).off(event, func);
-        } else if (_isBuilt(selector)) {
-            $(selector).off(event, func);
-        } else {
-            $(trigger).undelegate(selector, event, func);
-        }
-    };
+    Events.cache = {};
+    Events._cache = {};
 
     SYST.Events = Events;
 

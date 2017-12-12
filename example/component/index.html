@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>SYST Component</title>
+    <style>
+        *[st-lock]{ display: none; }
+    </style>
+</head>
+<body>
+    <div id="cp" st-lock>
+        <p>{{ message }}</p>
+        <my-component></my-component>
+    </div>
+
+    <script src="../../dist/SYST.js"></script>
+    <script>
+
+        //$(function(){
+
+            var myComponent = SYST.Component('my-component', {
+                template: '<button>Component-{{ name }}</button>',
+                props: {
+                    name: 'SYST Component'
+                },
+                components: []
+            });
+
+            var componentModel = SYST.Model('#cp', {
+                props: {
+                    message: 'Hello'
+                },
+                components: ['my-component'],
+                init: function(){
+                    myComponent._init();
+                }
+            });
+
+        //});
+    </script>
+</body>
+</html>

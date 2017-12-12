@@ -31,14 +31,14 @@
         /**
          * 也可以采用 SYST.T.each
          */
-        SYST.T.each(posts, function(post, i) {
+        each(posts, function(post, i) {
     %>
         <% if(SYST.V.isEmpty(post.expert)){ %>
             <span>expert is null</span><br/>
         <% }else{ %>
             <% console.log(SYST.T.escapeHtml(post.expert)); %>
             <% console.log(filter(post.expert)); %>
-            <span><%== post.expert + (i + 1) %> at <%= SYST.T.setDateFormat(post.time) %></span><br/>
+            <span><%== post.expert + (i + 1) %> at <%= SYST.T.dateFormat(post.time) %></span><br/>
         <% } %>
     <% }); %>
 
@@ -51,16 +51,17 @@
         <li><%= version %></li>
         <li><%= author %></li>
         <li><%= toMailLink(email) %></li>
+        <li><%= SYST.T.dateFormatCN(date) %></li>
     </ul>
 
 </script>
 
 <!--载入js-->
-<script src="../../bower_components/jquery/dist/jquery.min.js"></script>
+<!--<script src="../../bower_components/jquery/dist/jquery.min.js"></script>-->
 <script src="../../dist/SYST.js"></script>
 <script>
 
-    $(function(){
+    SYST.$(function(){
 
         function filter(str){
             return str.replace(/\d+/gi, '');
@@ -70,8 +71,12 @@
             return '<a href="mailto:'+ email +'">'+ email +'</a>';
         }
 
+        function formatTitle(title){
+            return '---' + title + '---';
+        }
+
         var data = {
-            title: '<h1>&模板渲染实例</h1>',
+            title: '<h1>模板渲染实例</h1>',
             "posts": [{
                 "expert": "<<content>>",
                 "time": 1448603587595
@@ -90,15 +95,16 @@
                 return this.author + ' say ' + message + '!';
             },
 
-            name: 'SYST JS FROMWORK',
+            name: '             SYST JS FROMWORK              ',
             version: '0.0.5',
             author: 'Rodey',
-            email: 'rodeyluo@gmail.com'
+            email: 'rodeyluo@gmail.com',
+            date: Date.now()
         };
 
-        var html = SYST.T.render('tpl', data, {filter: filter, toMailLink: toMailLink} );
+        var html = SYST.T.render('tpl', data, {filter: filter, toMailLink: toMailLink, formatTitle: formatTitle} );
         //console.log(html);
-        document.querySelector('#app').innerHTML = html;
+        SYST.$('#app').html(html);
 
 
     });
